@@ -33,12 +33,14 @@ const Home = () => {
     {
       icon: Code2,
       title: "توسعه نرم‌افزار",
-      description: "طراحی و توسعه راه‌حل‌های نرم‌افزاری مدرن، امن و قابل اعتماد با جدیدترین تکنولوژی‌ها",
+      description:
+        "طراحی و توسعه راه‌حل‌های نرم‌افزاری مدرن، امن و قابل اعتماد با جدیدترین تکنولوژی‌ها",
     },
     {
       icon: Database,
       title: "تحلیل داده",
-      description: "استخراج الگوها و روندهای مهم از داده‌های پیچیده شما برای رشد کسب‌وکار",
+      description:
+        "استخراج الگوها و روندهای مهم از داده‌های پیچیده شما برای رشد کسب‌وکار",
     },
   ];
 
@@ -56,7 +58,8 @@ const Home = () => {
     {
       icon: Target,
       title: "تمرکز بر نتیجه",
-      description: "راه‌حل‌های هدفمند که مستقیماً به اهداف کسب‌وکار شما کمک می‌کند",
+      description:
+        "راه‌حل‌های هدفمند که مستقیماً به اهداف کسب‌وکار شما کمک می‌کند",
     },
   ];
 
@@ -64,26 +67,28 @@ const Home = () => {
     <div className="bg-background">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
-
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/100 to-background/50"></div>
+        {/* <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-background/20 to-transparent"></div> */}
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto space-y-8 fade-in-up">
             <h1 className="persian-heading text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent block md:inline md:ml-4">
+              <span className="text-transparent bg-clip-text bg-accent block md:inline md:ml-4">
                 ویراپ&nbsp;
               </span>
               راهکارهای نرم‌افزاری پیشرفته
             </h1>
 
-            <p className="persian-body text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              شرکت پیشرو در توسعه نرم‌افزار، هوش تجاری و تحلیل داده با تیمی از متخصصان مجرب
-              برای تحویل بهترین راه‌حل‌های تکنولوژیکی
+            <p className="persian-body text-lg md:text-xl text-muted-dark leading-relaxed max-w-3xl mx-auto">
+              شرکت پیشرو در توسعه نرم‌افزار، هوش تجاری و تحلیل داده با تیمی از
+              متخصصان مجرب برای تحویل بهترین راه‌حل‌های تکنولوژیکی
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
               <Link to="/contact">
-                <Button size="lg" className="btn-hero-primary text-lg px-8 py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary">
+                <Button
+                  size="lg"
+                  className="btn-hero-primary text-lg px-8 py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary"
+                >
                   شروع همکاری
                   <ArrowLeft className="w-5 h-5 mr-2" />
                 </Button>
@@ -92,7 +97,7 @@ const Home = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="btn-hero-secondary text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  className="btn-hero-secondary text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-accent hover:text-primary-foreground"
                 >
                   مشاهده نمونه کارها
                 </Button>
@@ -136,13 +141,17 @@ const Home = () => {
               خدمات حرفه‌ای ما
             </h2>
             <p className="persian-body text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              با استفاده از جدیدترین تکنولوژی‌ها و روش‌های نوآورانه، راه‌حل‌های منحصربه‌فرد ارائه می‌دهیم
+              با استفاده از جدیدترین تکنولوژی‌ها و روش‌های نوآورانه، راه‌حل‌های
+              منحصربه‌فرد ارائه می‌دهیم
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {features.map((feature, index) => (
-              <Card key={index} className="service-card text-center p-8 bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong">
+              <Card
+                key={index}
+                className="service-card text-center p-8 bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong"
+              >
                 <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center mx-auto mb-6">
                   <feature.icon className="w-10 h-10 text-primary-foreground" />
                 </div>
@@ -189,14 +198,17 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary via-primary-dark to-primary text-primary-foreground">
+      <section className="py-20 bg-gradient-to-br from-primary via-primary-dark to-primary text-primary-foreground">
+        <div className="absolute inset-0 "></div>
+
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto fade-in-up">
             <h2 className="persian-heading text-3xl md:text-5xl font-bold mb-6">
               آماده شروع پروژه بعدی هستید؟
             </h2>
             <p className="persian-body text-lg md:text-xl mb-8 text-primary-foreground/90 leading-relaxed">
-              با تیم متخصص ما تماس بگیرید و پروژه‌تان را به بهترین شکل ممکن به واقعیت تبدیل کنید
+              با تیم متخصص ما تماس بگیرید و پروژه‌تان را به بهترین شکل ممکن به
+              واقعیت تبدیل کنید
             </p>
             <Link to="/contact">
               <Button

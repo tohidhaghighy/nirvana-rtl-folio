@@ -1,7 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Info, Briefcase, FolderOpen, Phone, Shield, Code, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Home,
+  Info,
+  Briefcase,
+  FolderOpen,
+  Phone,
+  Shield,
+  Code,
+  LogOut,
+} from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 const Header = () => {
@@ -24,13 +35,18 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-primary font-bold text-xl"
+          >
+            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
               <Code className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="persian-heading text-xl text-foreground">ویراپ</h1>
-              <p className="text-sm text-muted-foreground persian-body">راهکارهای نرم‌افزاری</p>
+              <h1 className="persian-heading text-xl text-foreground">
+                ویرا افزار پاسارگاد
+              </h1>
+              {/* <p className="text-sm text-muted-foreground persian-body">راهکارهای نرم‌افزاری</p> */}
             </div>
           </Link>
 
@@ -65,7 +81,12 @@ const Header = () => {
                     پنل مدیریت
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={signOut} className="persian-body">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="persian-body"
+                >
                   <LogOut className="w-4 h-4 ml-2" />
                   خروج
                 </Button>
@@ -110,13 +131,13 @@ const Header = () => {
                   </Link>
                 );
               })}
-              
+
               {/* Mobile Auth Section */}
               <div className="px-4 pt-2 border-t border-border mt-2 space-y-2">
                 {user ? (
                   <>
-                    <Link 
-                      to="/admin" 
+                    <Link
+                      to="/admin"
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body"
                     >
@@ -136,7 +157,11 @@ const Header = () => {
                   </>
                 ) : (
                   <Link to="/auth" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full persian-body">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full persian-body"
+                    >
                       ورود / ثبت نام
                     </Button>
                   </Link>
