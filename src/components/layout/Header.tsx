@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Info, Briefcase, FolderOpen, Phone, Shield } from "lucide-react";
+import { Menu, X, Home, Info, Briefcase, FolderOpen, Phone, Shield, Code, LogOut } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuthStore();
 
-  const navigation = [
-    { name: "خانه", href: "/", icon: Home },
-    { name: "درباره ما", href: "/about", icon: Info },
-    { name: "خدمات", href: "/services", icon: Briefcase },
-    { name: "پروژه‌ها", href: "/projects", icon: FolderOpen },
-    { name: "تماس", href: "/contact", icon: Phone },
+  const navItems = [
+    { path: "/", label: "خانه", icon: Home },
+    { path: "/about", label: "درباره ما", icon: Info },
+    { path: "/services", label: "خدمات", icon: Briefcase },
+    { path: "/projects", label: "پروژه‌ها", icon: FolderOpen },
+    { path: "/contact", label: "تماس", icon: Phone },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -24,54 +24,55 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">و</span>
+              <Code className="w-6 h-6 text-primary-foreground" />
             </div>
-            <div className="text-persian">
-              <h1 className="text-xl font-bold text-foreground">ویراپ</h1>
-              <p className="text-sm text-muted-foreground">راهکارهای نرم‌افزاری</p>
+            <div>
+              <h1 className="persian-heading text-xl text-foreground">ویراپ</h1>
+              <p className="text-sm text-muted-foreground persian-body">راهکارهای نرم‌افزاری</p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 rtl:space-x-reverse">
-            {navigation.map((item) => {
+          <nav className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-2 rtl:space-x-reverse px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg text-persian ${
-                    isActive(item.href)
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-lg persian-body ${
+                    isActive(item.path)
                       ? "text-primary bg-primary/10"
-                      : "text-foreground hover:text-primary hover:bg-primary/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   <Icon size={16} />
-                  <span>{item.name}</span>
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Auth Actions */}
-          <div className="hidden md:flex items-center space-x-4 rtl:space-x-reverse">
+          <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
                 <Link to="/admin">
-                  <Button variant="ghost" size="sm" className="text-persian">
-                    <Shield size={16} className="ml-2" />
+                  <Button variant="outline" size="sm" className="persian-body">
+                    <Shield className="w-4 h-4 ml-2" />
                     پنل مدیریت
                   </Button>
                 </Link>
-                <Button onClick={signOut} variant="outline" size="sm" className="text-persian">
+                <Button variant="ghost" size="sm" onClick={signOut} className="persian-body">
+                  <LogOut className="w-4 h-4 ml-2" />
                   خروج
                 </Button>
               </>
             ) : (
               <Link to="/auth">
-                <Button className="text-persian accent-gradient hover:scale-105 transition-transform">
+                <Button variant="outline" size="sm" className="persian-body">
                   ورود / ثبت نام
                 </Button>
               </Link>
@@ -80,42 +81,44 @@ const Header = () => {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4 animate-fade-in">
-            <nav className="flex flex-col space-y-2">
-              {navigation.map((item) => {
+        {isOpen && (
+          <div className="md:hidden border-t border-border bg-background">
+            <div className="py-4 space-y-2">
+              {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 text-sm font-medium transition-colors rounded-lg text-persian ${
-                      isActive(item.href)
-                        ? "text-primary bg-primary/10"
-                        : "text-foreground hover:text-primary hover:bg-primary/5"
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg persian-body transition-colors ${
+                      isActive(item.path)
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     <Icon size={20} />
-                    <span>{item.name}</span>
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
-              <div className="pt-4 border-t border-gray-200 mt-4">
+              
+              {/* Mobile Auth Section */}
+              <div className="px-4 pt-2 border-t border-border mt-2 space-y-2">
                 {user ? (
                   <>
-                    <Link
-                      to="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 text-sm font-medium text-foreground hover:text-primary transition-colors text-persian"
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body"
                     >
                       <Shield size={20} />
                       <span>پنل مدیریت</span>
@@ -123,26 +126,23 @@ const Header = () => {
                     <button
                       onClick={() => {
                         signOut();
-                        setIsMenuOpen(false);
+                        setIsOpen(false);
                       }}
-                      className="flex items-center space-x-3 rtl:space-x-reverse px-3 py-3 text-sm font-medium text-foreground hover:text-primary transition-colors text-persian w-full text-right"
+                      className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body w-full text-right"
                     >
+                      <LogOut size={20} />
                       <span>خروج</span>
                     </button>
                   </>
                 ) : (
-                  <Link
-                    to="/auth"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block w-full"
-                  >
-                    <Button className="w-full text-persian accent-gradient">
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full persian-body">
                       ورود / ثبت نام
                     </Button>
                   </Link>
                 )}
               </div>
-            </nav>
+            </div>
           </div>
         )}
       </div>
