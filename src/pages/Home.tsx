@@ -72,9 +72,9 @@ const Home = () => {
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto space-y-8 fade-in-up">
             <h1 className="persian-heading text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6">
-              <span className="text-transparent bg-clip-text bg-accent block md:inline md:ml-4">
-                ویراپ&nbsp;
-              </span>
+              <p className="text-transparent bg-clip-text bg-accent block md:inline md:ml-4">
+                ویراپ
+              </p>
               راهکارهای نرم‌افزاری پیشرفته
             </h1>
 
