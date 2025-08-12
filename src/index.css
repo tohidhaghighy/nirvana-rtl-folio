@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -114,8 +116,8 @@
   }
   
   body {
-    @apply bg-background text-foreground;
-    font-family: inherit;
+    @apply bg-background text-foreground font-vazir;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'ss01' 1;
   }
 
   /* Persian/Farsi typography optimization */
