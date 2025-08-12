@@ -1,82 +1,98 @@
-import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  ChevronDown,
+  BarChart3,
+  Code2,
+  Database,
+  Users,
+  Award,
+  Clock,
+  Zap,
+  Shield,
+  Target,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, BarChart3, Code, Database, Zap, Users, Target, Award } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const Home = () => {
-  const services = [
-    {
-      icon: BarChart3,
-      title: "هوش تجاری",
-      description: "تحلیل داده‌های کسب‌وکار شما برای تصمیم‌گیری‌های بهتر",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
-    },
-    {
-      icon: Code,
-      title: "توسعه نرم‌افزار",
-      description: "ساخت نرم‌افزارهای مدرن و قابل اعتماد برای کسب‌وکار شما",
-      color: "text-green-600",
-      bgColor: "bg-green-50"
-    },
-    {
-      icon: Database,
-      title: "تحلیل داده‌ها",
-      description: "کشف الگوها و بینش‌های مخفی در داده‌های شما",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
-    },
+  const stats = [
+    { icon: Users, value: "۵۰+", label: "مشتری راضی" },
+    { icon: Award, value: "۱۰۰+", label: "پروژه موفق" },
+    { icon: Clock, value: "۳+", label: "سال تجربه" },
+    { icon: Code2, value: "۲۴/۷", label: "پشتیبانی" },
   ];
 
   const features = [
     {
-      icon: Zap,
-      title: "سرعت بالا",
-      description: "تحویل سریع پروژه‌ها با کیفیت بالا"
+      icon: BarChart3,
+      title: "هوش تجاری",
+      description:
+        "تبدیل داده‌های خام به بینش‌های قابل اجرا برای تصمیم‌گیری بهتر و بهینه‌سازی عملکرد",
     },
     {
-      icon: Users,
-      title: "تیم متخصص",
-      description: "همکاری با بهترین متخصصان حوزه فناوری"
+      icon: Code2,
+      title: "توسعه نرم‌افزار",
+      description: "طراحی و توسعه راه‌حل‌های نرم‌افزاری مدرن، امن و قابل اعتماد با جدیدترین تکنولوژی‌ها",
+    },
+    {
+      icon: Database,
+      title: "تحلیل داده",
+      description: "استخراج الگوها و روندهای مهم از داده‌های پیچیده شما برای رشد کسب‌وکار",
+    },
+  ];
+
+  const values = [
+    {
+      icon: Zap,
+      title: "سرعت و کیفیت",
+      description: "تحویل سریع پروژه‌ها با بالاترین کیفیت و استانداردهای روز",
+    },
+    {
+      icon: Shield,
+      title: "امنیت و قابلیت اعتماد",
+      description: "حفاظت کامل از داده‌ها و اطلاعات با بالاترین سطح امنیت",
     },
     {
       icon: Target,
-      title: "هدف‌محور",
-      description: "تمرکز بر اهداف کسب‌وکار و نیازهای شما"
-    },
-    {
-      icon: Award,
-      title: "کیفیت تضمینی",
-      description: "تضمین کیفیت و پشتیبانی مداوم"
+      title: "تمرکز بر نتیجه",
+      description: "راه‌حل‌های هدفمند که مستقیماً به اهداف کسب‌وکار شما کمک می‌کند",
     },
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="bg-background">
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-24 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-persian leading-tight">
-              افزایش بهره‌وری با
-              <span className="text-secondary block mt-2">ابزارهای سفارشی</span>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
+
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-4xl mx-auto space-y-8 fade-in-up">
+            <h1 className="persian-heading text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent block md:inline md:ml-4">
+                ویراپ&nbsp;
+              </span>
+              راهکارهای نرم‌افزاری پیشرفته
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed text-persian max-w-3xl mx-auto">
-              ویراپ ابزارهایی ارائه می‌دهد که بهره‌وری را افزایش و مدیریت را بهینه می‌کند.
-              تحلیل داده‌ها و توسعه نرم‌افزار، دقت در تصمیم‌گیری و بهره‌وری سازمان را افزایش می‌دهد.
+
+            <p className="persian-body text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+              شرکت پیشرو در توسعه نرم‌افزار، هوش تجاری و تحلیل داده با تیمی از متخصصان مجرب
+              برای تحویل بهترین راه‌حل‌های تکنولوژیکی
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
               <Link to="/contact">
-                <Button size="lg" className="accent-gradient hover:scale-105 transition-transform text-lg px-8 py-3 text-persian">
-                  اطلاعات بیشتر
-                  <ArrowLeft className="mr-2 h-5 w-5" />
+                <Button size="lg" className="btn-hero-primary text-lg px-8 py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary">
+                  شروع همکاری
+                  <ArrowLeft className="w-5 h-5 mr-2" />
                 </Button>
               </Link>
               <Link to="/projects">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="glass border-white/30 text-white hover:bg-white/10 text-lg px-8 py-3 text-persian"
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="btn-hero-secondary text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 >
                   مشاهده نمونه کارها
                 </Button>
@@ -84,94 +100,111 @@ const Home = () => {
             </div>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <ChevronDown className="w-8 h-8 text-muted-foreground" />
+        </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-persian">خدمات ویراپ</h2>
-            <p className="text-xl text-muted-foreground text-persian leading-relaxed">
-              ویراپ با توسعه نرم‌افزارهای سازمانی، تحلیل داده‌ها و راهکارهای هوش مصنوعی، 
-              ابزارهای نوآورانه‌ای برای رشد و بهینه‌سازی کسب‌وکارها ارائه می‌دهد.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {services.map((service, index) => {
-              const Icon = service.icon;
-              return (
-                <Card 
-                  key={service.title} 
-                  className="hover-lift cursor-pointer border-0 shadow-lg bg-white/50 backdrop-blur-sm"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <CardContent className="p-8 text-center">
-                    <div className={`w-16 h-16 ${service.bgColor} rounded-2xl mx-auto mb-6 flex items-center justify-center`}>
-                      <Icon className={`h-8 w-8 ${service.color}`} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-4 text-persian">{service.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed text-persian">
-                      {service.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-br from-secondary/30 to-muted/20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center fade-in-scale">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                  <stat.icon className="w-8 h-8 text-primary" />
+                </div>
+                <div className="persian-heading text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  {stat.value}
+                </div>
+                <div className="persian-body text-muted-foreground text-sm md:text-base">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-persian">چرا ویراپ؟</h2>
-            <p className="text-xl text-muted-foreground text-persian">
-              ویژگی‌هایی که ما را از سایرین متمایز می‌کند
+      <section className="py-20 bg-gradient-to-b from-background to-secondary/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 fade-in-up">
+            <h2 className="persian-heading text-3xl md:text-5xl font-bold text-foreground mb-6">
+              خدمات حرفه‌ای ما
+            </h2>
+            <p className="persian-body text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              با استفاده از جدیدترین تکنولوژی‌ها و روش‌های نوآورانه، راه‌حل‌های منحصربه‌فرد ارائه می‌دهیم
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div 
-                  key={feature.title}
-                  className="text-center animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                    <Icon className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2 text-persian">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed text-persian">
-                    {feature.description}
-                  </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            {features.map((feature, index) => (
+              <Card key={index} className="service-card text-center p-8 bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center mx-auto mb-6">
+                  <feature.icon className="w-10 h-10 text-primary-foreground" />
                 </div>
-              );
-            })}
+                <h3 className="persian-heading text-xl md:text-2xl font-semibold text-foreground mb-4">
+                  {feature.title}
+                </h3>
+                <p className="persian-body text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Values Section */}
+      <section className="py-20 bg-gradient-to-br from-muted/20 to-accent/10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 fade-in-up">
+            <h2 className="persian-heading text-3xl md:text-5xl font-bold text-foreground mb-6">
+              چرا ویراپ؟
+            </h2>
+            <p className="persian-body text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              ارزش‌ها و اصولی که ما را در ارائه بهترین خدمات راهنمایی می‌کند
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {values.map((value, index) => (
+              <div key={index} className="text-center fade-in-scale">
+                <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-accent/10 rounded-xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                  <value.icon className="w-10 h-10 text-accent" />
+                </div>
+                <h3 className="persian-heading text-xl md:text-2xl font-semibold text-foreground mb-4">
+                  {value.title}
+                </h3>
+                <p className="persian-body text-muted-foreground leading-relaxed">
+                  {value.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 hero-gradient text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center animate-scale-in">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-persian">
-              آماده شروع همکاری هستید؟
+      <section className="py-20 bg-gradient-to-r from-primary via-primary-dark to-primary text-primary-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-3xl mx-auto fade-in-up">
+            <h2 className="persian-heading text-3xl md:text-5xl font-bold mb-6">
+              آماده شروع پروژه بعدی هستید؟
             </h2>
-            <p className="text-xl mb-8 text-white/90 text-persian leading-relaxed">
-              با ما تماس بگیرید و اولین قدم را برای رشد کسب‌وکارتان بردارید
+            <p className="persian-body text-lg md:text-xl mb-8 text-primary-foreground/90 leading-relaxed">
+              با تیم متخصص ما تماس بگیرید و پروژه‌تان را به بهترین شکل ممکن به واقعیت تبدیل کنید
             </p>
             <Link to="/contact">
-              <Button 
-                size="lg" 
-                className="accent-gradient hover:scale-105 transition-all duration-300 text-lg px-10 py-4 text-persian shadow-lg hover:shadow-xl"
+              <Button
+                size="lg"
+                className="bg-accent text-accent-foreground hover:bg-accent-light px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 تماس با ما
-                <ArrowLeft className="mr-2 h-5 w-5" />
+                <ArrowLeft className="w-5 h-5 mr-2" />
               </Button>
             </Link>
           </div>
