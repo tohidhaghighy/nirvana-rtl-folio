@@ -177,14 +177,14 @@
   /* Service Cards */
   .service-card {
     @apply bg-card border border-border rounded-xl p-8;
-    @apply hover:shadow-medium transition-all duration-300;
+    @apply hover:shadow-lg transition-all duration-300;
     @apply hover:-translate-y-2;
   }
 
   /* Portfolio Cards */
   .portfolio-card {
     @apply bg-card border border-border rounded-xl overflow-hidden;
-    @apply hover:shadow-strong transition-all duration-500;
+    @apply hover:shadow-xl transition-all duration-500;
     @apply cursor-pointer;
   }
 
