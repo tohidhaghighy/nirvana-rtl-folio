@@ -66,6 +66,7 @@ interface ClientProfile {
   id: string;
   user_id: string;
   full_name: string | null;
+  email: string | null;
   role: string;
   created_at: string;
   updated_at: string;
@@ -140,17 +141,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const fetchClients = async () => {
     setClientsLoading(true);
     try {
-      // First get all client profiles
+      // Get all user profiles (both clients and admins)
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'client')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Get submission counts for each client
-      const clientsWithStats = await Promise.all(
+      // Get submission counts for each user
+      const usersWithStats = await Promise.all(
         (profilesData || []).map(async (profile) => {
           const { count } = await supabase
             .from('contact_submissions')
@@ -164,7 +164,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             .eq('user_id', profile.user_id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           return {
             ...profile,
@@ -174,7 +174,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         })
       );
 
-      setClients(clientsWithStats);
+      setClients(usersWithStats);
     } catch (error: any) {
       toast({
         title: "خطا",
@@ -212,6 +212,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const clientStats = {
     total: clients.length,
+    admins: clients.filter(c => c.role === 'admin').length,
+    clients: clients.filter(c => c.role === 'client').length,
     active: clients.filter(c => c.submission_count && c.submission_count > 0).length,
     recent: clients.filter(c => {
       if (!c.last_submission) return false;
@@ -403,8 +405,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
           <TabsContent value="users">
             <div className="space-y-6">
-              {/* Client Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* User Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -418,8 +420,18 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground mb-1">کاربران فعال</p>
-                      <p className="persian-heading text-3xl font-bold text-green-500">{clientStats.active}</p>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">مدیران</p>
+                      <p className="persian-heading text-3xl font-bold text-red-500">{clientStats.admins}</p>
+                    </div>
+                    <Shield className="w-8 h-8 text-red-500" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">کاربران عادی</p>
+                      <p className="persian-heading text-3xl font-bold text-green-500">{clientStats.clients}</p>
                     </div>
                     <UserCheck className="w-8 h-8 text-green-500" />
                   </div>
@@ -436,11 +448,11 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 </Card>
               </div>
 
-              {/* Clients Table */}
+              {/* Users Table */}
               <Card>
                 <div className="p-6">
                   <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
-                    مدیریت کاربران
+                    لیست کاربران سیستم
                   </h2>
                   
                   {clientsLoading ? (
@@ -460,6 +472,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         <TableHeader>
                           <TableRow>
                             <TableHead className="persian-body">نام</TableHead>
+                            <TableHead className="persian-body">ایمیل</TableHead>
                             <TableHead className="persian-body">نقش</TableHead>
                             <TableHead className="persian-body">تعداد درخواست</TableHead>
                             <TableHead className="persian-body">آخرین فعالیت</TableHead>
@@ -472,6 +485,14 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                             <TableRow key={client.id}>
                               <TableCell className="persian-body font-medium">
                                 {client.full_name || 'بدون نام'}
+                              </TableCell>
+                              <TableCell className="persian-body">
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-4 h-4 text-muted-foreground" />
+                                  <span className="ltr-content text-sm">
+                                    {client.email || 'بدون ایمیل'}
+                                  </span>
+                                </div>
                               </TableCell>
                               <TableCell>
                                 {getRoleBadge(client.role)}
@@ -533,13 +554,21 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           
           {selectedClient && (
             <div className="space-y-6 pt-4">
-              {/* Client Info */}
+              {/* User Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5 text-muted-foreground" />
                   <div>
                     <p className="persian-body text-sm text-muted-foreground">نام کامل</p>
                     <p className="persian-body font-medium">{selectedClient.full_name || 'نامشخص'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="persian-body text-sm text-muted-foreground">ایمیل</p>
+                    <p className="persian-body font-medium ltr-content">{selectedClient.email || 'نامشخص'}</p>
                   </div>
                 </div>
 
