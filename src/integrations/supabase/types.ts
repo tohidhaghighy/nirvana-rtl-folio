@@ -89,6 +89,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_responses: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin_response: boolean
+          message: string
+          submission_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin_response?: boolean
+          message: string
+          submission_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin_response?: boolean
+          message?: string
+          submission_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_responses_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

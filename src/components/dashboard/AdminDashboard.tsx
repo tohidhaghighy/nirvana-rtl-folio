@@ -237,6 +237,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                                 {submission.name}
                               </h3>
                               {getStatusBadge(submission.status)}
+                              {/* User Type Indicator */}
+                              {submission.user_id ? (
+                                <Badge variant="outline" className="persian-body text-xs bg-green-50 text-green-700 border-green-200">
+                                  عضو
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="persian-body text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                  مهمان
+                                </Badge>
+                              )}
                             </div>
                             <p className="persian-body text-sm text-muted-foreground mb-1">
                               {submission.email} • {submission.phone}
@@ -247,9 +257,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                             <p className="persian-body text-sm text-muted-foreground line-clamp-2">
                               {submission.message}
                             </p>
-                            <p className="persian-body text-xs text-muted-foreground mt-2">
-                              {new Date(submission.created_at).toLocaleDateString('fa-IR')}
-                            </p>
+                            <div className="flex justify-between items-center mt-2">
+                              <p className="persian-body text-xs text-muted-foreground">
+                                {new Date(submission.created_at).toLocaleDateString('fa-IR')}
+                              </p>
+                              {submission.user_id && (
+                                <span className="persian-body text-xs text-green-600 font-medium">
+                                  قابلیت پاسخگویی
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <Button
@@ -258,7 +275,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                               onClick={() => openSubmissionModal(submission)}
                             >
                               <Eye className="w-4 h-4 ml-1" />
-                              مشاهده
+                              {submission.user_id ? 'پاسخگویی' : 'مشاهده'}
                             </Button>
                           </div>
                         </div>

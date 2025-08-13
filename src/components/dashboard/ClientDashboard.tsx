@@ -6,7 +6,9 @@ import {
   AlertCircle,
   LogOut,
   Plus,
-  FileText
+  FileText,
+  Eye,
+  Calendar
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Profile {
   id: string;
@@ -38,6 +46,15 @@ interface ContactSubmission {
   updated_at: string;
 }
 
+interface TicketResponse {
+  id: string;
+  submission_id: string;
+  message: string;
+  is_admin_response: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface ClientDashboardProps {
   profile: Profile;
 }
@@ -47,6 +64,9 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [responses, setResponses] = useState<TicketResponse[]>([]);
 
   const fetchSubmissions = async () => {
     if (!user) return;
@@ -95,6 +115,27 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
+  const fetchTicketResponses = async (submissionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('ticket_responses')
+        .select('*')
+        .eq('submission_id', submissionId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setResponses(data || []);
+    } catch (error) {
+      console.error('Error fetching responses:', error);
+    }
+  };
+
+  const openTicketModal = (submission: ContactSubmission) => {
+    setSelectedSubmission(submission);
+    fetchTicketResponses(submission.id);
+    setTicketModalOpen(true);
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -272,6 +313,16 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                         )}
                       </div>
                     </div>
+                    <div className="flex items-start">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openTicketModal(submission)}
+                      >
+                        <Eye className="w-4 h-4 ml-1" />
+                        مشاهده
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -279,6 +330,87 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
           )}
         </div>
       </Card>
+
+      {/* Ticket Details Modal */}
+      <Dialog open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="persian-heading text-xl">
+              جزئیات تیکت
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedSubmission && (
+            <div className="space-y-6 pt-4">
+              {/* Subject and Status */}
+              <div className="flex items-center justify-between">
+                <h3 className="persian-heading text-lg font-semibold">
+                  {selectedSubmission.subject}
+                </h3>
+                {getStatusBadge(selectedSubmission.status)}
+              </div>
+
+              {/* Original Message */}
+              <div>
+                <h4 className="persian-body font-medium mb-2">پیام اصلی:</h4>
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="persian-body whitespace-pre-wrap">
+                    {selectedSubmission.message}
+                  </p>
+                </div>
+                <p className="persian-body text-xs text-muted-foreground mt-1">
+                  {new Date(selectedSubmission.created_at).toLocaleDateString('fa-IR')} - 
+                  {new Date(selectedSubmission.created_at).toLocaleTimeString('fa-IR')}
+                </p>
+              </div>
+
+              {/* Admin Notes */}
+              {selectedSubmission.admin_notes && (
+                <div>
+                  <h4 className="persian-body font-medium mb-2">یادداشت پشتیبانی:</h4>
+                  <div className="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
+                    <p className="persian-body whitespace-pre-wrap">
+                      {selectedSubmission.admin_notes}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Conversation */}
+              {responses.length > 0 && (
+                <div>
+                  <h4 className="persian-body font-medium mb-4">گفتگو با پشتیبانی:</h4>
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {responses.map((response) => (
+                      <div
+                        key={response.id}
+                        className={`p-3 rounded-lg ${
+                          response.is_admin_response
+                            ? 'bg-blue-50 border-r-4 border-blue-500 mr-4'
+                            : 'bg-green-50 border-r-4 border-green-500 ml-4'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="persian-body text-xs font-medium text-muted-foreground">
+                            {response.is_admin_response ? 'پشتیبانی' : 'شما'}
+                          </span>
+                          <span className="persian-body text-xs text-muted-foreground">
+                            {new Date(response.created_at).toLocaleDateString('fa-IR')} - 
+                            {new Date(response.created_at).toLocaleTimeString('fa-IR')}
+                          </span>
+                        </div>
+                        <p className="persian-body text-sm whitespace-pre-wrap">
+                          {response.message}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,10 @@ import {
   Phone, 
   MessageSquare, 
   Calendar,
-  Save
+  Save,
+  Send,
+  ShieldCheck,
+  UserX
 } from "lucide-react";
 
 interface ContactSubmission {
@@ -35,6 +38,15 @@ interface ContactSubmission {
   updated_at: string;
 }
 
+interface TicketResponse {
+  id: string;
+  submission_id: string;
+  message: string;
+  is_admin_response: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface ContactRequestModalProps {
   submission: ContactSubmission | null;
   open: boolean;
@@ -47,6 +59,37 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
   const [status, setStatus] = useState(submission?.status || 'pending');
   const [adminNotes, setAdminNotes] = useState(submission?.admin_notes || '');
   const [saving, setSaving] = useState(false);
+  const [responses, setResponses] = useState<TicketResponse[]>([]);
+  const [newResponse, setNewResponse] = useState('');
+  const [sendingResponse, setSendingResponse] = useState(false);
+  
+  const isAuthenticatedUser = submission?.user_id !== null;
+  
+  // Fetch responses when submission changes
+  useEffect(() => {
+    if (submission && isAuthenticatedUser) {
+      fetchResponses();
+    } else {
+      setResponses([]);
+    }
+  }, [submission, isAuthenticatedUser]);
+
+  const fetchResponses = async () => {
+    if (!submission) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ticket_responses')
+        .select('*')
+        .eq('submission_id', submission.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setResponses(data || []);
+    } catch (error) {
+      console.error('Error fetching responses:', error);
+    }
+  };
 
   const handleSave = async () => {
     if (!submission) return;
@@ -82,6 +125,39 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
     }
   };
 
+  const handleSendResponse = async () => {
+    if (!submission || !newResponse.trim()) return;
+
+    setSendingResponse(true);
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .insert({
+          submission_id: submission.id,
+          message: newResponse.trim(),
+          is_admin_response: true,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "پاسخ ارسال شد",
+        description: "پاسخ شما با موفقیت ارسال شد.",
+      });
+
+      setNewResponse('');
+      fetchResponses();
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: "خطا در ارسال پاسخ",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingResponse(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -107,6 +183,27 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
         </DialogHeader>
 
         <div className="space-y-6 pt-4">
+          {/* User Type Indicator */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {isAuthenticatedUser ? (
+              <>
+                <ShieldCheck className="w-5 h-5 text-green-500" />
+                <div>
+                  <p className="persian-body font-medium text-green-700">کاربر عضو</p>
+                  <p className="persian-body text-sm text-muted-foreground">امکان پاسخگویی موجود است</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <UserX className="w-5 h-5 text-orange-500" />
+                <div>
+                  <p className="persian-body font-medium text-orange-700">کاربر مهمان</p>
+                  <p className="persian-body text-sm text-muted-foreground">فقط مشاهده اطلاعات</p>
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Contact Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
@@ -154,7 +251,7 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
           <div>
             <div className="flex items-center gap-2 mb-3">
               <MessageSquare className="w-5 h-5 text-muted-foreground" />
-              <p className="persian-body text-sm text-muted-foreground">پیام</p>
+              <p className="persian-body text-sm text-muted-foreground">پیام اصلی</p>
             </div>
             <div className="bg-muted p-4 rounded-lg">
               <p className="persian-body whitespace-pre-wrap leading-relaxed">
@@ -162,6 +259,67 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
               </p>
             </div>
           </div>
+
+          {/* Responses Section - Only for authenticated users */}
+          {isAuthenticatedUser && (
+            <div>
+              <h3 className="persian-heading text-lg font-semibold mb-4">گفتگو</h3>
+              
+              {/* Existing Responses */}
+              {responses.length > 0 && (
+                <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                  {responses.map((response) => (
+                    <div
+                      key={response.id}
+                      className={`p-3 rounded-lg ${
+                        response.is_admin_response
+                          ? 'bg-blue-50 border-r-4 border-blue-500 mr-4'
+                          : 'bg-green-50 border-r-4 border-green-500 ml-4'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="persian-body text-xs font-medium text-muted-foreground">
+                          {response.is_admin_response ? 'پشتیبانی' : 'کاربر'}
+                        </span>
+                        <span className="persian-body text-xs text-muted-foreground">
+                          {new Date(response.created_at).toLocaleDateString('fa-IR')} - 
+                          {new Date(response.created_at).toLocaleTimeString('fa-IR')}
+                        </span>
+                      </div>
+                      <p className="persian-body text-sm whitespace-pre-wrap">
+                        {response.message}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* New Response Input */}
+              <div className="space-y-3">
+                <Label className="persian-body">پاسخ جدید</Label>
+                <Textarea
+                  value={newResponse}
+                  onChange={(e) => setNewResponse(e.target.value)}
+                  placeholder="پاسخ خود را اینجا بنویسید..."
+                  className="min-h-24"
+                />
+                <Button 
+                  onClick={handleSendResponse} 
+                  disabled={sendingResponse || !newResponse.trim()}
+                  size="sm"
+                >
+                  {sendingResponse ? (
+                    "در حال ارسال..."
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 ml-1" />
+                      ارسال پاسخ
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Admin Controls */}
           <div className="border-t pt-6 space-y-4">
@@ -185,19 +343,21 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
               </div>
             </div>
 
-            {/* Admin Notes */}
-            <div className="space-y-2">
-              <Label className="persian-body">یادداشت ادمین</Label>
-              <Textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="یادداشت‌های خود را اینجا بنویسید..."
-                className="min-h-24"
-              />
-              <p className="persian-body text-xs text-muted-foreground">
-                این یادداشت برای کاربر نمایش داده خواهد شد
-              </p>
-            </div>
+            {/* Admin Notes - Only show for anonymous users */}
+            {!isAuthenticatedUser && (
+              <div className="space-y-2">
+                <Label className="persian-body">یادداشت ادمین</Label>
+                <Textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="یادداشت‌های خود را اینجا بنویسید..."
+                  className="min-h-24"
+                />
+                <p className="persian-body text-xs text-muted-foreground">
+                  این یادداشت برای کاربر نمایش داده خواهد شد
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
