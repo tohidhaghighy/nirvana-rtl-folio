@@ -48,18 +48,53 @@ const Contact = () => {
   const handleSubmit = async (data: ContactForm) => {
     setLoading(true);
     try {
-      // TODO: Implement database storage and email functionality
-      console.log("Contact form data:", data);
+      // Get current user if authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Prepare submission data
+      const submissionData = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+        user_id: user?.id || null,
+      };
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('contact_submissions')
+        .insert(submissionData);
+
+      if (dbError) {
+        throw dbError;
+      }
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+        body: data,
+      });
+
+      if (emailError) {
+        console.warn('Email notification failed:', emailError);
+        // Don't throw error as the main submission was successful
+      }
 
       toast({
         title: "پیام شما ارسال شد",
-        description: "تشکر از تماس شما. در اسرع وقت پاسخ خواهیم داد.",
+        description: user 
+          ? "درخواست شما ثبت شد و می‌توانید وضعیت آن را در داشبورد خود مشاهده کنید."
+          : "تشکر از تماس شما. در اسرع وقت پاسخ خواهیم داد.",
       });
 
       form.reset();
+      
+      // Redirect to dashboard if user is logged in
+      if (user) {
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 2000);
+      }
     } catch (error: any) {
       toast({
         title: "خطا در ارسال پیام",

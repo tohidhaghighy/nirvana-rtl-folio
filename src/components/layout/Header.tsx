@@ -75,10 +75,10 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
-                <Link to="/admin">
+                <Link to="/dashboard">
                   <Button variant="outline" size="sm" className="persian-body">
                     <Shield className="w-4 h-4 ml-2" />
-                    پنل مدیریت
+                    داشبورد
                   </Button>
                 </Link>
                 <Button
@@ -137,12 +137,12 @@ const Header = () => {
                 {user ? (
                   <>
                     <Link
-                      to="/admin"
+                      to="/dashboard"
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body"
                     >
                       <Shield size={20} />
-                      <span>پنل مدیریت</span>
+                      <span>داشبورد</span>
                     </Link>
                     <button
                       onClick={() => {
