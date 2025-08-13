@@ -1,0 +1,139 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, User, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  slug: string;
+  created_at: string;
+  featured_image_url?: string;
+  author_id: string;
+}
+
+const Blog = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast({
+        variant: "destructive",
+        title: "خطا",
+        description: "خطا در بارگذاری مقالات",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fa-IR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-pulse">بارگذاری مقالات...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-20">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 persian-heading">
+            مقالات و آموزش‌ها
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto persian-body">
+            آخرین مطالب در زمینه توسعه نرم‌افزار، فناوری و نوآوری‌های دنیای تکنولوژی
+          </p>
+        </div>
+
+        {posts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground persian-body">هنوز مقاله‌ای منتشر نشده است.</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post) => (
+              <Link key={post.id} to={`/blog/${post.slug}`}>
+                <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer">
+                  {post.featured_image_url && (
+                    <div className="aspect-video overflow-hidden rounded-t-lg">
+                      <img 
+                        src={post.featured_image_url} 
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl persian-heading line-clamp-2 group-hover:text-primary transition-colors">
+                      {post.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground persian-body">
+                      <div className="flex items-center gap-1">
+                        <Calendar size={14} />
+                        <span>{formatDate(post.created_at)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <User size={14} />
+                        <span>نویسنده</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground persian-body line-clamp-3 mb-4">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary" className="persian-body">
+                        مقاله فنی
+                      </Badge>
+                      <div className="flex items-center gap-1 text-primary group-hover:gap-2 transition-all">
+                        <span className="text-sm persian-body">ادامه مطلب</span>
+                        <ChevronRight size={14} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Blog;

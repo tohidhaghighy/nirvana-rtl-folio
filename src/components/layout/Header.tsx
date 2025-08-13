@@ -12,6 +12,7 @@ import {
   Shield,
   Code,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,7 @@ const Header = () => {
     { path: "/about", label: "درباره ما", icon: Info },
     { path: "/services", label: "خدمات", icon: Briefcase },
     { path: "/projects", label: "پروژه‌ها", icon: FolderOpen },
+    { path: "/blog", label: "مقالات", icon: FileText },
     { path: "/contact", label: "تماس", icon: Phone },
   ];
 

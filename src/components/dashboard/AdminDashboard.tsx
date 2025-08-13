@@ -15,6 +15,8 @@ import {
   Mail,
   Phone,
   Shield,
+  FileText,
+  TrendingUp,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,7 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ContactRequestModal from "./ContactRequestModal";
+import { BlogManagement } from "./BlogManagement";
 import {
   Dialog,
   DialogContent,
@@ -336,13 +339,13 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="persian-body text-sm text-muted-foreground mb-1">
-                  در حال بررسی
+                  مقالات منتشر شده
                 </p>
                 <p className="persian-heading text-3xl font-bold text-blue-500">
-                  {stats.inProgress}
+                  3
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8 text-blue-500" />
+              <FileText className="w-8 h-8 text-blue-500" />
             </div>
           </Card>
 
@@ -350,20 +353,20 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="persian-body text-sm text-muted-foreground mb-1">
-                  حل شده
+                  بازدید ماهانه
                 </p>
                 <p className="persian-heading text-3xl font-bold text-green-500">
-                  {stats.resolved}
+                  1.2K
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <TrendingUp className="w-8 h-8 text-green-500" />
             </div>
           </Card>
         </div>
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -373,6 +376,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               onClick={fetchClients}
             >
               کاربران
+            </TabsTrigger>
+            <TabsTrigger value="blogs" className="persian-body">
+              مقالات
             </TabsTrigger>
           </TabsList>
 
@@ -616,6 +622,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="blogs">
+            <BlogManagement />
           </TabsContent>
         </Tabs>
       </div>
