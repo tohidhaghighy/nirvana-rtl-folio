@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +14,33 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
   const { user, signOut } = useAuthStore();
+
+  useEffect(() => {
+    if (user) {
+      const fetchUserRole = async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data && !error) {
+          setUserRole(data.role);
+        }
+      };
+      
+      fetchUserRole();
+    } else {
+      setUserRole(null);
+    }
+  }, [user]);
 
   const navItems = [
     { path: "/", label: "خانه", icon: Home },
@@ -78,7 +100,7 @@ const Header = () => {
                 <Link to="/dashboard">
                   <Button variant="outline" size="sm" className="persian-body">
                     <Shield className="w-4 h-4 ml-2" />
-                    داشبورد
+                    {userRole === 'admin' ? 'پنل مدیریت' : 'داشبورد'}
                   </Button>
                 </Link>
                 <Button
@@ -142,7 +164,7 @@ const Header = () => {
                       className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body"
                     >
                       <Shield size={20} />
-                      <span>داشبورد</span>
+                      <span>{userRole === 'admin' ? 'پنل مدیریت' : 'داشبورد'}</span>
                     </Link>
                     <button
                       onClick={() => {
