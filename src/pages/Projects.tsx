@@ -95,9 +95,9 @@ const Projects = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-12 relative">
+    <div className="min-h-screen relative">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-subtle">
+      <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center fade-in-up">
             <h1 className="persian-heading text-4xl md:text-6xl font-bold text-foreground mb-6">
@@ -111,7 +111,7 @@ const Projects = () => {
       </section>
 
       {/* Projects Grid */}
-      <section className="pb-20 relative z-10">
+      <section className="py-20 relative z-10">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (

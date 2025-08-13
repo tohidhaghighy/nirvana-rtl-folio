@@ -55,7 +55,7 @@ const About = () => {
   return (
     <div className="bg-background">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-subtle">
+      <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center fade-in-up">
             <h1 className="persian-heading text-4xl md:text-6xl font-bold text-foreground mb-6">

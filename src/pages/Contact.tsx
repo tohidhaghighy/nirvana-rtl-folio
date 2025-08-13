@@ -49,10 +49,10 @@ const Contact = () => {
     setLoading(true);
     try {
       // TODO: Implement database storage and email functionality
-      console.log('Contact form data:', data);
-      
+      console.log("Contact form data:", data);
+
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         title: "پیام شما ارسال شد",
@@ -110,7 +110,7 @@ const Contact = () => {
   return (
     <div className="bg-background">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-subtle">
+      <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center fade-in-up">
             <h1 className="persian-heading text-4xl md:text-6xl font-bold text-foreground mb-6">
@@ -132,8 +132,8 @@ const Contact = () => {
                 key={index}
                 className="p-6 text-center hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <info.icon className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <info.icon className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <h3 className="persian-heading text-lg font-semibold text-foreground mb-2 text-center">
                   {info.title}
@@ -167,7 +167,10 @@ const Contact = () => {
                   </p>
                 </div>
 
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <form
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                  className="space-y-6"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="persian-body">
@@ -275,7 +278,11 @@ const Contact = () => {
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full btn-hero-primary" disabled={loading}>
+                  <Button
+                    type="submit"
+                    className="w-full px-8 py-4 rounded-lg font-medium text-primary-foreground bg-accent accent-gradient shadow-lg hover:shadow-xl hover:bg-accent hover:scale-105 active:scale-95 transition-all duration-300"
+                    disabled={loading}
+                  >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin ml-2" />
                     ) : (
