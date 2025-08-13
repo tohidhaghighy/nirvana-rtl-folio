@@ -16,8 +16,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -74,7 +72,6 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
   const [responses, setResponses] = useState<TicketResponse[]>([]);
   const [newResponse, setNewResponse] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchSubmissions = async () => {
     if (!user) return;
@@ -167,11 +164,6 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
       setNewResponse('');
       fetchTicketResponses(selectedSubmission.id);
-      
-      // Also update the status to in_progress if it was pending
-      if (selectedSubmission.status === 'pending') {
-        await handleStatusUpdate('in_progress');
-      }
     } catch (error: any) {
       toast({
         title: "خطا",
@@ -180,39 +172,6 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
       });
     } finally {
       setSendingResponse(false);
-    }
-  };
-
-  const handleStatusUpdate = async (newStatus: string) => {
-    if (!selectedSubmission) return;
-
-    setUpdatingStatus(true);
-    try {
-      const { error } = await supabase
-        .from('contact_submissions')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "وضعیت بروزرسانی شد",
-        description: "وضعیت تیکت با موفقیت تغییر یافت.",
-      });
-
-      setSelectedSubmission({ ...selectedSubmission, status: newStatus });
-      fetchSubmissions(); // Refresh the main list
-    } catch (error: any) {
-      toast({
-        title: "خطا",
-        description: "خطا در بروزرسانی وضعیت",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdatingStatus(false);
     }
   };
 
@@ -434,38 +393,6 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 <div className="flex items-center gap-2">
                   {getStatusBadge(selectedSubmission.status)}
                 </div>
-              </div>
-
-              {/* Status Update Section */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <Label className="persian-body font-medium">تغییر وضعیت:</Label>
-                  <div className="flex items-center gap-3">
-                    <Select 
-                      value={selectedSubmission.status} 
-                      onValueChange={handleStatusUpdate}
-                      disabled={updatingStatus || selectedSubmission.status === 'closed'}
-                    >
-                      <SelectTrigger className="w-48">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">در انتظار</SelectItem>
-                        <SelectItem value="in_progress">در حال بررسی</SelectItem>
-                        <SelectItem value="resolved">حل شده</SelectItem>
-                        {selectedSubmission.status === 'resolved' && (
-                          <SelectItem value="closed">بستن تیکت</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {updatingStatus && (
-                      <span className="persian-body text-xs text-muted-foreground">در حال بروزرسانی...</span>
-                    )}
-                  </div>
-                </div>
-                <p className="persian-body text-xs text-muted-foreground mt-2">
-                  وضعیت تیکت را بر اساس پیشرفت مسئله تغییر دهید
-                </p>
               </div>
 
               {/* Original Message */}

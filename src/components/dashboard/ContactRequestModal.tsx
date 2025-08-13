@@ -166,6 +166,8 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
         return <Badge variant="outline">در حال بررسی</Badge>;
       case 'resolved':
         return <Badge variant="default">حل شده</Badge>;
+      case 'closed':
+        return <Badge variant="destructive">بسته شده</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -337,6 +339,7 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
                     <SelectItem value="pending">در انتظار</SelectItem>
                     <SelectItem value="in_progress">در حال بررسی</SelectItem>
                     <SelectItem value="resolved">حل شده</SelectItem>
+                    <SelectItem value="closed">بسته شده</SelectItem>
                   </SelectContent>
                 </Select>
                 {getStatusBadge(status)}
