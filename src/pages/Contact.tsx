@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 const contactSchema = z.object({
   name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
@@ -33,6 +34,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 const Contact = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuthStore();
 
   const form = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
@@ -44,6 +46,30 @@ const Contact = () => {
       message: "",
     },
   });
+
+  // Auto-fill form for authenticated users
+  useEffect(() => {
+    const fillUserData = async () => {
+      if (user) {
+        // Get user's profile data
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single();
+
+        // Pre-fill form fields
+        if (profile?.full_name) {
+          form.setValue('name', profile.full_name);
+        }
+        if (user.email) {
+          form.setValue('email', user.email);
+        }
+      }
+    };
+
+    fillUserData();
+  }, [user, form]);
 
   const handleSubmit = async (data: ContactForm) => {
     setLoading(true);
