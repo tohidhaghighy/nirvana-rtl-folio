@@ -8,11 +8,16 @@ import {
   Plus,
   FileText,
   Eye,
-  Calendar
+  Calendar,
+  Send,
+  Edit
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -67,6 +72,9 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
   const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [responses, setResponses] = useState<TicketResponse[]>([]);
+  const [newResponse, setNewResponse] = useState('');
+  const [sendingResponse, setSendingResponse] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchSubmissions = async () => {
     if (!user) return;
@@ -137,6 +145,77 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
     setTicketModalOpen(true);
   };
 
+  const handleSendResponse = async () => {
+    if (!selectedSubmission || !newResponse.trim()) return;
+
+    setSendingResponse(true);
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .insert({
+          submission_id: selectedSubmission.id,
+          message: newResponse.trim(),
+          is_admin_response: false,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "پیام ارسال شد",
+        description: "پیام شما با موفقیت ارسال شد.",
+      });
+
+      setNewResponse('');
+      fetchTicketResponses(selectedSubmission.id);
+      
+      // Also update the status to in_progress if it was pending
+      if (selectedSubmission.status === 'pending') {
+        await handleStatusUpdate('in_progress');
+      }
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: "خطا در ارسال پیام",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingResponse(false);
+    }
+  };
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!selectedSubmission) return;
+
+    setUpdatingStatus(true);
+    try {
+      const { error } = await supabase
+        .from('contact_submissions')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedSubmission.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "وضعیت بروزرسانی شد",
+        description: "وضعیت تیکت با موفقیت تغییر یافت.",
+      });
+
+      setSelectedSubmission({ ...selectedSubmission, status: newStatus });
+      fetchSubmissions(); // Refresh the main list
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: "خطا در بروزرسانی وضعیت",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleLogout = async () => {
     await signOut();
   };
@@ -149,6 +228,8 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         return <Badge variant="outline" className="persian-body">در حال بررسی</Badge>;
       case 'resolved':
         return <Badge variant="default" className="persian-body">حل شده</Badge>;
+      case 'closed':
+        return <Badge variant="destructive" className="persian-body">بسته شده</Badge>;
       default:
         return <Badge variant="secondary" className="persian-body">{status}</Badge>;
     }
@@ -162,6 +243,8 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         return <AlertCircle className="w-4 h-4 text-blue-500" />;
       case 'resolved':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'closed':
+        return <CheckCircle className="w-4 h-4 text-gray-500" />;
       default:
         return <MessageSquare className="w-4 h-4 text-muted-foreground" />;
     }
@@ -172,6 +255,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
     pending: submissions.filter(s => s.status === 'pending').length,
     inProgress: submissions.filter(s => s.status === 'in_progress').length,
     resolved: submissions.filter(s => s.status === 'resolved').length,
+    closed: submissions.filter(s => s.status === 'closed').length,
   };
 
   if (loading) {
@@ -347,7 +431,41 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 <h3 className="persian-heading text-lg font-semibold">
                   {selectedSubmission.subject}
                 </h3>
-                {getStatusBadge(selectedSubmission.status)}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(selectedSubmission.status)}
+                </div>
+              </div>
+
+              {/* Status Update Section */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <Label className="persian-body font-medium">تغییر وضعیت:</Label>
+                  <div className="flex items-center gap-3">
+                    <Select 
+                      value={selectedSubmission.status} 
+                      onValueChange={handleStatusUpdate}
+                      disabled={updatingStatus || selectedSubmission.status === 'closed'}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">در انتظار</SelectItem>
+                        <SelectItem value="in_progress">در حال بررسی</SelectItem>
+                        <SelectItem value="resolved">حل شده</SelectItem>
+                        {selectedSubmission.status === 'resolved' && (
+                          <SelectItem value="closed">بستن تیکت</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {updatingStatus && (
+                      <span className="persian-body text-xs text-muted-foreground">در حال بروزرسانی...</span>
+                    )}
+                  </div>
+                </div>
+                <p className="persian-body text-xs text-muted-foreground mt-2">
+                  وضعیت تیکت را بر اساس پیشرفت مسئله تغییر دهید
+                </p>
               </div>
 
               {/* Original Message */}
@@ -405,6 +523,48 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* New Response Section - Only if ticket is not closed */}
+              {selectedSubmission.status !== 'closed' && (
+                <div>
+                  <h4 className="persian-body font-medium mb-3">ارسال پیام جدید:</h4>
+                  <div className="space-y-3">
+                    <Textarea
+                      value={newResponse}
+                      onChange={(e) => setNewResponse(e.target.value)}
+                      placeholder="پیام خود را اینجا بنویسید..."
+                      className="min-h-24"
+                    />
+                    <div className="flex justify-between items-center">
+                      <p className="persian-body text-xs text-muted-foreground">
+                        پیام شما برای تیم پشتیبانی ارسال خواهد شد
+                      </p>
+                      <Button 
+                        onClick={handleSendResponse} 
+                        disabled={sendingResponse || !newResponse.trim()}
+                        size="sm"
+                      >
+                        {sendingResponse ? (
+                          "در حال ارسال..."
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 ml-1" />
+                            ارسال پیام
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedSubmission.status === 'closed' && (
+                <div className="bg-gray-100 p-4 rounded-lg text-center">
+                  <p className="persian-body text-muted-foreground">
+                    این تیکت بسته شده است. برای مسائل جدید، لطفاً تیکت جدیدی ایجاد کنید.
+                  </p>
                 </div>
               )}
             </div>
