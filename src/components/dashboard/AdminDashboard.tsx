@@ -8,7 +8,13 @@ import {
   Settings,
   LogOut,
   Eye,
-  Edit
+  Edit,
+  UserCheck,
+  UserX,
+  Calendar,
+  Mail,
+  Phone,
+  Shield
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +24,20 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ContactRequestModal from "./ContactRequestModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Profile {
   id: string;
@@ -42,6 +62,21 @@ interface ContactSubmission {
   updated_at: string;
 }
 
+interface ClientProfile {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  role: string;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    email: string;
+    created_at: string;
+  };
+  submission_count?: number;
+  last_submission?: string;
+}
+
 interface AdminDashboardProps {
   profile: Profile;
 }
@@ -50,9 +85,13 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const { signOut } = useAuthStore();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
+  const [clients, setClients] = useState<ClientProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [clientsLoading, setClientsLoading] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
+  const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [clientModalOpen, setClientModalOpen] = useState(false);
 
   const fetchSubmissions = async () => {
     try {
@@ -98,6 +137,55 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     };
   }, []);
 
+  const fetchClients = async () => {
+    setClientsLoading(true);
+    try {
+      // First get all client profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'client')
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
+
+      // Get submission counts for each client
+      const clientsWithStats = await Promise.all(
+        (profilesData || []).map(async (profile) => {
+          const { count } = await supabase
+            .from('contact_submissions')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', profile.user_id);
+
+          // Get last submission date
+          const { data: lastSubmission } = await supabase
+            .from('contact_submissions')
+            .select('created_at')
+            .eq('user_id', profile.user_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...profile,
+            submission_count: count || 0,
+            last_submission: lastSubmission?.created_at || null,
+          };
+        })
+      );
+
+      setClients(clientsWithStats);
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: "خطا در بارگذاری کاربران",
+        variant: "destructive",
+      });
+    } finally {
+      setClientsLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     await signOut();
   };
@@ -122,9 +210,35 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     resolved: submissions.filter(s => s.status === 'resolved').length,
   };
 
+  const clientStats = {
+    total: clients.length,
+    active: clients.filter(c => c.submission_count && c.submission_count > 0).length,
+    recent: clients.filter(c => {
+      if (!c.last_submission) return false;
+      const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return new Date(c.last_submission) > lastWeek;
+    }).length,
+  };
+
   const openSubmissionModal = (submission: ContactSubmission) => {
     setSelectedSubmission(submission);
     setModalOpen(true);
+  };
+
+  const openClientModal = (client: ClientProfile) => {
+    setSelectedClient(client);
+    setClientModalOpen(true);
+  };
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return <Badge variant="destructive" className="persian-body">مدیر</Badge>;
+      case 'client':
+        return <Badge variant="default" className="persian-body">کاربر</Badge>;
+      default:
+        return <Badge variant="secondary" className="persian-body">{role}</Badge>;
+    }
   };
 
   if (loading) {
@@ -209,7 +323,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         <Tabs defaultValue="submissions" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="submissions" className="persian-body">درخواست‌ها</TabsTrigger>
-            <TabsTrigger value="users" className="persian-body">کاربران</TabsTrigger>
+            <TabsTrigger value="users" className="persian-body" onClick={fetchClients}>کاربران</TabsTrigger>
           </TabsList>
 
           <TabsContent value="submissions">
@@ -288,17 +402,114 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="users">
-            <Card className="p-6">
-              <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
-                مدیریت کاربران
-              </h2>
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="persian-body text-muted-foreground">
-                  بخش مدیریت کاربران به زودی اضافه خواهد شد
-                </p>
+            <div className="space-y-6">
+              {/* Client Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">کل کاربران</p>
+                      <p className="persian-heading text-3xl font-bold text-foreground">{clientStats.total}</p>
+                    </div>
+                    <Users className="w-8 h-8 text-primary" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">کاربران فعال</p>
+                      <p className="persian-heading text-3xl font-bold text-green-500">{clientStats.active}</p>
+                    </div>
+                    <UserCheck className="w-8 h-8 text-green-500" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">فعالیت هفته اخیر</p>
+                      <p className="persian-heading text-3xl font-bold text-blue-500">{clientStats.recent}</p>
+                    </div>
+                    <Calendar className="w-8 h-8 text-blue-500" />
+                  </div>
+                </Card>
               </div>
-            </Card>
+
+              {/* Clients Table */}
+              <Card>
+                <div className="p-6">
+                  <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
+                    مدیریت کاربران
+                  </h2>
+                  
+                  {clientsLoading ? (
+                    <div className="text-center py-12">
+                      <p className="persian-body text-muted-foreground">در حال بارگذاری...</p>
+                    </div>
+                  ) : clients.length === 0 ? (
+                    <div className="text-center py-12">
+                      <UserX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="persian-body text-muted-foreground">
+                        هنوز کاربری ثبت نام نکرده است
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="persian-body">نام</TableHead>
+                            <TableHead className="persian-body">نقش</TableHead>
+                            <TableHead className="persian-body">تعداد درخواست</TableHead>
+                            <TableHead className="persian-body">آخرین فعالیت</TableHead>
+                            <TableHead className="persian-body">تاریخ عضویت</TableHead>
+                            <TableHead className="persian-body">عملیات</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {clients.map((client) => (
+                            <TableRow key={client.id}>
+                              <TableCell className="persian-body font-medium">
+                                {client.full_name || 'بدون نام'}
+                              </TableCell>
+                              <TableCell>
+                                {getRoleBadge(client.role)}
+                              </TableCell>
+                              <TableCell className="persian-body">
+                                <div className="flex items-center gap-2">
+                                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                                  {client.submission_count || 0}
+                                </div>
+                              </TableCell>
+                              <TableCell className="persian-body text-sm text-muted-foreground">
+                                {client.last_submission 
+                                  ? new Date(client.last_submission).toLocaleDateString('fa-IR')
+                                  : 'هرگز'
+                                }
+                              </TableCell>
+                              <TableCell className="persian-body text-sm text-muted-foreground">
+                                {new Date(client.created_at).toLocaleDateString('fa-IR')}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openClientModal(client)}
+                                >
+                                  <Eye className="w-4 h-4 ml-1" />
+                                  مشاهده
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
@@ -310,6 +521,91 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         onOpenChange={setModalOpen}
         onUpdate={fetchSubmissions}
       />
+
+      {/* Client Details Modal */}
+      <Dialog open={clientModalOpen} onOpenChange={setClientModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="persian-heading text-xl">
+              جزئیات کاربر
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedClient && (
+            <div className="space-y-6 pt-4">
+              {/* Client Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="persian-body text-sm text-muted-foreground">نام کامل</p>
+                    <p className="persian-body font-medium">{selectedClient.full_name || 'نامشخص'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="persian-body text-sm text-muted-foreground">نقش</p>
+                    <div className="mt-1">{getRoleBadge(selectedClient.role)}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="persian-body text-sm text-muted-foreground">تعداد درخواست‌ها</p>
+                    <p className="persian-body font-medium">{selectedClient.submission_count || 0}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="persian-body text-sm text-muted-foreground">تاریخ عضویت</p>
+                    <p className="persian-body font-medium">
+                      {new Date(selectedClient.created_at).toLocaleDateString('fa-IR')}
+                    </p>
+                  </div>
+                </div>
+
+                {selectedClient.last_submission && (
+                  <div className="flex items-center gap-3 md:col-span-2">
+                    <Clock className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground">آخرین فعالیت</p>
+                      <p className="persian-body font-medium">
+                        {new Date(selectedClient.last_submission).toLocaleDateString('fa-IR')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Activity Summary */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="persian-body font-medium mb-2">خلاصه فعالیت</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="persian-body text-muted-foreground">کل درخواست‌ها:</span>
+                    <span className="persian-body font-medium">{selectedClient.submission_count || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="persian-body text-muted-foreground">وضعیت:</span>
+                    <span className={`persian-body font-medium ${
+                      selectedClient.submission_count && selectedClient.submission_count > 0 
+                        ? 'text-green-600' 
+                        : 'text-orange-600'
+                    }`}>
+                      {selectedClient.submission_count && selectedClient.submission_count > 0 ? 'فعال' : 'غیرفعال'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
