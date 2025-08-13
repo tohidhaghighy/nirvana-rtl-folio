@@ -135,14 +135,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ loading: true });
     
-    const { error } = await supabase.auth.signOut();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (error) {
-      console.error('Error signing out:', error);
+    if (session) {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        toast({
+          variant: "destructive",
+          title: "خطا",
+          description: "خطا در خروج از سیستم",
+        });
+      }
+    } else {
+      // No active session, just clear local state
+      set({ 
+        user: null, 
+        session: null, 
+        loading: false 
+      });
       toast({
-        variant: "destructive",
-        title: "خطا",
-        description: "خطا در خروج از سیستم",
+        title: "خروج",
+        description: "با موفقیت خارج شدید.",
       });
     }
     
