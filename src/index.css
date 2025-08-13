@@ -265,5 +265,5 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary-light;
+  @apply bg-accent;
 }

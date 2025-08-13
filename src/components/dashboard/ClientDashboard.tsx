@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { 
-  MessageSquare, 
-  CheckCircle, 
-  Clock, 
+import {
+  MessageSquare,
+  CheckCircle,
+  Clock,
   AlertCircle,
   LogOut,
   Plus,
@@ -10,7 +10,7 @@ import {
   Eye,
   Calendar,
   Send,
-  Edit
+  Edit,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,21 +67,22 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<ContactSubmission | null>(null);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [responses, setResponses] = useState<TicketResponse[]>([]);
-  const [newResponse, setNewResponse] = useState('');
+  const [newResponse, setNewResponse] = useState("");
   const [sendingResponse, setSendingResponse] = useState(false);
 
   const fetchSubmissions = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("contact_submissions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setSubmissions(data || []);
@@ -101,14 +102,14 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
     // Set up real-time subscription for user's own submissions
     const channel = supabase
-      .channel('user_contact_submissions')
+      .channel("user_contact_submissions")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'contact_submissions',
-          filter: `user_id=eq.${user?.id}`
+          event: "*",
+          schema: "public",
+          table: "contact_submissions",
+          filter: `user_id=eq.${user?.id}`,
         },
         () => {
           fetchSubmissions();
@@ -124,15 +125,15 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
   const fetchTicketResponses = async (submissionId: string) => {
     try {
       const { data, error } = await supabase
-        .from('ticket_responses')
-        .select('*')
-        .eq('submission_id', submissionId)
-        .order('created_at', { ascending: true });
+        .from("ticket_responses")
+        .select("*")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       setResponses(data || []);
     } catch (error) {
-      console.error('Error fetching responses:', error);
+      console.error("Error fetching responses:", error);
     }
   };
 
@@ -147,13 +148,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
     setSendingResponse(true);
     try {
-      const { error } = await supabase
-        .from('ticket_responses')
-        .insert({
-          submission_id: selectedSubmission.id,
-          message: newResponse.trim(),
-          is_admin_response: false,
-        });
+      const { error } = await supabase.from("ticket_responses").insert({
+        submission_id: selectedSubmission.id,
+        message: newResponse.trim(),
+        is_admin_response: false,
+      });
 
       if (error) throw error;
 
@@ -162,7 +161,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         description: "پیام شما با موفقیت ارسال شد.",
       });
 
-      setNewResponse('');
+      setNewResponse("");
       fetchTicketResponses(selectedSubmission.id);
     } catch (error: any) {
       toast({
@@ -181,28 +180,42 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="secondary" className="persian-body">در انتظار</Badge>;
-      case 'in_progress':
-        return <Badge variant="outline" className="persian-body">در حال بررسی</Badge>;
-      case 'resolved':
-        return <Badge variant="default" className="persian-body">حل شده</Badge>;
-      case 'closed':
-        return <Badge variant="destructive" className="persian-body">بسته شده</Badge>;
+      case "pending":
+        return (
+          <Badge variant="secondary" className="persian-body">
+            در انتظار
+          </Badge>
+        );
+      case "in_progress":
+        return (
+          <Badge variant="outline" className="persian-body">
+            در حال بررسی
+          </Badge>
+        );
+      case "resolved":
+        return (
+          <Badge variant="default" className="persian-body">
+            حل شده
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary" className="persian-body">{status}</Badge>;
+        return (
+          <Badge variant="secondary" className="persian-body">
+            {status}
+          </Badge>
+        );
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return <Clock className="w-4 h-4 text-orange-500" />;
-      case 'in_progress':
+      case "in_progress":
         return <AlertCircle className="w-4 h-4 text-blue-500" />;
-      case 'resolved':
+      case "resolved":
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'closed':
+      case "closed":
         return <CheckCircle className="w-4 h-4 text-gray-500" />;
       default:
         return <MessageSquare className="w-4 h-4 text-muted-foreground" />;
@@ -211,17 +224,19 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
   const stats = {
     total: submissions.length,
-    pending: submissions.filter(s => s.status === 'pending').length,
-    inProgress: submissions.filter(s => s.status === 'in_progress').length,
-    resolved: submissions.filter(s => s.status === 'resolved').length,
-    closed: submissions.filter(s => s.status === 'closed').length,
+    pending: submissions.filter((s) => s.status === "pending").length,
+    inProgress: submissions.filter((s) => s.status === "in_progress").length,
+    resolved: submissions.filter((s) => s.status === "resolved").length,
+    closed: submissions.filter((s) => s.status === "closed").length,
   };
 
   if (loading) {
     return (
       <div className="p-8">
         <div className="text-center">
-          <p className="persian-body text-muted-foreground">در حال بارگذاری...</p>
+          <p className="persian-body text-muted-foreground">
+            در حال بارگذاری...
+          </p>
         </div>
       </div>
     );
@@ -236,7 +251,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
             داشبورد شما
           </h1>
           <p className="persian-body text-muted-foreground">
-            خوش آمدید {profile.full_name || 'کاربر عزیز'}
+            خوش آمدید {profile.full_name || "کاربر عزیز"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -246,10 +261,6 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
               درخواست جدید
             </a>
           </Button>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 ml-1" />
-            خروج
-          </Button>
         </div>
       </div>
 
@@ -258,8 +269,12 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">کل درخواست‌ها</p>
-              <p className="persian-heading text-3xl font-bold text-foreground">{stats.total}</p>
+              <p className="persian-body text-sm text-muted-foreground mb-1">
+                کل درخواست‌ها
+              </p>
+              <p className="persian-heading text-3xl font-bold text-foreground">
+                {stats.total}
+              </p>
             </div>
             <MessageSquare className="w-8 h-8 text-primary" />
           </div>
@@ -268,8 +283,12 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">در انتظار</p>
-              <p className="persian-heading text-3xl font-bold text-orange-500">{stats.pending}</p>
+              <p className="persian-body text-sm text-muted-foreground mb-1">
+                در انتظار
+              </p>
+              <p className="persian-heading text-3xl font-bold text-orange-500">
+                {stats.pending}
+              </p>
             </div>
             <Clock className="w-8 h-8 text-orange-500" />
           </div>
@@ -278,8 +297,12 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">در حال بررسی</p>
-              <p className="persian-heading text-3xl font-bold text-blue-500">{stats.inProgress}</p>
+              <p className="persian-body text-sm text-muted-foreground mb-1">
+                در حال بررسی
+              </p>
+              <p className="persian-heading text-3xl font-bold text-blue-500">
+                {stats.inProgress}
+              </p>
             </div>
             <AlertCircle className="w-8 h-8 text-blue-500" />
           </div>
@@ -288,8 +311,12 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">حل شده</p>
-              <p className="persian-heading text-3xl font-bold text-green-500">{stats.resolved}</p>
+              <p className="persian-body text-sm text-muted-foreground mb-1">
+                حل شده
+              </p>
+              <p className="persian-heading text-3xl font-bold text-green-500">
+                {stats.resolved}
+              </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-500" />
           </div>
@@ -302,7 +329,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
           <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
             درخواست‌های شما
           </h2>
-          
+
           {submissions.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -319,7 +346,10 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
           ) : (
             <div className="space-y-4">
               {submissions.map((submission) => (
-                <Card key={submission.id} className="p-4 border-l-4 border-l-primary">
+                <Card
+                  key={submission.id}
+                  className="p-4 border-l-4 border-l-primary"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
@@ -329,11 +359,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                         </h3>
                         {getStatusBadge(submission.status)}
                       </div>
-                      
+
                       <p className="persian-body text-sm text-muted-foreground line-clamp-2 mb-3">
                         {submission.message}
                       </p>
-                      
+
                       {submission.admin_notes && (
                         <div className="bg-muted p-3 rounded-lg mb-3">
                           <p className="persian-body text-sm font-medium text-foreground mb-1">
@@ -344,14 +374,20 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                           </p>
                         </div>
                       )}
-                      
+
                       <div className="flex justify-between items-center text-xs text-muted-foreground">
                         <span className="persian-body">
-                          ارسال شده: {new Date(submission.created_at).toLocaleDateString('fa-IR')}
+                          ارسال شده:{" "}
+                          {new Date(submission.created_at).toLocaleDateString(
+                            "fa-IR"
+                          )}
                         </span>
                         {submission.updated_at !== submission.created_at && (
                           <span className="persian-body">
-                            آخرین بروزرسانی: {new Date(submission.updated_at).toLocaleDateString('fa-IR')}
+                            آخرین بروزرسانی:{" "}
+                            {new Date(submission.updated_at).toLocaleDateString(
+                              "fa-IR"
+                            )}
                           </span>
                         )}
                       </div>
@@ -382,7 +418,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
               جزئیات تیکت
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedSubmission && (
             <div className="space-y-6 pt-4">
               {/* Subject and Status */}
@@ -404,15 +440,22 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                   </p>
                 </div>
                 <p className="persian-body text-xs text-muted-foreground mt-1">
-                  {new Date(selectedSubmission.created_at).toLocaleDateString('fa-IR')} - 
-                  {new Date(selectedSubmission.created_at).toLocaleTimeString('fa-IR')}
+                  {new Date(selectedSubmission.created_at).toLocaleDateString(
+                    "fa-IR"
+                  )}{" "}
+                  -
+                  {new Date(selectedSubmission.created_at).toLocaleTimeString(
+                    "fa-IR"
+                  )}
                 </p>
               </div>
 
               {/* Admin Notes */}
               {selectedSubmission.admin_notes && (
                 <div>
-                  <h4 className="persian-body font-medium mb-2">یادداشت پشتیبانی:</h4>
+                  <h4 className="persian-body font-medium mb-2">
+                    یادداشت پشتیبانی:
+                  </h4>
                   <div className="bg-blue-50 p-4 rounded-lg border-r-4 border-blue-500">
                     <p className="persian-body whitespace-pre-wrap">
                       {selectedSubmission.admin_notes}
@@ -424,24 +467,31 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
               {/* Conversation */}
               {responses.length > 0 && (
                 <div>
-                  <h4 className="persian-body font-medium mb-4">گفتگو با پشتیبانی:</h4>
+                  <h4 className="persian-body font-medium mb-4">
+                    گفتگو با پشتیبانی:
+                  </h4>
                   <div className="space-y-3 max-h-60 overflow-y-auto">
                     {responses.map((response) => (
                       <div
                         key={response.id}
                         className={`p-3 rounded-lg ${
                           response.is_admin_response
-                            ? 'bg-blue-50 border-r-4 border-blue-500 mr-4'
-                            : 'bg-green-50 border-r-4 border-green-500 ml-4'
+                            ? "bg-blue-50 border-r-4 border-blue-500 mr-4"
+                            : "bg-green-50 border-r-4 border-green-500 ml-4"
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <span className="persian-body text-xs font-medium text-muted-foreground">
-                            {response.is_admin_response ? 'پشتیبانی' : 'شما'}
+                            {response.is_admin_response ? "پشتیبانی" : "شما"}
                           </span>
                           <span className="persian-body text-xs text-muted-foreground">
-                            {new Date(response.created_at).toLocaleDateString('fa-IR')} - 
-                            {new Date(response.created_at).toLocaleTimeString('fa-IR')}
+                            {new Date(response.created_at).toLocaleDateString(
+                              "fa-IR"
+                            )}{" "}
+                            -
+                            {new Date(response.created_at).toLocaleTimeString(
+                              "fa-IR"
+                            )}
                           </span>
                         </div>
                         <p className="persian-body text-sm whitespace-pre-wrap">
@@ -454,9 +504,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
               )}
 
               {/* New Response Section - Only if ticket is not closed */}
-              {selectedSubmission.status !== 'closed' && (
+              {selectedSubmission.status !== "closed" && (
                 <div>
-                  <h4 className="persian-body font-medium mb-3">ارسال پیام جدید:</h4>
+                  <h4 className="persian-body font-medium mb-3">
+                    ارسال پیام جدید:
+                  </h4>
                   <div className="space-y-3">
                     <Textarea
                       value={newResponse}
@@ -468,8 +520,8 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                       <p className="persian-body text-xs text-muted-foreground">
                         پیام شما برای تیم پشتیبانی ارسال خواهد شد
                       </p>
-                      <Button 
-                        onClick={handleSendResponse} 
+                      <Button
+                        onClick={handleSendResponse}
                         disabled={sendingResponse || !newResponse.trim()}
                         size="sm"
                       >
@@ -487,10 +539,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 </div>
               )}
 
-              {selectedSubmission.status === 'closed' && (
+              {selectedSubmission.status === "closed" && (
                 <div className="bg-gray-100 p-4 rounded-lg text-center">
                   <p className="persian-body text-muted-foreground">
-                    این تیکت بسته شده است. برای مسائل جدید، لطفاً تیکت جدیدی ایجاد کنید.
+                    این تیکت بسته شده است. برای مسائل جدید، لطفاً تیکت جدیدی
+                    ایجاد کنید.
                   </p>
                 </div>
               )}

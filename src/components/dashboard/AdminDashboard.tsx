@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  MessageSquare, 
-  CheckCircle, 
-  Clock, 
+import {
+  Users,
+  MessageSquare,
+  CheckCircle,
+  Clock,
   AlertCircle,
   Settings,
   LogOut,
@@ -14,7 +14,7 @@ import {
   Calendar,
   Mail,
   Phone,
-  Shield
+  Shield,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,17 +89,20 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientsLoading, setClientsLoading] = useState(false);
-  const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
-  const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<ContactSubmission | null>(null);
+  const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(
+    null
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
 
   const fetchSubmissions = async () => {
     try {
       const { data, error } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("contact_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setSubmissions(data || []);
@@ -119,13 +122,13 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('contact_submissions_changes')
+      .channel("contact_submissions_changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'contact_submissions'
+          event: "*",
+          schema: "public",
+          table: "contact_submissions",
         },
         () => {
           fetchSubmissions();
@@ -143,9 +146,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     try {
       // Get all user profiles (both clients and admins)
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
 
@@ -153,16 +156,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
       const usersWithStats = await Promise.all(
         (profilesData || []).map(async (profile) => {
           const { count } = await supabase
-            .from('contact_submissions')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', profile.user_id);
+            .from("contact_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", profile.user_id);
 
           // Get last submission date
           const { data: lastSubmission } = await supabase
-            .from('contact_submissions')
-            .select('created_at')
-            .eq('user_id', profile.user_id)
-            .order('created_at', { ascending: false })
+            .from("contact_submissions")
+            .select("created_at")
+            .eq("user_id", profile.user_id)
+            .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
@@ -192,30 +195,47 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="secondary" className="persian-body">در انتظار</Badge>;
-      case 'in_progress':
-        return <Badge variant="outline" className="persian-body">در حال بررسی</Badge>;
-      case 'resolved':
-        return <Badge variant="default" className="persian-body">حل شده</Badge>;
+      case "pending":
+        return (
+          <Badge variant="secondary" className="persian-body">
+            در انتظار
+          </Badge>
+        );
+      case "in_progress":
+        return (
+          <Badge variant="outline" className="persian-body">
+            در حال بررسی
+          </Badge>
+        );
+      case "resolved":
+        return (
+          <Badge variant="default" className="persian-body">
+            حل شده
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary" className="persian-body">{status}</Badge>;
+        return (
+          <Badge variant="secondary" className="persian-body">
+            {status}
+          </Badge>
+        );
     }
   };
 
   const stats = {
     total: submissions.length,
-    pending: submissions.filter(s => s.status === 'pending').length,
-    inProgress: submissions.filter(s => s.status === 'in_progress').length,
-    resolved: submissions.filter(s => s.status === 'resolved').length,
+    pending: submissions.filter((s) => s.status === "pending").length,
+    inProgress: submissions.filter((s) => s.status === "in_progress").length,
+    resolved: submissions.filter((s) => s.status === "resolved").length,
   };
 
   const clientStats = {
     total: clients.length,
-    admins: clients.filter(c => c.role === 'admin').length,
-    clients: clients.filter(c => c.role === 'client').length,
-    active: clients.filter(c => c.submission_count && c.submission_count > 0).length,
-    recent: clients.filter(c => {
+    admins: clients.filter((c) => c.role === "admin").length,
+    clients: clients.filter((c) => c.role === "client").length,
+    active: clients.filter((c) => c.submission_count && c.submission_count > 0)
+      .length,
+    recent: clients.filter((c) => {
       if (!c.last_submission) return false;
       const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       return new Date(c.last_submission) > lastWeek;
@@ -234,12 +254,24 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'admin':
-        return <Badge variant="destructive" className="persian-body">مدیر</Badge>;
-      case 'client':
-        return <Badge variant="default" className="persian-body">کاربر</Badge>;
+      case "admin":
+        return (
+          <Badge variant="destructive" className="persian-body">
+            مدیر
+          </Badge>
+        );
+      case "client":
+        return (
+          <Badge variant="default" className="persian-body">
+            کاربر
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary" className="persian-body">{role}</Badge>;
+        return (
+          <Badge variant="secondary" className="persian-body">
+            {role}
+          </Badge>
+        );
     }
   };
 
@@ -247,7 +279,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     return (
       <div className="p-8">
         <div className="text-center">
-          <p className="persian-body text-muted-foreground">در حال بارگذاری...</p>
+          <p className="persian-body text-muted-foreground">
+            در حال بارگذاری...
+          </p>
         </div>
       </div>
     );
@@ -263,18 +297,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               پنل مدیریت
             </h1>
             <p className="persian-body text-muted-foreground">
-              خوش آمدید {profile.full_name || 'ادمین'}
+              خوش آمدید {profile.full_name || "ادمین"}
             </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Settings className="w-4 h-4 ml-1" />
-              تنظیمات
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 ml-1" />
-              خروج
-            </Button>
           </div>
         </div>
 
@@ -283,8 +307,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="persian-body text-sm text-muted-foreground mb-1">کل درخواست‌ها</p>
-                <p className="persian-heading text-3xl font-bold text-foreground">{stats.total}</p>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  کل درخواست‌ها
+                </p>
+                <p className="persian-heading text-3xl font-bold text-foreground">
+                  {stats.total}
+                </p>
               </div>
               <MessageSquare className="w-8 h-8 text-primary" />
             </div>
@@ -293,8 +321,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="persian-body text-sm text-muted-foreground mb-1">در انتظار</p>
-                <p className="persian-heading text-3xl font-bold text-orange-500">{stats.pending}</p>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  در انتظار
+                </p>
+                <p className="persian-heading text-3xl font-bold text-orange-500">
+                  {stats.pending}
+                </p>
               </div>
               <Clock className="w-8 h-8 text-orange-500" />
             </div>
@@ -303,8 +335,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="persian-body text-sm text-muted-foreground mb-1">در حال بررسی</p>
-                <p className="persian-heading text-3xl font-bold text-blue-500">{stats.inProgress}</p>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  در حال بررسی
+                </p>
+                <p className="persian-heading text-3xl font-bold text-blue-500">
+                  {stats.inProgress}
+                </p>
               </div>
               <AlertCircle className="w-8 h-8 text-blue-500" />
             </div>
@@ -313,8 +349,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="persian-body text-sm text-muted-foreground mb-1">حل شده</p>
-                <p className="persian-heading text-3xl font-bold text-green-500">{stats.resolved}</p>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  حل شده
+                </p>
+                <p className="persian-heading text-3xl font-bold text-green-500">
+                  {stats.resolved}
+                </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
@@ -322,10 +362,18 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="submissions" className="space-y-6">
+        <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="submissions" className="persian-body">درخواست‌ها</TabsTrigger>
-            <TabsTrigger value="users" className="persian-body" onClick={fetchClients}>کاربران</TabsTrigger>
+            <TabsTrigger value="submissions" className="persian-body">
+              درخواست‌ها
+            </TabsTrigger>
+            <TabsTrigger
+              value="users"
+              className="persian-body"
+              onClick={fetchClients}
+            >
+              کاربران
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="submissions">
@@ -334,7 +382,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
                   درخواست‌های تماس
                 </h2>
-                
+
                 {submissions.length === 0 ? (
                   <div className="text-center py-12">
                     <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -355,11 +403,17 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                               {getStatusBadge(submission.status)}
                               {/* User Type Indicator */}
                               {submission.user_id ? (
-                                <Badge variant="outline" className="persian-body text-xs bg-green-50 text-green-700 border-green-200">
+                                <Badge
+                                  variant="outline"
+                                  className="persian-body text-xs bg-green-50 text-green-700 border-green-200"
+                                >
                                   عضو
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="persian-body text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                <Badge
+                                  variant="outline"
+                                  className="persian-body text-xs bg-orange-50 text-orange-700 border-orange-200"
+                                >
                                   مهمان
                                 </Badge>
                               )}
@@ -375,7 +429,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                             </p>
                             <div className="flex justify-between items-center mt-2">
                               <p className="persian-body text-xs text-muted-foreground">
-                                {new Date(submission.created_at).toLocaleDateString('fa-IR')}
+                                {new Date(
+                                  submission.created_at
+                                ).toLocaleDateString("fa-IR")}
                               </p>
                               {submission.user_id && (
                                 <span className="persian-body text-xs text-green-600 font-medium">
@@ -391,7 +447,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                               onClick={() => openSubmissionModal(submission)}
                             >
                               <Eye className="w-4 h-4 ml-1" />
-                              {submission.user_id ? 'پاسخگویی' : 'مشاهده'}
+                              {submission.user_id ? "پاسخگویی" : "مشاهده"}
                             </Button>
                           </div>
                         </div>
@@ -410,8 +466,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground mb-1">کل کاربران</p>
-                      <p className="persian-heading text-3xl font-bold text-foreground">{clientStats.total}</p>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        کل کاربران
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-foreground">
+                        {clientStats.total}
+                      </p>
                     </div>
                     <Users className="w-8 h-8 text-primary" />
                   </div>
@@ -420,8 +480,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground mb-1">مدیران</p>
-                      <p className="persian-heading text-3xl font-bold text-red-500">{clientStats.admins}</p>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        مدیران
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-red-500">
+                        {clientStats.admins}
+                      </p>
                     </div>
                     <Shield className="w-8 h-8 text-red-500" />
                   </div>
@@ -430,8 +494,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground mb-1">کاربران عادی</p>
-                      <p className="persian-heading text-3xl font-bold text-green-500">{clientStats.clients}</p>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        کاربران عادی
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-green-500">
+                        {clientStats.clients}
+                      </p>
                     </div>
                     <UserCheck className="w-8 h-8 text-green-500" />
                   </div>
@@ -440,8 +508,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground mb-1">فعالیت هفته اخیر</p>
-                      <p className="persian-heading text-3xl font-bold text-blue-500">{clientStats.recent}</p>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        فعالیت هفته اخیر
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-blue-500">
+                        {clientStats.recent}
+                      </p>
                     </div>
                     <Calendar className="w-8 h-8 text-blue-500" />
                   </div>
@@ -454,10 +526,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
                     لیست کاربران سیستم
                   </h2>
-                  
+
                   {clientsLoading ? (
                     <div className="text-center py-12">
-                      <p className="persian-body text-muted-foreground">در حال بارگذاری...</p>
+                      <p className="persian-body text-muted-foreground">
+                        در حال بارگذاری...
+                      </p>
                     </div>
                   ) : clients.length === 0 ? (
                     <div className="text-center py-12">
@@ -472,31 +546,39 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         <TableHeader>
                           <TableRow>
                             <TableHead className="persian-body">نام</TableHead>
-                            <TableHead className="persian-body">ایمیل</TableHead>
+                            <TableHead className="persian-body">
+                              ایمیل
+                            </TableHead>
                             <TableHead className="persian-body">نقش</TableHead>
-                            <TableHead className="persian-body">تعداد درخواست</TableHead>
-                            <TableHead className="persian-body">آخرین فعالیت</TableHead>
-                            <TableHead className="persian-body">تاریخ عضویت</TableHead>
-                            <TableHead className="persian-body">عملیات</TableHead>
+                            <TableHead className="persian-body">
+                              تعداد درخواست
+                            </TableHead>
+                            <TableHead className="persian-body">
+                              آخرین فعالیت
+                            </TableHead>
+                            <TableHead className="persian-body">
+                              تاریخ عضویت
+                            </TableHead>
+                            <TableHead className="persian-body">
+                              عملیات
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {clients.map((client) => (
                             <TableRow key={client.id}>
                               <TableCell className="persian-body font-medium">
-                                {client.full_name || 'بدون نام'}
+                                {client.full_name || "بدون نام"}
                               </TableCell>
                               <TableCell className="persian-body">
                                 <div className="flex items-center gap-2">
                                   <Mail className="w-4 h-4 text-muted-foreground" />
                                   <span className="ltr-content text-sm">
-                                    {client.email || 'بدون ایمیل'}
+                                    {client.email || "بدون ایمیل"}
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell>
-                                {getRoleBadge(client.role)}
-                              </TableCell>
+                              <TableCell>{getRoleBadge(client.role)}</TableCell>
                               <TableCell className="persian-body">
                                 <div className="flex items-center gap-2">
                                   <MessageSquare className="w-4 h-4 text-muted-foreground" />
@@ -504,13 +586,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                                 </div>
                               </TableCell>
                               <TableCell className="persian-body text-sm text-muted-foreground">
-                                {client.last_submission 
-                                  ? new Date(client.last_submission).toLocaleDateString('fa-IR')
-                                  : 'هرگز'
-                                }
+                                {client.last_submission
+                                  ? new Date(
+                                      client.last_submission
+                                    ).toLocaleDateString("fa-IR")
+                                  : "هرگز"}
                               </TableCell>
                               <TableCell className="persian-body text-sm text-muted-foreground">
-                                {new Date(client.created_at).toLocaleDateString('fa-IR')}
+                                {new Date(client.created_at).toLocaleDateString(
+                                  "fa-IR"
+                                )}
                               </TableCell>
                               <TableCell>
                                 <Button
@@ -551,7 +636,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               جزئیات کاربر
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedClient && (
             <div className="space-y-6 pt-4">
               {/* User Info */}
@@ -559,41 +644,61 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="persian-body text-sm text-muted-foreground">نام کامل</p>
-                    <p className="persian-body font-medium">{selectedClient.full_name || 'نامشخص'}</p>
+                    <p className="persian-body text-sm text-muted-foreground">
+                      نام کامل
+                    </p>
+                    <p className="persian-body font-medium">
+                      {selectedClient.full_name || "نامشخص"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="persian-body text-sm text-muted-foreground">ایمیل</p>
-                    <p className="persian-body font-medium ltr-content">{selectedClient.email || 'نامشخص'}</p>
+                    <p className="persian-body text-sm text-muted-foreground">
+                      ایمیل
+                    </p>
+                    <p className="persian-body font-medium ltr-content">
+                      {selectedClient.email || "نامشخص"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="persian-body text-sm text-muted-foreground">نقش</p>
-                    <div className="mt-1">{getRoleBadge(selectedClient.role)}</div>
+                    <p className="persian-body text-sm text-muted-foreground">
+                      نقش
+                    </p>
+                    <div className="mt-1">
+                      {getRoleBadge(selectedClient.role)}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <MessageSquare className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="persian-body text-sm text-muted-foreground">تعداد درخواست‌ها</p>
-                    <p className="persian-body font-medium">{selectedClient.submission_count || 0}</p>
+                    <p className="persian-body text-sm text-muted-foreground">
+                      تعداد درخواست‌ها
+                    </p>
+                    <p className="persian-body font-medium">
+                      {selectedClient.submission_count || 0}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <Calendar className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="persian-body text-sm text-muted-foreground">تاریخ عضویت</p>
+                    <p className="persian-body text-sm text-muted-foreground">
+                      تاریخ عضویت
+                    </p>
                     <p className="persian-body font-medium">
-                      {new Date(selectedClient.created_at).toLocaleDateString('fa-IR')}
+                      {new Date(selectedClient.created_at).toLocaleDateString(
+                        "fa-IR"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -602,9 +707,13 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   <div className="flex items-center gap-3 md:col-span-2">
                     <Clock className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="persian-body text-sm text-muted-foreground">آخرین فعالیت</p>
+                      <p className="persian-body text-sm text-muted-foreground">
+                        آخرین فعالیت
+                      </p>
                       <p className="persian-body font-medium">
-                        {new Date(selectedClient.last_submission).toLocaleDateString('fa-IR')}
+                        {new Date(
+                          selectedClient.last_submission
+                        ).toLocaleDateString("fa-IR")}
                       </p>
                     </div>
                   </div>
@@ -616,17 +725,29 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 <h4 className="persian-body font-medium mb-2">خلاصه فعالیت</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between">
-                    <span className="persian-body text-muted-foreground">کل درخواست‌ها:</span>
-                    <span className="persian-body font-medium">{selectedClient.submission_count || 0}</span>
+                    <span className="persian-body text-muted-foreground">
+                      کل درخواست‌ها:
+                    </span>
+                    <span className="persian-body font-medium">
+                      {selectedClient.submission_count || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="persian-body text-muted-foreground">وضعیت:</span>
-                    <span className={`persian-body font-medium ${
-                      selectedClient.submission_count && selectedClient.submission_count > 0 
-                        ? 'text-green-600' 
-                        : 'text-orange-600'
-                    }`}>
-                      {selectedClient.submission_count && selectedClient.submission_count > 0 ? 'فعال' : 'غیرفعال'}
+                    <span className="persian-body text-muted-foreground">
+                      وضعیت:
+                    </span>
+                    <span
+                      className={`persian-body font-medium ${
+                        selectedClient.submission_count &&
+                        selectedClient.submission_count > 0
+                          ? "text-green-600"
+                          : "text-orange-600"
+                      }`}
+                    >
+                      {selectedClient.submission_count &&
+                      selectedClient.submission_count > 0
+                        ? "فعال"
+                        : "غیرفعال"}
                     </span>
                   </div>
                 </div>

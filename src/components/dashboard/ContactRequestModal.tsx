@@ -9,19 +9,25 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MessageSquare, 
+import {
+  User,
+  Mail,
+  Phone,
+  MessageSquare,
   Calendar,
   Save,
   Send,
   ShieldCheck,
-  UserX
+  UserX,
 } from "lucide-react";
 
 interface ContactSubmission {
@@ -54,17 +60,22 @@ interface ContactRequestModalProps {
   onUpdate: () => void;
 }
 
-const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: ContactRequestModalProps) => {
+const ContactRequestModal = ({
+  submission,
+  open,
+  onOpenChange,
+  onUpdate,
+}: ContactRequestModalProps) => {
   const { toast } = useToast();
-  const [status, setStatus] = useState(submission?.status || 'pending');
-  const [adminNotes, setAdminNotes] = useState(submission?.admin_notes || '');
+  const [status, setStatus] = useState(submission?.status || "pending");
+  const [adminNotes, setAdminNotes] = useState(submission?.admin_notes || "");
   const [saving, setSaving] = useState(false);
   const [responses, setResponses] = useState<TicketResponse[]>([]);
-  const [newResponse, setNewResponse] = useState('');
+  const [newResponse, setNewResponse] = useState("");
   const [sendingResponse, setSendingResponse] = useState(false);
-  
+
   const isAuthenticatedUser = submission?.user_id !== null;
-  
+
   // Fetch responses when submission changes
   useEffect(() => {
     if (submission && isAuthenticatedUser) {
@@ -76,18 +87,18 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
 
   const fetchResponses = async () => {
     if (!submission) return;
-    
+
     try {
       const { data, error } = await supabase
-        .from('ticket_responses')
-        .select('*')
-        .eq('submission_id', submission.id)
-        .order('created_at', { ascending: true });
+        .from("ticket_responses")
+        .select("*")
+        .eq("submission_id", submission.id)
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       setResponses(data || []);
     } catch (error) {
-      console.error('Error fetching responses:', error);
+      console.error("Error fetching responses:", error);
     }
   };
 
@@ -97,13 +108,13 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('contact_submissions')
+        .from("contact_submissions")
         .update({
           status,
           admin_notes: adminNotes,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', submission.id);
+        .eq("id", submission.id);
 
       if (error) throw error;
 
@@ -130,13 +141,11 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
 
     setSendingResponse(true);
     try {
-      const { error } = await supabase
-        .from('ticket_responses')
-        .insert({
-          submission_id: submission.id,
-          message: newResponse.trim(),
-          is_admin_response: true,
-        });
+      const { error } = await supabase.from("ticket_responses").insert({
+        submission_id: submission.id,
+        message: newResponse.trim(),
+        is_admin_response: true,
+      });
 
       if (error) throw error;
 
@@ -145,7 +154,7 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
         description: "پاسخ شما با موفقیت ارسال شد.",
       });
 
-      setNewResponse('');
+      setNewResponse("");
       fetchResponses();
     } catch (error: any) {
       toast({
@@ -160,14 +169,12 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return <Badge variant="secondary">در انتظار</Badge>;
-      case 'in_progress':
+      case "in_progress":
         return <Badge variant="outline">در حال بررسی</Badge>;
-      case 'resolved':
+      case "resolved":
         return <Badge variant="default">حل شده</Badge>;
-      case 'closed':
-        return <Badge variant="destructive">بسته شده</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -191,16 +198,24 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
               <>
                 <ShieldCheck className="w-5 h-5 text-green-500" />
                 <div>
-                  <p className="persian-body font-medium text-green-700">کاربر عضو</p>
-                  <p className="persian-body text-sm text-muted-foreground">امکان پاسخگویی موجود است</p>
+                  <p className="persian-body font-medium text-green-700">
+                    کاربر عضو
+                  </p>
+                  <p className="persian-body text-sm text-muted-foreground">
+                    امکان پاسخگویی موجود است
+                  </p>
                 </div>
               </>
             ) : (
               <>
                 <UserX className="w-5 h-5 text-orange-500" />
                 <div>
-                  <p className="persian-body font-medium text-orange-700">کاربر مهمان</p>
-                  <p className="persian-body text-sm text-muted-foreground">فقط مشاهده اطلاعات</p>
+                  <p className="persian-body font-medium text-orange-700">
+                    کاربر مهمان
+                  </p>
+                  <p className="persian-body text-sm text-muted-foreground">
+                    فقط مشاهده اطلاعات
+                  </p>
                 </div>
               </>
             )}
@@ -211,7 +226,9 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="persian-body text-sm text-muted-foreground">نام</p>
+                <p className="persian-body text-sm text-muted-foreground">
+                  نام
+                </p>
                 <p className="persian-body font-medium">{submission.name}</p>
               </div>
             </div>
@@ -219,25 +236,35 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="persian-body text-sm text-muted-foreground">ایمیل</p>
-                <p className="persian-body font-medium ltr-content">{submission.email}</p>
+                <p className="persian-body text-sm text-muted-foreground">
+                  ایمیل
+                </p>
+                <p className="persian-body font-medium ltr-content">
+                  {submission.email}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="persian-body text-sm text-muted-foreground">تلفن</p>
-                <p className="persian-body font-medium ltr-content">{submission.phone}</p>
+                <p className="persian-body text-sm text-muted-foreground">
+                  تلفن
+                </p>
+                <p className="persian-body font-medium ltr-content">
+                  {submission.phone}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="persian-body text-sm text-muted-foreground">تاریخ ارسال</p>
+                <p className="persian-body text-sm text-muted-foreground">
+                  تاریخ ارسال
+                </p>
                 <p className="persian-body font-medium">
-                  {new Date(submission.created_at).toLocaleDateString('fa-IR')}
+                  {new Date(submission.created_at).toLocaleDateString("fa-IR")}
                 </p>
               </div>
             </div>
@@ -245,15 +272,21 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
 
           {/* Subject */}
           <div>
-            <p className="persian-body text-sm text-muted-foreground mb-2">موضوع</p>
-            <p className="persian-body font-medium text-lg">{submission.subject}</p>
+            <p className="persian-body text-sm text-muted-foreground mb-2">
+              موضوع
+            </p>
+            <p className="persian-body font-medium text-lg">
+              {submission.subject}
+            </p>
           </div>
 
           {/* Message */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <MessageSquare className="w-5 h-5 text-muted-foreground" />
-              <p className="persian-body text-sm text-muted-foreground">پیام اصلی</p>
+              <p className="persian-body text-sm text-muted-foreground">
+                پیام اصلی
+              </p>
             </div>
             <div className="bg-muted p-4 rounded-lg">
               <p className="persian-body whitespace-pre-wrap leading-relaxed">
@@ -265,8 +298,10 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
           {/* Responses Section - Only for authenticated users */}
           {isAuthenticatedUser && (
             <div>
-              <h3 className="persian-heading text-lg font-semibold mb-4">گفتگو</h3>
-              
+              <h3 className="persian-heading text-lg font-semibold mb-4">
+                گفتگو
+              </h3>
+
               {/* Existing Responses */}
               {responses.length > 0 && (
                 <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
@@ -275,17 +310,22 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
                       key={response.id}
                       className={`p-3 rounded-lg ${
                         response.is_admin_response
-                          ? 'bg-blue-50 border-r-4 border-blue-500 mr-4'
-                          : 'bg-green-50 border-r-4 border-green-500 ml-4'
+                          ? "bg-blue-50 border-r-4 border-blue-500 mr-4"
+                          : "bg-green-50 border-r-4 border-green-500 ml-4"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="persian-body text-xs font-medium text-muted-foreground">
-                          {response.is_admin_response ? 'پشتیبانی' : 'کاربر'}
+                          {response.is_admin_response ? "پشتیبانی" : "کاربر"}
                         </span>
                         <span className="persian-body text-xs text-muted-foreground">
-                          {new Date(response.created_at).toLocaleDateString('fa-IR')} - 
-                          {new Date(response.created_at).toLocaleTimeString('fa-IR')}
+                          {new Date(response.created_at).toLocaleDateString(
+                            "fa-IR"
+                          )}{" "}
+                          -
+                          {new Date(response.created_at).toLocaleTimeString(
+                            "fa-IR"
+                          )}
                         </span>
                       </div>
                       <p className="persian-body text-sm whitespace-pre-wrap">
@@ -305,8 +345,8 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
                   placeholder="پاسخ خود را اینجا بنویسید..."
                   className="min-h-24"
                 />
-                <Button 
-                  onClick={handleSendResponse} 
+                <Button
+                  onClick={handleSendResponse}
                   disabled={sendingResponse || !newResponse.trim()}
                   size="sm"
                 >
@@ -325,8 +365,10 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
 
           {/* Admin Controls */}
           <div className="border-t pt-6 space-y-4">
-            <h3 className="persian-heading text-lg font-semibold">مدیریت درخواست</h3>
-            
+            <h3 className="persian-heading text-lg font-semibold">
+              مدیریت درخواست
+            </h3>
+
             {/* Status */}
             <div className="space-y-2">
               <Label className="persian-body">وضعیت</Label>
@@ -339,28 +381,11 @@ const ContactRequestModal = ({ submission, open, onOpenChange, onUpdate }: Conta
                     <SelectItem value="pending">در انتظار</SelectItem>
                     <SelectItem value="in_progress">در حال بررسی</SelectItem>
                     <SelectItem value="resolved">حل شده</SelectItem>
-                    <SelectItem value="closed">بسته شده</SelectItem>
                   </SelectContent>
                 </Select>
                 {getStatusBadge(status)}
               </div>
             </div>
-
-            {/* Admin Notes - Only show for anonymous users */}
-            {!isAuthenticatedUser && (
-              <div className="space-y-2">
-                <Label className="persian-body">یادداشت ادمین</Label>
-                <Textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="یادداشت‌های خود را اینجا بنویسید..."
-                  className="min-h-24"
-                />
-                <p className="persian-body text-xs text-muted-foreground">
-                  این یادداشت برای کاربر نمایش داده خواهد شد
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Actions */}
