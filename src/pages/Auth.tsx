@@ -2,11 +2,17 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Code } from "lucide-react";
 
 const Auth = () => {
   const { user, loading, signIn, signUp, initialize } = useAuthStore();
@@ -29,20 +35,20 @@ const Auth = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
-    
+
     await signIn(formData.email, formData.password);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email || !formData.password || !formData.fullName) return;
-    
+
     if (formData.password !== formData.confirmPassword) {
       return;
     }
@@ -62,8 +68,8 @@ const Auth = () => {
 
         <Card className="shadow-2xl border-0">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-2xl">و</span>
+            <div className="w-16 h-16 bg-accent rounded-2xl mx-auto mb-4 flex items-center justify-center">
+              <Code className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl text-persian">ویراپ</CardTitle>
             <CardDescription className="text-persian">
@@ -73,14 +79,20 @@ const Auth = () => {
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin" className="text-persian">ورود</TabsTrigger>
-                <TabsTrigger value="signup" className="text-persian">ثبت نام</TabsTrigger>
+                <TabsTrigger value="signin" className="text-persian">
+                  ورود
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="text-persian">
+                  ثبت نام
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin" className="space-y-4">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-persian">ایمیل</Label>
+                    <Label htmlFor="signin-email" className="text-persian">
+                      ایمیل
+                    </Label>
                     <div className="relative">
                       <Mail className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -96,9 +108,11 @@ const Auth = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-persian">رمز عبور</Label>
+                    <Label htmlFor="signin-password" className="text-persian">
+                      رمز عبور
+                    </Label>
                     <div className="relative">
                       <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -117,14 +131,18 @@ const Auth = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute left-3 top-3 text-muted-foreground hover:text-foreground"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full accent-gradient hover:scale-[1.02] transition-transform text-persian"
+                  <Button
+                    type="submit"
+                    className="w-full bg-accent accent-gradient hover:scale-[1.02] hover:bg-accent transition-transform text-persian"
                     disabled={loading}
                   >
                     {loading ? "در حال ورود..." : "ورود"}
@@ -135,7 +153,9 @@ const Auth = () => {
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-persian">نام کامل</Label>
+                    <Label htmlFor="signup-name" className="text-persian">
+                      نام کامل
+                    </Label>
                     <div className="relative">
                       <User className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -153,7 +173,9 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-persian">ایمیل</Label>
+                    <Label htmlFor="signup-email" className="text-persian">
+                      ایمیل
+                    </Label>
                     <div className="relative">
                       <Mail className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -171,7 +193,9 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-persian">رمز عبور</Label>
+                    <Label htmlFor="signup-password" className="text-persian">
+                      رمز عبور
+                    </Label>
                     <div className="relative">
                       <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -191,13 +215,19 @@ const Auth = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute left-3 top-3 text-muted-foreground hover:text-foreground"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password" className="text-persian">تکرار رمز عبور</Label>
+                    <Label htmlFor="confirm-password" className="text-persian">
+                      تکرار رمز عبور
+                    </Label>
                     <div className="relative">
                       <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -214,9 +244,9 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full accent-gradient hover:scale-[1.02] transition-transform text-persian"
+                  <Button
+                    type="submit"
+                    className="w-full bg-accent accent-gradient hover:bg-accent hover:scale-[1.02] transition-transform text-persian"
                     disabled={loading}
                   >
                     {loading ? "در حال ثبت نام..." : "ثبت نام"}
@@ -229,9 +259,8 @@ const Auth = () => {
 
         <div className="text-center mt-6">
           <p className="text-sm text-muted-foreground text-persian">
-            با ورود یا ثبت نام، شما با 
-            <span className="text-primary"> شرایط استفاده </span>
-            و
+            با ورود یا ثبت نام، شما با
+            <span className="text-primary"> شرایط استفاده </span>و
             <span className="text-primary"> حریم خصوصی </span>
             ما موافقت می‌کنید.
           </p>

@@ -97,7 +97,8 @@ const Home = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="btn-hero-secondary text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-accent hover:text-primary-foreground"
+                  style={{ backgroundColor: "hsl(var(--accent-light))" }}
+                  className="btn-hero-secondary text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-accent hover:text-secondary-foreground"
                 >
                   مشاهده نمونه کارها
                 </Button>
@@ -203,7 +204,8 @@ const Home = () => {
 
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto fade-in-up">
-            <h2 className="persian-heading text-3xl md:text-5xl font-bold mb-6">
+            <Zap className="h-16 w-16 text-accent mx-auto mb-6" />
+            <h2 className="persian-heading text-white text-3xl md:text-5xl font-bold mb-6">
               آماده شروع پروژه بعدی هستید؟
             </h2>
             <p className="persian-body text-lg md:text-xl mb-8 text-primary-foreground/90 leading-relaxed">
