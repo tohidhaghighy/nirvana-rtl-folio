@@ -39,7 +39,7 @@ const Footer = () => {
                 { path: "/", label: "خانه" },
                 { path: "/about", label: "درباره ما" },
                 { path: "/services", label: "خدمات" },
-                { path: "/portfolio", label: "نمونه کارها" },
+                { path: "/projects", label: "نمونه کارها" },
               ].map((item) => (
                 <li key={item.path}>
                   <Link
@@ -93,9 +93,9 @@ const Footer = () => {
             {/* Social Links */}
             <div className="flex gap-4 pt-4">
               {[
-                { icon: Instagram, href: "#" },
-                { icon: Linkedin, href: "#" },
-                { icon: Twitter, href: "#" },
+                { icon: Instagram, href: "/contact" },
+                { icon: Linkedin, href: "/contact" },
+                { icon: Twitter, href: "/contact" },
               ].map((social, index) => (
                 <a
                   key={index}

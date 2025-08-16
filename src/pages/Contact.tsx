@@ -53,17 +53,17 @@ const Contact = () => {
       if (user) {
         // Get user's profile data
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('user_id', user.id)
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", user.id)
           .single();
 
         // Pre-fill form fields
         if (profile?.full_name) {
-          form.setValue('name', profile.full_name);
+          form.setValue("name", profile.full_name);
         }
         if (user.email) {
-          form.setValue('email', user.email);
+          form.setValue("email", user.email);
         }
       }
     };
@@ -75,8 +75,10 @@ const Contact = () => {
     setLoading(true);
     try {
       // Get current user if authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       // Prepare submission data
       const submissionData = {
         name: data.name,
@@ -89,7 +91,7 @@ const Contact = () => {
 
       // Save to database
       const { error: dbError } = await supabase
-        .from('contact_submissions')
+        .from("contact_submissions")
         .insert(submissionData);
 
       if (dbError) {
@@ -97,28 +99,31 @@ const Contact = () => {
       }
 
       // Send email notification
-      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-        body: data,
-      });
+      const { error: emailError } = await supabase.functions.invoke(
+        "send-contact-email",
+        {
+          body: data,
+        }
+      );
 
       if (emailError) {
-        console.warn('Email notification failed:', emailError);
+        console.warn("Email notification failed:", emailError);
         // Don't throw error as the main submission was successful
       }
 
       toast({
         title: "پیام شما ارسال شد",
-        description: user 
+        description: user
           ? "درخواست شما ثبت شد و می‌توانید وضعیت آن را در داشبورد خود مشاهده کنید."
           : "تشکر از تماس شما. در اسرع وقت پاسخ خواهیم داد.",
       });
 
       form.reset();
-      
+
       // Redirect to dashboard if user is logged in
       if (user) {
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = "/dashboard";
         }, 2000);
       }
     } catch (error: any) {
@@ -361,10 +366,15 @@ const Contact = () => {
               <Card className="overflow-hidden">
                 <div className="h-64 bg-muted flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
-                    <MapPin className="w-12 h-12 mx-auto mb-4" />
-                    <p className="persian-body">
-                      نقشه در اینجا نمایش داده می‌شود
-                    </p>
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m21!1m12!1m3!1d1619.5151808640526!2d51.39059857535066!3d35.72547181442255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m6!3e6!4m0!4m3!3m2!1d35.72550447664093!2d51.39124230548214!5e0!3m2!1sen!2sfr!4v1755330176702!5m2!1sen!2sfr"
+                      width="600"
+                      height="450"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
                   </div>
                 </div>
               </Card>
@@ -396,7 +406,7 @@ const Contact = () => {
                       چگونه می‌توانم پروژه‌ام را شروع کنم؟
                     </h4>
                     <p className="persian-body text-sm text-muted-foreground">
-                      فقط کافی است فرم بالا را پر کنید یا با ما تماس بگیرید.
+                      فقط کافی است فرم را پر کنید یا با ما تماس بگیرید.
                     </p>
                   </div>
                 </div>
