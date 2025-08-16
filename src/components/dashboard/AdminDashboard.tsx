@@ -92,6 +92,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientsLoading, setClientsLoading] = useState(false);
+  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [selectedSubmission, setSelectedSubmission] =
     useState<ContactSubmission | null>(null);
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(
@@ -120,8 +122,29 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     }
   };
 
+  const fetchDashboardStats = async () => {
+    try {
+      // Fetch published blogs count
+      const { count: blogsCount } = await supabase
+        .from('blogs')
+        .select('*', { count: 'exact', head: true })
+        .eq('published', true);
+      
+      // Fetch total users count
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      setPublishedBlogsCount(blogsCount || 0);
+      setTotalUsers(usersCount || 0);
+    } catch (error: any) {
+      console.error('Error fetching dashboard stats:', error);
+    }
+  };
+
   useEffect(() => {
     fetchSubmissions();
+    fetchDashboardStats();
 
     // Set up real-time subscription
     const channel = supabase
@@ -325,13 +348,13 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="persian-body text-sm text-muted-foreground mb-1">
-                  در انتظار
+                  تعداد کاربران
                 </p>
                 <p className="persian-heading text-3xl font-bold text-orange-500">
-                  {stats.pending}
+                  {totalUsers}
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-orange-500" />
+              <Users className="w-8 h-8 text-orange-500" />
             </div>
           </Card>
 
@@ -342,7 +365,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   مقالات منتشر شده
                 </p>
                 <p className="persian-heading text-3xl font-bold text-blue-500">
-                  3
+                  {publishedBlogsCount}
                 </p>
               </div>
               <FileText className="w-8 h-8 text-blue-500" />
@@ -383,13 +406,73 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           </TabsList>
 
           <TabsContent value="submissions">
-            <Card>
-              <div className="p-6">
-                <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
-                  درخواست‌های تماس
-                </h2>
+            <div className="space-y-6">
+              {/* Submission Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        کل درخواست‌ها
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-foreground">
+                        {stats.total}
+                      </p>
+                    </div>
+                    <MessageSquare className="w-8 h-8 text-primary" />
+                  </div>
+                </Card>
 
-                {submissions.length === 0 ? (
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        در انتظار
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-orange-500">
+                        {stats.pending}
+                      </p>
+                    </div>
+                    <Clock className="w-8 h-8 text-orange-500" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        در حال بررسی
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-blue-500">
+                        {stats.inProgress}
+                      </p>
+                    </div>
+                    <AlertCircle className="w-8 h-8 text-blue-500" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="persian-body text-sm text-muted-foreground mb-1">
+                        حل شده
+                      </p>
+                      <p className="persian-heading text-3xl font-bold text-green-500">
+                        {stats.resolved}
+                      </p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-green-500" />
+                  </div>
+                </Card>
+              </div>
+
+              <Card>
+                <div className="p-6">
+                  <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
+                    درخواست‌های تماس
+                  </h2>
+
+                  {submissions.length === 0 ? (
                   <div className="text-center py-12">
                     <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <p className="persian-body text-muted-foreground">
@@ -460,9 +543,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                       </Card>
                     ))}
                   </div>
-                )}
-              </div>
-            </Card>
+                  )}
+                </div>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="users">
