@@ -18,21 +18,22 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Contact email function called');
-  
+  console.log("Contact email function called");
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { name, email, phone, subject, message }: ContactEmailRequest = await req.json();
-    
-    console.log('Email data received:', { name, email, subject });
+    const { name, email, phone, subject, message }: ContactEmailRequest =
+      await req.json();
+
+    console.log("Email data received:", { name, email, subject });
 
     const emailResponse = await resend.emails.send({
       from: "ویراپ <onboarding@resend.dev>",
-      to: ["info.viraap.co"],
+      to: ["info@viraap.co"],
       subject: `درخواست جدید: ${subject}`,
       html: `
         <div dir="rtl" style="font-family: 'Tahoma', sans-serif;">
@@ -60,20 +61,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response(
+      JSON.stringify({ success: true, data: emailResponse }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-contact-email function:", error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Failed to send email"
+      JSON.stringify({
+        success: false,
+        error: error.message || "Failed to send email",
       }),
       {
         status: 500,

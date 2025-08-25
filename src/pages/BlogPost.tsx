@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, ArrowLeft, Share2 } from "lucide-react";
+import { Calendar, User, ArrowLeft, Share2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -32,16 +32,16 @@ const BlogPost = () => {
   const fetchPost = async () => {
     try {
       const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('slug', slug)
-        .eq('published', true)
+        .from("blogs")
+        .select("*")
+        .eq("slug", slug)
+        .eq("published", true)
         .single();
 
       if (error) throw error;
       setPost(data);
     } catch (error) {
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
       toast({
         variant: "destructive",
         title: "خطا",
@@ -53,10 +53,10 @@ const BlogPost = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fa-IR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("fa-IR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -100,7 +100,7 @@ const BlogPost = () => {
           </p>
           <Link to="/blog">
             <Button variant="outline" className="persian-body">
-              <ArrowLeft className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-4 h-4 ml-2" />
               بازگشت به مقالات
             </Button>
           </Link>
@@ -116,7 +116,7 @@ const BlogPost = () => {
         <div className="container mx-auto px-4 py-6">
           <Link to="/blog">
             <Button variant="ghost" size="sm" className="persian-body">
-              <ArrowLeft className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-4 h-4 ml-2" />
               بازگشت به مقالات
             </Button>
           </Link>
@@ -128,8 +128,8 @@ const BlogPost = () => {
           {/* Featured Image */}
           {post.featured_image_url && (
             <div className="aspect-video mb-8 rounded-lg overflow-hidden">
-              <img 
-                src={post.featured_image_url} 
+              <img
+                src={post.featured_image_url}
                 alt={post.title}
                 className="w-full h-full object-cover"
               />
@@ -143,7 +143,7 @@ const BlogPost = () => {
                 مقاله فنی
               </Badge>
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 persian-heading">
               {post.title}
             </h1>
@@ -159,10 +159,10 @@ const BlogPost = () => {
                   <span>نویسنده</span>
                 </div>
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleShare}
                 className="persian-body"
               >
@@ -181,39 +181,53 @@ const BlogPost = () => {
           </header>
 
           {/* Article Content */}
-          <div className="prose prose-lg max-w-none persian-body">
-            <div 
+          <div className="prose prose-lg max-w-none persian-body text-justify">
+            <div
               className="leading-relaxed text-foreground/90"
-              style={{ 
-                whiteSpace: 'pre-line',
-                lineHeight: '1.8'
+              style={{
+                whiteSpace: "pre-line",
+                lineHeight: "1.8",
               }}
             >
-              {post.content.split('\n').map((line, index) => {
-                if (line.startsWith('## ')) {
+              {post.content.split("\n").map((line, index) => {
+                // Check for block-level elements first (headings, lists)
+                if (line.startsWith("## ")) {
                   return (
-                    <h2 key={index} className="text-2xl font-bold text-foreground mt-12 mb-6 persian-heading">
-                      {line.replace('## ', '')}
+                    <h2
+                      key={index}
+                      className="text-2xl font-bold text-foreground mt-12 mb-6 persian-heading"
+                    >
+                      {line.replace("## ", "")}
                     </h2>
                   );
-                } else if (line.startsWith('# ')) {
+                } else if (line.startsWith("# ")) {
                   return (
-                    <h1 key={index} className="text-3xl font-bold text-foreground mt-12 mb-6 persian-heading">
-                      {line.replace('# ', '')}
+                    <h1
+                      key={index}
+                      className="text-3xl font-bold text-foreground mt-12 mb-6 persian-heading"
+                    >
+                      {line.replace("# ", "")}
                     </h1>
                   );
-                } else if (line.startsWith('- ')) {
+                } else if (line.startsWith("- ")) {
                   return (
                     <li key={index} className="mb-2 mr-6 list-disc">
-                      {line.replace('- ', '')}
+                      {line.replace("- ", "")}
                     </li>
                   );
-                } else if (line.trim() === '') {
+                } else if (line.trim() === "") {
                   return <br key={index} />;
                 } else {
+                  // If it's a regular paragraph, process inline bolding
+                  const parts = line.split("**");
                   return (
                     <p key={index} className="mb-4 leading-relaxed">
-                      {line}
+                      {parts.map((part, i) => {
+                        if (i % 2 === 1) {
+                          return <strong key={i}>{part}</strong>;
+                        }
+                        return part;
+                      })}
                     </p>
                   );
                 }
@@ -227,10 +241,10 @@ const BlogPost = () => {
               <p className="text-sm text-muted-foreground persian-body">
                 آخرین بروزرسانی: {formatDate(post.updated_at)}
               </p>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleShare}
                 className="persian-body"
               >

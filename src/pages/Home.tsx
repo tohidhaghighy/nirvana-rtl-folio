@@ -10,18 +10,19 @@ import {
   Zap,
   Shield,
   Target,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 const Home = () => {
-  const stats = [
-    { icon: Users, value: "۵۰+", label: "مشتری راضی" },
-    { icon: Award, value: "۱۰۰+", label: "پروژه موفق" },
-    { icon: Clock, value: "۳+", label: "سال تجربه" },
-    { icon: Code2, value: "۲۴/۷", label: "پشتیبانی" },
-  ];
+  // const stats = [
+  //   { icon: Users, value: "۵۰+", label: "مشتری راضی" },
+  //   { icon: Award, value: "۱۰۰+", label: "پروژه موفق" },
+  //   { icon: Clock, value: "۳+", label: "سال تجربه" },
+  //   { icon: Code2, value: "۲۴/۷", label: "پشتیبانی" },
+  // ];
 
   const features = [
     {
@@ -29,6 +30,12 @@ const Home = () => {
       title: "هوش تجاری",
       description:
         "تبدیل داده‌های خام به بینش‌های قابل اجرا برای تصمیم‌گیری بهتر و بهینه‌سازی عملکرد",
+    },
+    {
+      icon: Brain,
+      title: "راهکارهای هوش مصنوعی",
+      description:
+        "ارائه سیستم‌ها و ابزارهای مبتنی بر هوش مصنوعی برای بهبود فرآیندها، پیش‌بینی دقیق و تصمیم‌گیری هوشمند",
     },
     {
       icon: Code2,
@@ -114,7 +121,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-br from-secondary/30 to-muted/20">
+      {/* <section className="py-20 bg-gradient-to-br from-secondary/30 to-muted/20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -132,7 +139,7 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
       <section className="py-20 bg-gradient-to-b from-background to-secondary/10">
@@ -147,7 +154,7 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
             {features.map((feature, index) => (
               <Card
                 key={index}

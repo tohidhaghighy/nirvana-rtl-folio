@@ -3,11 +3,11 @@ import {
   Mail,
   Phone,
   MapPin,
-  Github,
-  Linkedin,
-  Twitter,
+  // Github,
+  // Linkedin,
+  // Twitter,
   Code,
-  Instagram,
+  // Instagram,
 } from "lucide-react";
 
 const Footer = () => {
@@ -79,7 +79,7 @@ const Footer = () => {
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-accent" />
                 <span className="persian-body text-background/80 ltr-content">
-                  info.viraap.co
+                  info@viraap.co
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ const Footer = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex gap-4 pt-4">
+            {/* <div className="flex gap-4 pt-4">
               {[
                 { icon: Instagram, href: "/contact" },
                 { icon: Linkedin, href: "/contact" },
@@ -105,7 +105,7 @@ const Footer = () => {
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
 

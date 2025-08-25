@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, ChevronRight } from "lucide-react";
+import { Calendar, User, ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -132,7 +132,7 @@ const Blog = () => {
                           <span className="text-sm persian-body">
                             ادامه مطلب
                           </span>
-                          <ChevronRight size={14} />
+                          <ChevronLeft size={14} />
                         </div>
                       </div>
                     </CardContent>

@@ -27,16 +27,16 @@ const Header = () => {
     if (user) {
       const fetchUserRole = async () => {
         const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', user.id)
+          .from("profiles")
+          .select("role")
+          .eq("user_id", user.id)
           .single();
-        
+
         if (data && !error) {
           setUserRole(data.role);
         }
       };
-      
+
       fetchUserRole();
     } else {
       setUserRole(null);
@@ -67,7 +67,7 @@ const Header = () => {
               <Code className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="persian-heading text-xl text-foreground">
+              <h1 className="persian-heading md:text-xl text-lg text-foreground">
                 ویرا افزار پاسارگاد
               </h1>
               {/* <p className="text-sm text-muted-foreground persian-body">راهکارهای نرم‌افزاری</p> */}
@@ -82,7 +82,7 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-lg persian-body ${
+                  className={`flex items-center gap-2 lg:px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-lg persian-body ${
                     isActive(item.path)
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -102,7 +102,7 @@ const Header = () => {
                 <Link to="/dashboard">
                   <Button variant="outline" size="sm" className="persian-body">
                     <Shield className="w-4 h-4 ml-2" />
-                    {userRole === 'admin' ? 'پنل مدیریت' : 'داشبورد'}
+                    {userRole === "admin" ? "پنل مدیریت" : "داشبورد"}
                   </Button>
                 </Link>
                 <Button
@@ -166,7 +166,9 @@ const Header = () => {
                       className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors persian-body"
                     >
                       <Shield size={20} />
-                      <span>{userRole === 'admin' ? 'پنل مدیریت' : 'داشبورد'}</span>
+                      <span>
+                        {userRole === "admin" ? "پنل مدیریت" : "داشبورد"}
+                      </span>
                     </Link>
                     <button
                       onClick={() => {
