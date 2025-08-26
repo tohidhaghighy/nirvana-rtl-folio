@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft, Share2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface BlogPost {
   id: string;
@@ -18,14 +26,25 @@ interface BlogPost {
   author_id: string;
 }
 
+interface RelatedBlog {
+  id: string;
+  title: string;
+  excerpt: string;
+  slug: string;
+  created_at: string;
+  featured_image_url?: string;
+}
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [relatedBlogs, setRelatedBlogs] = useState<RelatedBlog[]>([]);
 
   useEffect(() => {
     if (slug) {
       fetchPost();
+      fetchRelatedBlogs();
     }
   }, [slug]);
 
@@ -49,6 +68,23 @@ const BlogPost = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRelatedBlogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blogs")
+        .select("id, title, excerpt, featured_image_url, created_at, slug")
+        .eq("published", true)
+        .neq("slug", slug) // Exclude current post
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      setRelatedBlogs(data || []);
+    } catch (error) {
+      console.error("Error fetching related blogs:", error);
     }
   };
 
@@ -255,6 +291,82 @@ const BlogPost = () => {
           </footer>
         </div>
       </article>
+
+      {/* Related Blogs Section */}
+      {relatedBlogs.length > 0 && (
+        <section className="py-16 bg-gradient-to-b from-muted/10 to-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="persian-heading text-2xl md:text-4xl font-bold text-foreground mb-4">
+                مقالات مرتبط
+              </h2>
+              <p className="persian-body text-muted-foreground">
+                سایر مطالب جذاب و آموزشی ما
+              </p>
+            </div>
+
+            <div className="relative max-w-6xl mx-auto">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {relatedBlogs.map((blog) => (
+                    <CarouselItem key={blog.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                      <Link to={`/blog/${blog.slug}`}>
+                        <Card className="service-card h-full overflow-hidden bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong transition-all duration-300">
+                          {blog.featured_image_url && (
+                            <div className="aspect-video overflow-hidden">
+                              <img 
+                                src={blog.featured_image_url} 
+                                alt={blog.title}
+                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                              />
+                            </div>
+                          )}
+                          <div className="p-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                              <Calendar className="w-4 h-4" />
+                              <span className="persian-body">
+                                {formatDate(blog.created_at)}
+                              </span>
+                            </div>
+                            <h3 className="persian-heading text-lg font-semibold text-foreground mb-2 line-clamp-2">
+                              {blog.title}
+                            </h3>
+                            {blog.excerpt && (
+                              <p className="persian-body text-muted-foreground text-sm leading-relaxed line-clamp-2">
+                                {blog.excerpt}
+                              </p>
+                            )}
+                          </div>
+                        </Card>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex -right-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                <CarouselNext className="hidden md:flex -left-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+              </Carousel>
+            </div>
+
+            <div className="text-center mt-8">
+              <Link to="/blog">
+                <Button 
+                  variant="outline" 
+                  className="btn-hero-secondary border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  مشاهده همه مقالات
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };
