@@ -11,18 +11,41 @@ import {
   Shield,
   Target,
   Brain,
+  Calendar,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
-  // const stats = [
-  //   { icon: Users, value: "۵۰+", label: "مشتری راضی" },
-  //   { icon: Award, value: "۱۰۰+", label: "پروژه موفق" },
-  //   { icon: Clock, value: "۳+", label: "سال تجربه" },
-  //   { icon: Code2, value: "۲۴/۷", label: "پشتیبانی" },
-  // ];
+  const [latestBlogs, setLatestBlogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchLatestBlogs = async () => {
+      const { data } = await supabase
+        .from('blogs')
+        .select('id, title, excerpt, featured_image_url, created_at, slug')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+      
+      if (data) {
+        setLatestBlogs(data);
+      }
+    };
+
+    fetchLatestBlogs();
+  }, []);
 
   const features = [
     {
@@ -204,6 +227,83 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Latest Blogs Section */}
+      {latestBlogs.length > 0 && (
+        <section className="py-20 bg-gradient-to-br from-secondary/20 to-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16 fade-in-up">
+              <h2 className="persian-heading text-3xl md:text-5xl font-bold text-foreground mb-6">
+                جدیدترین مقالات
+              </h2>
+              <p className="persian-body text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                آخرین مطالب و مقالات تخصصی ما در حوزه تکنولوژی و نرم‌افزار
+              </p>
+            </div>
+
+            <div className="relative max-w-6xl mx-auto">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {latestBlogs.map((blog) => (
+                    <CarouselItem key={blog.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                      <Link to={`/blog/${blog.slug}`}>
+                        <Card className="service-card h-full overflow-hidden bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong transition-all duration-300">
+                          {blog.featured_image_url && (
+                            <div className="aspect-video overflow-hidden">
+                              <img 
+                                src={blog.featured_image_url} 
+                                alt={blog.title}
+                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                              />
+                            </div>
+                          )}
+                          <div className="p-6">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                              <Calendar className="w-4 h-4" />
+                              <span className="persian-body">
+                                {new Date(blog.created_at).toLocaleDateString('fa-IR')}
+                              </span>
+                            </div>
+                            <h3 className="persian-heading text-lg font-semibold text-foreground mb-3 line-clamp-2">
+                              {blog.title}
+                            </h3>
+                            {blog.excerpt && (
+                              <p className="persian-body text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                                {blog.excerpt}
+                              </p>
+                            )}
+                          </div>
+                        </Card>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex -right-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                <CarouselNext className="hidden md:flex -left-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+              </Carousel>
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to="/blog">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="btn-hero-secondary border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  مشاهده همه مقالات
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-primary via-primary-dark to-primary text-primary-foreground">
