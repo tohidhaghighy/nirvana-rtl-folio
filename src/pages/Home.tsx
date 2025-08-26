@@ -13,9 +13,12 @@ import {
   Brain,
   Calendar,
   User,
+  CircleCheckBig,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { 
   Carousel,
@@ -46,6 +49,69 @@ const Home = () => {
 
     fetchLatestBlogs();
   }, []);
+
+  const projects = [
+    {
+      id: 1,
+      title: "میز خدمت تعزیرات حکومتی و اپلیکیشن موبایل آن",
+      description:
+        "طراحی و توسعه سیستم جامع میز خدمت و اپلیکیشن موبایل برای تسهیل ارائه خدمات تعزیرات حکومتی.",
+      image: "./135.png",
+      category: "توسعه نرم‌افزار",
+      tags: ["React", "Mobile App", "Blazor", "Dashboard", "Government"],
+      client: "سازمان تعزیرات حکومتی",
+    },
+    {
+      id: 2,
+      title: "سامانه مدیریت پرونده‌ها",
+      description:
+        "پیاده‌سازی سامانه مدیریت پرونده‌ها برای بهبود روندهای کاری و افزایش بهره‌وری سازمانی.",
+      image: "./cms.png",
+      category: "توسعه نرم‌افزار",
+      tags: ["Web App", "Microsoft SilverLight", "SQL", "Workflow"],
+      client: "سازمان تعزیرات حکومتی",
+    },
+    {
+      id: 3,
+      title: "مشاوره نرم‌افزاری و DevOps",
+      description:
+        "ارائه خدمات مشاوره در زمینه توسعه نرم‌افزار و پیاده‌سازی فرآیندهای DevOps.",
+      image: "./devops.png",
+      category: "مشاوره و DevOps",
+      tags: ["DevOps", "CI/CD", "Cloud", "Consulting"],
+      client: "شرکت‌های فناوری اطلاعات",
+    },
+    {
+      id: 4,
+      title: "سامانه هوش تجاری سازمان تعزیرات",
+      description:
+        "ایجاد داشبورد هوش تجاری برای تحلیل داده‌های سازمان و بهبود فرآیند تصمیم‌گیری.",
+      image: "./bi.jpg",
+      category: "هوش تجاری",
+      tags: ["Power BI", "Analytics", "Dashboard", "Data"],
+      client: "سازمان تعزیرات حکومتی",
+    },
+    {
+      id: 5,
+      title: "سامانه امحاء",
+      description:
+        "طراحی و پیاده‌سازی سامانه امحاء اسناد و مدارک با امنیت بالا و قابلیت پیگیری.",
+      image: "./emha.png",
+      category: "توسعه نرم‌افزار",
+      tags: ["Security", "Workflow", "Web App", "Tracking"],
+      client: "سازمان تعزیرات حکومتی",
+    },
+    {
+      id: 6,
+      title: "سامانه مدیریت پروژه و مکاتبات",
+      description:
+        "پیاده‌سازی سامانه یکپارچه مدیریت پروژه‌ها و مکاتبات برای سازمان‌ها و شرکت‌ها.",
+      image: "./ticketing.png",
+      category: "توسعه نرم‌افزار",
+      tags: ["Project Management", "Communication", "Web App", "Collaboration"],
+      client: "شرکت‌ها و سازمان‌های دولتی",
+    },
+  ];
 
   const features = [
     {
@@ -304,6 +370,118 @@ const Home = () => {
           </div>
         </section>
       )}
+
+      {/* Featured Projects Section */}
+      <section className="py-20 bg-gradient-to-br from-muted/10 to-accent/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 fade-in-up">
+            <h2 className="persian-heading text-3xl md:text-5xl font-bold text-foreground mb-6">
+              نمونه کارهای ما
+            </h2>
+            <p className="persian-body text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              نگاهی به برخی از پروژه‌های موفق و تجربه‌های ارزشمند ما
+            </p>
+          </div>
+
+          <div className="relative max-w-6xl mx-auto">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {projects.slice(0, 4).map((project) => (
+                  <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full md:basis-1/2">
+                    <Card className="portfolio-card group h-full overflow-hidden bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong transition-all duration-300">
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={project.image}
+                          alt={project.title}
+                          className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="absolute bottom-4 right-4">
+                            <Badge
+                              variant="secondary"
+                              className="bg-white/90 text-foreground"
+                            >
+                              <CircleCheckBig className="w-3 h-3 ml-1" />
+                              تکمیل شده
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <Badge
+                            variant="secondary"
+                            className="bg-primary/10 text-primary"
+                          >
+                            {project.category}
+                          </Badge>
+                        </div>
+
+                        <h3 className="persian-heading text-lg md:text-xl font-semibold text-foreground mb-3 line-clamp-2">
+                          {project.title}
+                        </h3>
+
+                        <p className="persian-body text-muted-foreground text-sm mb-4 leading-relaxed line-clamp-3">
+                          {project.description}
+                        </p>
+
+                        <div className="space-y-3">
+                          <div>
+                            <span className="persian-body text-sm font-medium text-foreground">
+                              مشتری:{" "}
+                            </span>
+                            <span className="persian-body text-sm text-muted-foreground">
+                              {project.client}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1">
+                            {project.tags.slice(0, 3).map((tag, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-muted rounded-md text-xs text-muted-foreground"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {project.tags.length > 3 && (
+                              <span className="px-2 py-1 bg-muted rounded-md text-xs text-muted-foreground">
+                                +{project.tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -right-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+              <CarouselNext className="hidden md:flex -left-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+            </Carousel>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/projects">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="btn-hero-secondary border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
+                مشاهده همه پروژه‌ها
+                <ArrowLeft className="w-5 h-5 mr-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-primary via-primary-dark to-primary text-primary-foreground">
