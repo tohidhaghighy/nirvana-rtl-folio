@@ -13,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { SEOHead, createArticleSchema } from "@/components/seo/SEOHead";
 
 interface BlogPost {
   id: string;
@@ -146,6 +147,31 @@ const BlogPost = () => {
   }
 
   return (
+    <>
+      {post && (
+        <SEOHead
+          title={post.title}
+          description={post.excerpt || post.content.substring(0, 160)}
+          keywords={`${post.title}, مقاله فنی, ویراپ, توسعه نرم افزار, هوش تجاری`}
+          url={`https://virap.ir/blog/${post.slug}`}
+          image={post.featured_image_url || "https://virap.ir/AboutUsTeam.jpg"}
+          type="article"
+          publishedTime={post.created_at}
+          modifiedTime={post.updated_at}
+          author="ویراپ"
+          section="فناوری"
+          schema={createArticleSchema({
+            title: post.title,
+            description: post.excerpt || post.content.substring(0, 160),
+            content: post.content,
+            author: "ویراپ",
+            publishedTime: post.created_at,
+            modifiedTime: post.updated_at,
+            image: post.featured_image_url,
+            url: `https://virap.ir/blog/${post.slug}`
+          })}
+        />
+      )}
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header */}
       <div className="bg-background/80 backdrop-blur-md border-b">
@@ -368,6 +394,7 @@ const BlogPost = () => {
         </section>
       )}
     </div>
+    </>
   );
 };
 

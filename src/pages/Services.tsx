@@ -14,6 +14,7 @@ import {
   Globe,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
 
 const Services = () => {
   const services = [
@@ -117,6 +118,15 @@ const Services = () => {
   ];
 
   return (
+    <>
+      <SEOHead
+        title="خدمات ما - ویراپ"
+        description="خدمات حرفه‌ای ویراپ شامل توسعه نرم‌افزار، هوش تجاری، تحلیل داده، هوش مصنوعی و مشاوره DevOps برای رشد کسب‌وکار شما"
+        keywords="خدمات نرم افزاری، توسعه اپلیکیشن، هوش تجاری، BI، داشبورد، تحلیل داده، هوش مصنوعی، AI، DevOps، مشاوره IT"
+        url="https://virap.ir/services"
+        image="https://virap.ir/AboutUsTeam.jpg"
+        schema={createServiceSchema()}
+      />
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="py-20 bg-secondary/30">
@@ -244,6 +254,7 @@ const Services = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

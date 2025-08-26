@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
 
 const Home = () => {
   const [latestBlogs, setLatestBlogs] = useState<any[]>([]);
@@ -160,6 +161,15 @@ const Home = () => {
   ];
 
   return (
+    <>
+      <SEOHead
+        title="ویراپ - راهکارهای نرم‌افزاری پیشرفته"
+        description="شرکت پیشرو در توسعه نرم‌افزار، هوش تجاری و تحلیل داده با تیمی از متخصصان مجرب برای تحویل بهترین راه‌حل‌های تکنولوژیکی"
+        keywords="توسعه نرم افزار، هوش تجاری، تحلیل داده، هوش مصنوعی، DevOps، مشاوره IT، React، Power BI، داشبورد، ویراپ"
+        url="https://virap.ir"
+        image="https://virap.ir/AboutUsTeam.jpg"
+        schema={createServiceSchema()}
+      />
     <div className="bg-background">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -510,6 +520,7 @@ const Home = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

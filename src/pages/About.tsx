@@ -1,5 +1,6 @@
 import { Target, Eye, Users, Award, Lightbulb, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const About = () => {
   const values = [
@@ -77,6 +78,14 @@ const About = () => {
   ];
 
   return (
+    <>
+      <SEOHead
+        title="درباره ما - ویراپ"
+        description="آشنایی با تیم متخصص ویراپ، تاریخچه، ماموریت و ارزش‌های ما در ارائه راهکارهای نرم‌افزاری پیشرفته و خدمات هوش تجاری"
+        keywords="درباره ویراپ، تیم توسعه نرم افزار، متخصصان IT، تاریخچه شرکت، ماموریت، ارزش های سازمانی"
+        url="https://virap.ir/about"
+        image="https://virap.ir/AboutUsTeam.jpg"
+      />
     <div className="bg-background">
       {/* Hero Section */}
       <section className="py-20 bg-secondary/30">
@@ -233,6 +242,7 @@ const About = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

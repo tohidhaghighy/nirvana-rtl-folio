@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Zap, ArrowLeft, CircleCheckBig } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const Projects = () => {
   const projects = [
@@ -76,6 +77,14 @@ const Projects = () => {
   ];
 
   return (
+    <>
+      <SEOHead
+        title="نمونه کارها - ویراپ"
+        description="مشاهده پروژه‌های موفق ویراپ در زمینه توسعه نرم‌افزار، هوش تجاری و سیستم‌های مدیریت برای سازمان‌ها و شرکت‌های مختلف"
+        keywords="نمونه کار، پروژه های انجام شده، میز خدمت، سامانه مدیریت، CMS، هوش تجاری، DevOps، امحاء اسناد"
+        url="https://virap.ir/projects"
+        image="https://virap.ir/135.png"
+      />
     <div className="min-h-screen relative">
       {/* Hero Section */}
       <section className="py-20 bg-secondary/30">
@@ -195,6 +204,7 @@ const Projects = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

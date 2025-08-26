@@ -1,3 +1,28 @@
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /about
+Allow: /services
+Allow: /projects
+Allow: /blog
+Allow: /contact
+
+# Sitemaps
+Sitemap: https://virap.ir/sitemap.xml
+
+# Block admin areas
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /admin
+
+# Block private files
+Disallow: /*.json$
+Disallow: /api/
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
 User-agent: Googlebot
 Allow: /
 
@@ -8,7 +33,4 @@ User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /

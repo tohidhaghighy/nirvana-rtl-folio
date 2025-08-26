@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, User, ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 interface BlogPost {
   id: string;
@@ -67,6 +68,14 @@ const Blog = () => {
   }
 
   return (
+    <>
+      <SEOHead
+        title="مقالات فنی - ویراپ"
+        description="مطالعه آخرین مقالات فنی و آموزشی در زمینه توسعه نرم‌افزار، هوش تجاری، تحلیل داده و فناوری‌های نوین از کارشناسان ویراپ"
+        keywords="مقالات فنی، آموزش برنامه نویسی، هوش تجاری، تحلیل داده، DevOps، نوآوری تکنولوژی، بلاگ فنی"
+        url="https://virap.ir/blog"
+        image="https://virap.ir/AboutUsTeam.jpg"
+      />
     <div className="min-h-screen relative">
       {/* Header */}
       <section className="py-20 bg-secondary/30">
@@ -144,6 +153,7 @@ const Blog = () => {
         </section>
       )}
     </div>
+    </>
   );
 };
 

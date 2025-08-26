@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const contactSchema = z.object({
   name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
@@ -175,6 +176,14 @@ const Contact = () => {
   ];
 
   return (
+    <>
+      <SEOHead
+        title="تماس با ما - ویراپ"
+        description="با تیم متخصص ویراپ در ارتباط باشید. درخواست مشاوره رایگان، سوالات فنی و همکاری در پروژه‌های نرم‌افزاری"
+        keywords="تماس با ویراپ، مشاوره رایگان، درخواست پروژه، پشتیبانی فنی، همکاری، آدرس، تلفن"
+        url="https://virap.ir/contact"
+        image="https://virap.ir/AboutUsTeam.jpg"
+      />
     <div className="bg-background">
       {/* Hero Section */}
       <section className="py-20 bg-secondary/30">
@@ -417,6 +426,7 @@ const Contact = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 
