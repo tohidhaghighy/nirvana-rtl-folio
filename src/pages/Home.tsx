@@ -402,8 +402,8 @@ const Home = () => {
               className="w-full"
             >
               <CarouselContent className="-ml-2 md:-ml-4">
-                {projects.slice(0, 4).map((project) => (
-                  <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full md:basis-1/2">
+                {projects.map((project) => (
+                  <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
                     <Card className="portfolio-card group h-full overflow-hidden bg-gradient-to-br from-card to-card/50 border-card-border hover:shadow-strong transition-all duration-300">
                       <div className="relative overflow-hidden">
                         <img
