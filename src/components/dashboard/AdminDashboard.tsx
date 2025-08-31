@@ -128,33 +128,38 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     try {
       // Fetch published blogs count
       const { count: blogsCount } = await supabase
-        .from('blogs')
-        .select('*', { count: 'exact', head: true })
-        .eq('published', true);
-      
+        .from("blogs")
+        .select("*", { count: "exact", head: true })
+        .eq("published", true);
+
       // Fetch total users count
       const { count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-      
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
       // Calculate monthly visits based on user activity
       // This is an approximation - in a real app you'd use proper analytics
       const { count: monthlySubmissions } = await supabase
-        .from('contact_submissions')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-      
+        .from("contact_submissions")
+        .select("*", { count: "exact", head: true })
+        .gte(
+          "created_at",
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        );
+
       // Calculate estimated monthly visits (submissions * average visitor-to-submission ratio)
       const estimatedVisits = Math.max(
-        (monthlySubmissions || 0) * 50 + (usersCount || 0) * 25 + (blogsCount || 0) * 100,
+        (monthlySubmissions || 0) * 50 +
+          (usersCount || 0) * 25 +
+          (blogsCount || 0) * 100,
         (usersCount || 0) * 10 // minimum baseline
       );
-      
+
       setPublishedBlogsCount(blogsCount || 0);
       setTotalUsers(usersCount || 0);
       setMonthlyVisits(estimatedVisits);
     } catch (error: any) {
-      console.error('Error fetching dashboard stats:', error);
+      console.error("Error fetching dashboard stats:", error);
     }
   };
 
@@ -308,6 +313,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             کاربر
           </Badge>
         );
+      case "worker":
+        return (
+          <Badge variant="outline" className="persian-body">
+            کارمند
+          </Badge>
+        );
       default:
         return (
           <Badge variant="secondary" className="persian-body">
@@ -395,7 +406,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   بازدید ماهانه
                 </p>
                 <p className="persian-heading text-3xl font-bold text-green-500">
-                  {monthlyVisits.toLocaleString('fa-IR')}
+                  {monthlyVisits.toLocaleString("fa-IR")}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-500" />
@@ -417,7 +428,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               کاربران
             </TabsTrigger>
             <TabsTrigger value="workers" className="persian-body">
-              مدیریت کارگران
+              مدیریت کارمندان
             </TabsTrigger>
             <TabsTrigger value="blogs" className="persian-body">
               مقالات
@@ -492,76 +503,76 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   </h2>
 
                   {submissions.length === 0 ? (
-                  <div className="text-center py-12">
-                    <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="persian-body text-muted-foreground">
-                      هنوز درخواستی ارسال نشده است
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {submissions.map((submission) => (
-                      <Card key={submission.id} className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="persian-heading font-medium text-foreground">
-                                {submission.name}
-                              </h3>
-                              {getStatusBadge(submission.status)}
-                              {/* User Type Indicator */}
-                              {submission.user_id ? (
-                                <Badge
-                                  variant="outline"
-                                  className="persian-body text-xs bg-green-50 text-green-700 border-green-200"
-                                >
-                                  عضو
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="persian-body text-xs bg-orange-50 text-orange-700 border-orange-200"
-                                >
-                                  مهمان
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="persian-body text-sm text-muted-foreground mb-1">
-                              {submission.email} • {submission.phone}
-                            </p>
-                            <p className="persian-body font-medium text-sm mb-2">
-                              {submission.subject}
-                            </p>
-                            <p className="persian-body text-sm text-muted-foreground line-clamp-2">
-                              {submission.message}
-                            </p>
-                            <div className="flex justify-between items-center mt-2">
-                              <p className="persian-body text-xs text-muted-foreground">
-                                {new Date(
-                                  submission.created_at
-                                ).toLocaleDateString("fa-IR")}
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="persian-body text-muted-foreground">
+                        هنوز درخواستی ارسال نشده است
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {submissions.map((submission) => (
+                        <Card key={submission.id} className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="persian-heading font-medium text-foreground">
+                                  {submission.name}
+                                </h3>
+                                {getStatusBadge(submission.status)}
+                                {/* User Type Indicator */}
+                                {submission.user_id ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="persian-body text-xs bg-green-50 text-green-700 border-green-200"
+                                  >
+                                    عضو
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    className="persian-body text-xs bg-orange-50 text-orange-700 border-orange-200"
+                                  >
+                                    مهمان
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="persian-body text-sm text-muted-foreground mb-1">
+                                {submission.email} • {submission.phone}
                               </p>
-                              {submission.user_id && (
-                                <span className="persian-body text-xs text-green-600 font-medium">
-                                  قابلیت پاسخگویی
-                                </span>
-                              )}
+                              <p className="persian-body font-medium text-sm mb-2">
+                                {submission.subject}
+                              </p>
+                              <p className="persian-body text-sm text-muted-foreground line-clamp-2">
+                                {submission.message}
+                              </p>
+                              <div className="flex justify-between items-center mt-2">
+                                <p className="persian-body text-xs text-muted-foreground">
+                                  {new Date(
+                                    submission.created_at
+                                  ).toLocaleDateString("fa-IR")}
+                                </p>
+                                {submission.user_id && (
+                                  <span className="persian-body text-xs text-green-600 font-medium">
+                                    قابلیت پاسخگویی
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openSubmissionModal(submission)}
+                              >
+                                <Eye className="w-4 h-4 ml-1" />
+                                {submission.user_id ? "پاسخگویی" : "مشاهده"}
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openSubmissionModal(submission)}
-                            >
-                              <Eye className="w-4 h-4 ml-1" />
-                              {submission.user_id ? "پاسخگویی" : "مشاهده"}
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                        </Card>
+                      ))}
+                    </div>
                   )}
                 </div>
               </Card>

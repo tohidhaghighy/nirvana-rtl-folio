@@ -1,24 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Users, Clock, Coffee, CheckCircle, XCircle, Edit } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Users, Clock, Coffee, CheckCircle, XCircle, Edit } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getCurrentJalaliDate,
   getJalaliMonthName,
   getDaysInJalaliMonth,
   formatDateForDB,
   gregorianToJalali,
-  formatJalaliDate
-} from '@/utils/jalali';
+  formatJalaliDate,
+} from "@/utils/jalali";
 
 interface Worker {
   id: string;
@@ -41,7 +53,7 @@ interface DayOffRequest {
   worker_id: string;
   request_date: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   worker_name: string;
   created_at: string;
 }
@@ -60,13 +72,14 @@ export const WorkerManagement: React.FC = () => {
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
   const [workerSummaries, setWorkerSummaries] = useState<WorkerSummary[]>([]);
   const [selectedTimeLog, setSelectedTimeLog] = useState<TimeLog | null>(null);
-  const [editHours, setEditHours] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [adminNotes, setAdminNotes] = useState('');
+  const [editHours, setEditHours] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [adminNotes, setAdminNotes] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentMonth] = useState(getCurrentJalaliDate());
 
   useEffect(() => {
+    debugger;
     fetchWorkers();
     fetchTimeLogs();
     fetchDayOffRequests();
@@ -79,16 +92,17 @@ export const WorkerManagement: React.FC = () => {
   }, [workers, timeLogs, dayOffRequests]);
 
   const fetchWorkers = async () => {
+    debugger;
     const { data, error } = await supabase
-      .from('profiles')
-      .select('id, user_id, full_name, email')
-      .eq('role', 'worker');
+      .from("profiles")
+      .select("id, user_id, full_name, email")
+      .eq("role", "worker");
 
     if (error) {
       toast({
-        title: 'خطا',
-        description: 'خطا در دریافت لیست کارگران',
-        variant: 'destructive',
+        title: "خطا",
+        description: "خطا در دریافت لیست کارمندان",
+        variant: "destructive",
       });
       return;
     }
@@ -98,88 +112,105 @@ export const WorkerManagement: React.FC = () => {
 
   const fetchTimeLogs = async () => {
     const startDate = formatDateForDB(currentMonth.jy, currentMonth.jm, 1);
-    const endDate = formatDateForDB(currentMonth.jy, currentMonth.jm, getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm));
+    const endDate = formatDateForDB(
+      currentMonth.jy,
+      currentMonth.jm,
+      getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
+    );
 
     const { data, error } = await supabase
-      .from('time_logs')
-      .select('*')
-      .gte('date', startDate)
-      .lte('date', endDate);
+      .from("time_logs")
+      .select("*")
+      .gte("date", startDate)
+      .lte("date", endDate);
 
     if (error) {
       toast({
-        title: 'خطا',
-        description: 'خطا در دریافت ساعات کاری',
-        variant: 'destructive',
+        title: "خطا",
+        description: "خطا در دریافت ساعات کاری",
+        variant: "destructive",
       });
       return;
     }
 
     // Get worker names separately
-    const logsWithNames = await Promise.all((data || []).map(async (log) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', log.worker_id)
-        .single();
+    const logsWithNames = await Promise.all(
+      (data || []).map(async (log) => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", log.worker_id)
+          .single();
 
-      return {
-        ...log,
-        worker_name: profile?.full_name || 'نامشخص'
-      };
-    }));
+        return {
+          ...log,
+          worker_name: profile?.full_name || "نامشخص",
+        };
+      })
+    );
 
     setTimeLogs(logsWithNames);
   };
 
   const fetchDayOffRequests = async () => {
     const startDate = formatDateForDB(currentMonth.jy, currentMonth.jm, 1);
-    const endDate = formatDateForDB(currentMonth.jy, currentMonth.jm, getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm));
+    const endDate = formatDateForDB(
+      currentMonth.jy,
+      currentMonth.jm,
+      getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
+    );
 
     const { data, error } = await supabase
-      .from('day_off_requests')
-      .select('*')
-      .gte('request_date', startDate)
-      .lte('request_date', endDate);
+      .from("day_off_requests")
+      .select("*")
+      .gte("request_date", startDate)
+      .lte("request_date", endDate);
 
     if (error) {
       toast({
-        title: 'خطا',
-        description: 'خطا در دریافت درخواست‌های مرخصی',
-        variant: 'destructive',
+        title: "خطا",
+        description: "خطا در دریافت درخواست‌های مرخصی",
+        variant: "destructive",
       });
       return;
     }
 
     // Get worker names separately
-    const requestsWithNames = await Promise.all((data || []).map(async (request) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', request.worker_id)
-        .single();
+    const requestsWithNames = await Promise.all(
+      (data || []).map(async (request) => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", request.worker_id)
+          .single();
 
-      return {
-        ...request,
-        worker_name: profile?.full_name || 'نامشخص',
-        status: request.status as 'pending' | 'approved' | 'rejected'
-      };
-    }));
+        return {
+          ...request,
+          worker_name: profile?.full_name || "نامشخص",
+          status: request.status as "pending" | "approved" | "rejected",
+        };
+      })
+    );
 
     setDayOffRequests(requestsWithNames);
   };
 
   const calculateWorkerSummaries = () => {
-    const summaries = workers.map(worker => {
-      const workerLogs = timeLogs.filter(log => log.worker_id === worker.user_id);
+    const summaries = workers.map((worker) => {
+      const workerLogs = timeLogs.filter(
+        (log) => log.worker_id === worker.user_id
+      );
       const workerDayOffs = dayOffRequests.filter(
-        req => req.worker_id === worker.user_id && req.status === 'approved'
+        (req) => req.worker_id === worker.user_id && req.status === "approved"
       );
 
       return {
         worker_id: worker.user_id,
-        worker_name: worker.full_name || 'نامشخص',
-        total_hours: workerLogs.reduce((sum, log) => sum + Number(log.hours_worked), 0),
+        worker_name: worker.full_name || "نامشخص",
+        total_hours: workerLogs.reduce(
+          (sum, log) => sum + Number(log.hours_worked),
+          0
+        ),
         days_worked: workerLogs.length,
         approved_days_off: workerDayOffs.length,
       };
@@ -192,63 +223,66 @@ export const WorkerManagement: React.FC = () => {
     if (!selectedTimeLog) return;
 
     const { error } = await supabase
-      .from('time_logs')
+      .from("time_logs")
       .update({
         hours_worked: parseFloat(editHours),
         description: editDescription,
       })
-      .eq('id', selectedTimeLog.id);
+      .eq("id", selectedTimeLog.id);
 
     if (error) {
       toast({
-        title: 'خطا',
-        description: 'خطا در بروزرسانی ساعات کاری',
-        variant: 'destructive',
+        title: "خطا",
+        description: "خطا در بروزرسانی ساعات کاری",
+        variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: 'موفقیت',
-      description: 'ساعات کاری بروزرسانی شد',
+      title: "موفقیت",
+      description: "ساعات کاری بروزرسانی شد",
     });
 
     setIsEditDialogOpen(false);
     fetchTimeLogs();
   };
 
-  const handleDayOffRequest = async (requestId: string, status: 'approved' | 'rejected') => {
+  const handleDayOffRequest = async (
+    requestId: string,
+    status: "approved" | "rejected"
+  ) => {
     const { error } = await supabase
-      .from('day_off_requests')
+      .from("day_off_requests")
       .update({
         status,
         reviewed_at: new Date().toISOString(),
         admin_notes: adminNotes || null,
       })
-      .eq('id', requestId);
+      .eq("id", requestId);
 
     if (error) {
       toast({
-        title: 'خطا',
-        description: 'خطا در بروزرسانی درخواست مرخصی',
-        variant: 'destructive',
+        title: "خطا",
+        description: "خطا در بروزرسانی درخواست مرخصی",
+        variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: 'موفقیت',
-      description: `درخواست مرخصی ${status === 'approved' ? 'تایید' : 'رد'} شد`,
+      title: "موفقیت",
+      description: `درخواست مرخصی ${status === "approved" ? "تایید" : "رد"} شد`,
     });
 
-    setAdminNotes('');
+    setAdminNotes("");
     fetchDayOffRequests();
   };
 
   const openEditDialog = (timeLog: TimeLog) => {
     setSelectedTimeLog(timeLog);
     setEditHours(timeLog.hours_worked.toString());
-    setEditDescription(timeLog.description || '');
+    setEditDescription(timeLog.description || "");
     setIsEditDialogOpen(true);
   };
 
@@ -258,20 +292,22 @@ export const WorkerManagement: React.FC = () => {
     return formatJalaliDate(jalali);
   };
 
-  const pendingRequests = dayOffRequests.filter(req => req.status === 'pending');
+  const pendingRequests = dayOffRequests.filter(
+    (req) => req.status === "pending"
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">مدیریت کارگران</h2>
+        <h2 className="text-2xl font-bold">مدیریت کارمندان</h2>
         <Badge variant="outline">
           {getJalaliMonthName(currentMonth.jm)} {currentMonth.jy}
         </Badge>
       </div>
 
-      <Tabs defaultValue="summary" className="space-y-6">
+      <Tabs defaultValue="summary" className="space-y-6" dir="rtl">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="summary">خلاصه کارگران</TabsTrigger>
+          <TabsTrigger value="summary">خلاصه کارمندان</TabsTrigger>
           <TabsTrigger value="time-logs">ساعات کاری</TabsTrigger>
           <TabsTrigger value="day-off-requests">درخواست‌های مرخصی</TabsTrigger>
           <TabsTrigger value="pending">
@@ -284,14 +320,14 @@ export const WorkerManagement: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                خلاصه عملکرد کارگران
+                خلاصه عملکرد کارمندان
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>نام کارگر</TableHead>
+                    <TableHead>نام کارمند</TableHead>
                     <TableHead>مجموع ساعات</TableHead>
                     <TableHead>روزهای کاری</TableHead>
                     <TableHead>مرخصی‌های تایید شده</TableHead>
@@ -300,7 +336,9 @@ export const WorkerManagement: React.FC = () => {
                 <TableBody>
                   {workerSummaries.map((summary) => (
                     <TableRow key={summary.worker_id}>
-                      <TableCell className="font-medium">{summary.worker_name}</TableCell>
+                      <TableCell className="font-medium">
+                        {summary.worker_name}
+                      </TableCell>
                       <TableCell>{summary.total_hours} ساعت</TableCell>
                       <TableCell>{summary.days_worked} روز</TableCell>
                       <TableCell>{summary.approved_days_off} روز</TableCell>
@@ -324,7 +362,7 @@ export const WorkerManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>نام کارگر</TableHead>
+                    <TableHead>نام کارمند</TableHead>
                     <TableHead>تاریخ</TableHead>
                     <TableHead>ساعات کاری</TableHead>
                     <TableHead>توضیحات</TableHead>
@@ -334,10 +372,12 @@ export const WorkerManagement: React.FC = () => {
                 <TableBody>
                   {timeLogs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="font-medium">{log.worker_name}</TableCell>
+                      <TableCell className="font-medium">
+                        {log.worker_name}
+                      </TableCell>
                       <TableCell>{formatDateDisplay(log.date)}</TableCell>
                       <TableCell>{log.hours_worked} ساعت</TableCell>
-                      <TableCell>{log.description || '-'}</TableCell>
+                      <TableCell>{log.description || "-"}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
@@ -367,7 +407,7 @@ export const WorkerManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>نام کارگر</TableHead>
+                    <TableHead>نام کارمند</TableHead>
                     <TableHead>تاریخ مرخصی</TableHead>
                     <TableHead>دلیل</TableHead>
                     <TableHead>وضعیت</TableHead>
@@ -377,21 +417,33 @@ export const WorkerManagement: React.FC = () => {
                 <TableBody>
                   {dayOffRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">{request.worker_name}</TableCell>
-                      <TableCell>{formatDateDisplay(request.request_date)}</TableCell>
+                      <TableCell className="font-medium">
+                        {request.worker_name}
+                      </TableCell>
+                      <TableCell>
+                        {formatDateDisplay(request.request_date)}
+                      </TableCell>
                       <TableCell>{request.reason}</TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            request.status === 'approved' ? 'default' :
-                            request.status === 'rejected' ? 'destructive' : 'outline'
+                            request.status === "approved"
+                              ? "default"
+                              : request.status === "rejected"
+                              ? "destructive"
+                              : "outline"
                           }
                         >
-                          {request.status === 'pending' ? 'در انتظار' :
-                           request.status === 'approved' ? 'تایید شده' : 'رد شده'}
+                          {request.status === "pending"
+                            ? "در انتظار"
+                            : request.status === "approved"
+                            ? "تایید شده"
+                            : "رد شده"}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDateDisplay(request.created_at)}</TableCell>
+                      <TableCell>
+                        {formatDateDisplay(request.created_at)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -412,7 +464,7 @@ export const WorkerManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>نام کارگر</TableHead>
+                    <TableHead>نام کارمند</TableHead>
                     <TableHead>تاریخ مرخصی</TableHead>
                     <TableHead>دلیل</TableHead>
                     <TableHead>تاریخ درخواست</TableHead>
@@ -422,22 +474,32 @@ export const WorkerManagement: React.FC = () => {
                 <TableBody>
                   {pendingRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">{request.worker_name}</TableCell>
-                      <TableCell>{formatDateDisplay(request.request_date)}</TableCell>
+                      <TableCell className="font-medium">
+                        {request.worker_name}
+                      </TableCell>
+                      <TableCell>
+                        {formatDateDisplay(request.request_date)}
+                      </TableCell>
                       <TableCell>{request.reason}</TableCell>
-                      <TableCell>{formatDateDisplay(request.created_at)}</TableCell>
+                      <TableCell>
+                        {formatDateDisplay(request.created_at)}
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleDayOffRequest(request.id, 'approved')}
+                            onClick={() =>
+                              handleDayOffRequest(request.id, "approved")
+                            }
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDayOffRequest(request.id, 'rejected')}
+                            onClick={() =>
+                              handleDayOffRequest(request.id, "rejected")
+                            }
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>

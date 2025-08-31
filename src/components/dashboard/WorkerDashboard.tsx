@@ -1,13 +1,13 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Calendar, Coffee, TrendingUp } from 'lucide-react';
-import { WorkerCalendar } from '@/components/worker/WorkerCalendar';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, Calendar, Coffee, TrendingUp } from "lucide-react";
+import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
 
 export const WorkerDashboard: React.FC = () => {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">داشبورد کارگر</h1>
+        <h1 className="text-3xl font-bold text-foreground">داشبورد کارمند</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
