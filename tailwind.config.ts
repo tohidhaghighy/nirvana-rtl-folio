@@ -68,9 +68,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
-      backgroundImage: {
-        "hero-image": "url('/images/bg.jpg')", // Add this line
-      },
+      // backgroundImage: {
+      //   "hero-image": "url('/images/hero-image.jpg')", // Add this line
+      // },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
