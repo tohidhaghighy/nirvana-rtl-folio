@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ContactRequestModal from "./ContactRequestModal";
 import { BlogManagement } from "./BlogManagement";
+import { WorkerManagement } from "./WorkerManagement";
 import {
   Dialog,
   DialogContent,
@@ -404,7 +405,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -414,6 +415,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               onClick={fetchClients}
             >
               کاربران
+            </TabsTrigger>
+            <TabsTrigger value="workers" className="persian-body">
+              مدیریت کارگران
             </TabsTrigger>
             <TabsTrigger value="blogs" className="persian-body">
               مقالات
@@ -721,6 +725,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="workers">
+            <WorkerManagement />
           </TabsContent>
 
           <TabsContent value="blogs">

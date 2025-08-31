@@ -102,7 +102,11 @@ export const WorkerCalendar: React.FC = () => {
       return;
     }
 
-    setDayOffRequests(data || []);
+    const typedData = (data || []).map(request => ({
+      ...request,
+      status: request.status as 'pending' | 'approved' | 'rejected'
+    }));
+    setDayOffRequests(typedData);
   };
 
   const saveTimeLog = async () => {

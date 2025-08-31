@@ -102,14 +102,7 @@ export const WorkerManagement: React.FC = () => {
 
     const { data, error } = await supabase
       .from('time_logs')
-      .select(`
-        id,
-        worker_id,
-        date,
-        hours_worked,
-        description,
-        profiles!inner(full_name)
-      `)
+      .select('*')
       .gte('date', startDate)
       .lte('date', endDate);
 
@@ -122,9 +115,18 @@ export const WorkerManagement: React.FC = () => {
       return;
     }
 
-    const logsWithNames = (data || []).map(log => ({
-      ...log,
-      worker_name: log.profiles?.full_name || 'نامشخص'
+    // Get worker names separately
+    const logsWithNames = await Promise.all((data || []).map(async (log) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', log.worker_id)
+        .single();
+
+      return {
+        ...log,
+        worker_name: profile?.full_name || 'نامشخص'
+      };
     }));
 
     setTimeLogs(logsWithNames);
@@ -136,15 +138,7 @@ export const WorkerManagement: React.FC = () => {
 
     const { data, error } = await supabase
       .from('day_off_requests')
-      .select(`
-        id,
-        worker_id,
-        request_date,
-        reason,
-        status,
-        created_at,
-        profiles!inner(full_name)
-      `)
+      .select('*')
       .gte('request_date', startDate)
       .lte('request_date', endDate);
 
@@ -157,9 +151,19 @@ export const WorkerManagement: React.FC = () => {
       return;
     }
 
-    const requestsWithNames = (data || []).map(request => ({
-      ...request,
-      worker_name: request.profiles?.full_name || 'نامشخص'
+    // Get worker names separately
+    const requestsWithNames = await Promise.all((data || []).map(async (request) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', request.worker_id)
+        .single();
+
+      return {
+        ...request,
+        worker_name: profile?.full_name || 'نامشخص',
+        status: request.status as 'pending' | 'approved' | 'rejected'
+      };
     }));
 
     setDayOffRequests(requestsWithNames);

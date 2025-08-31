@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
+import { WorkerDashboard } from "@/components/dashboard/WorkerDashboard";
 import { Loader2 } from "lucide-react";
 
 interface Profile {
@@ -79,6 +80,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {profile.role === 'admin' ? (
         <AdminDashboard profile={profile} />
+      ) : profile.role === 'worker' ? (
+        <WorkerDashboard />
       ) : (
         <ClientDashboard profile={profile} />
       )}
