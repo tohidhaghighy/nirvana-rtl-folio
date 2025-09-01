@@ -121,6 +121,7 @@ export const WorkerManagement: React.FC = () => {
     const { data, error } = await supabase
       .from("time_logs")
       .select("*")
+      .order("date", { ascending: false })
       .gte("date", startDate)
       .lte("date", endDate);
 
@@ -163,6 +164,7 @@ export const WorkerManagement: React.FC = () => {
     const { data, error } = await supabase
       .from("day_off_requests")
       .select("*")
+      .order("created_at", { ascending: false })
       .gte("request_date", startDate)
       .lte("request_date", endDate);
 

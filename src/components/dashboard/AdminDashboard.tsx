@@ -5,18 +5,15 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Settings,
-  LogOut,
   Eye,
-  Edit,
   UserCheck,
   UserX,
   Calendar,
   Mail,
-  Phone,
   Shield,
   FileText,
   TrendingUp,
+  Save,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +28,7 @@ import { WorkerManagement } from "./WorkerManagement";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -42,6 +40,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 
 interface Profile {
   id: string;
@@ -103,6 +103,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [newRole, setNewRole] = useState<string>("");
 
   const fetchSubmissions = async () => {
     try {
@@ -161,6 +162,34 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     } catch (error: any) {
       console.error("Error fetching dashboard stats:", error);
     }
+  };
+
+  const updateUserRole = async () => {
+    if (!selectedClient || !newRole) return;
+
+    // Update the 'profiles' table where the 'id' matches the selected client's id
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role: newRole })
+      .eq("user_id", selectedClient.id);
+
+    if (error) {
+      toast({
+        title: "خطا",
+        description: "خطا در بروزرسانی نقش کاربر",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "موفقیت",
+      description: "نقش کاربر با موفقیت بروزرسانی شد",
+    });
+
+    // Close the modal and refresh the list of clients
+    setClientModalOpen(false);
+    fetchClients(); // Make sure you have a function that fetches all clients
   };
 
   useEffect(() => {
@@ -296,6 +325,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const openClientModal = (client: ClientProfile) => {
     setSelectedClient(client);
+    setNewRole(client.role);
     setClientModalOpen(true);
   };
 
@@ -831,6 +861,34 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="role-select" className="persian-body text-sm">
+                    تغییر نقش کاربر
+                  </Label>
+                  <Select value={newRole} onValueChange={setNewRole}>
+                    <SelectTrigger id="role-select" className="w-full">
+                      <span>{getRoleBadge(newRole)}</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        <div className="flex items-center gap-2">
+                          {getRoleBadge("admin")}
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="worker">
+                        <div className="flex items-center gap-2">
+                          {getRoleBadge("worker")}
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="client">
+                        <div className="flex items-center gap-2">
+                          {getRoleBadge("client")}
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {selectedClient.last_submission && (
                   <div className="flex items-center gap-3 md:col-span-2">
                     <Clock className="w-5 h-5 text-muted-foreground" />
@@ -882,6 +940,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               </div>
             </div>
           )}
+          <DialogFooter className="pt-4">
+            <Button
+              onClick={updateUserRole}
+              className="persian-body"
+              disabled={newRole === selectedClient?.role}
+            >
+              <Save className="w-4 h-4 ml-2" />
+              ذخیره تغییرات
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

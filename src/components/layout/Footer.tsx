@@ -1,14 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  // Github,
-  // Linkedin,
-  // Twitter,
-  Code,
-  // Instagram,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Code } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -31,7 +22,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="persian-heading text-lg font-semibold">
+            <h3 className="persian-heading text-lg font-semibold text-accent">
               لینک‌های سریع
             </h3>
             <ul className="space-y-2">
@@ -55,7 +46,9 @@ const Footer = () => {
 
           {/* Services */}
           <div className="space-y-4">
-            <h3 className="persian-heading text-lg font-semibold">خدمات ما</h3>
+            <h3 className="persian-heading text-lg font-semibold text-accent">
+              خدمات ما
+            </h3>
             <ul className="space-y-2 persian-body text-background/80">
               <li>توسعه نرم‌افزار</li>
               <li>هوش تجاری</li>
@@ -66,7 +59,7 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="persian-heading text-lg font-semibold">
+            <h3 className="persian-heading text-lg font-semibold text-accent">
               تماس با ما
             </h3>
             <div className="space-y-3">

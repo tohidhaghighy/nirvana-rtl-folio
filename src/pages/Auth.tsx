@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +23,7 @@ const Auth = () => {
     fullName: "",
     confirmPassword: "",
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     initialize();
@@ -42,7 +43,11 @@ const Auth = () => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
 
-    await signIn(formData.email, formData.password);
+    const { error } = await signIn(formData.email, formData.password);
+
+    if (!error) {
+      navigate("/dashboard", { replace: true });
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {

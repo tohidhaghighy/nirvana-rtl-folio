@@ -70,7 +70,6 @@ const Header = () => {
               <h1 className="persian-heading md:text-xl text-lg text-foreground">
                 ویرا افزار پاسارگاد
               </h1>
-              {/* <p className="text-sm text-muted-foreground persian-body">راهکارهای نرم‌افزاری</p> */}
             </div>
           </Link>
 
