@@ -74,7 +74,11 @@ const Auth = () => {
         <Card className="shadow-2xl border-0">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-accent rounded-2xl mx-auto mb-4 flex items-center justify-center">
-              <Code className="w-6 h-6 text-primary-foreground" />
+              <img
+                src="/public/vira.png"
+                alt="ویرا افزار پاسارگاد"
+                className="w-6 h-6 text-primary-foreground"
+              />
             </div>
             <CardTitle className="text-2xl text-persian">ویراپ</CardTitle>
             <CardDescription className="text-persian">

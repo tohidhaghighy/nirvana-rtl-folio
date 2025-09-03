@@ -63,8 +63,12 @@ const Header = () => {
             to="/"
             className="flex items-center gap-2 text-primary font-bold text-xl"
           >
-            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
-              <Code className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+              <img
+                src="/public/vira.png"
+                alt="ویرا افزار پاسارگاد"
+                className="w-6 h-6"
+              />
             </div>
             <div>
               <h1 className="persian-heading md:text-xl text-lg text-foreground">

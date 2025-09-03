@@ -9,7 +9,11 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Code className="w-8 h-8 text-accent" />
+              <img
+                src="/public/vira.png"
+                alt="ویرا افزار پاسارگاد"
+                className="w-8 h-8 text-accent"
+              />
               <span className="persian-heading text-xl font-bold text-accent">
                 ویرا افزار پاسارگاد
               </span>
