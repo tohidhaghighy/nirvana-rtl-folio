@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <img
-                src="/public/vira.png"
+                src="/vira.png"
                 alt="ویرا افزار پاسارگاد"
                 className="w-8 h-8 text-accent"
               />

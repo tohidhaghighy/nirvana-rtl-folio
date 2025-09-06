@@ -65,7 +65,7 @@ const Header = () => {
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center">
               <img
-                src="/public/vira.png"
+                src="/vira.png"
                 alt="ویرا افزار پاسارگاد"
                 className="w-6 h-6"
               />

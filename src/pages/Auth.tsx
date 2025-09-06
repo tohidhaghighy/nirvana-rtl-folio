@@ -75,7 +75,7 @@ const Auth = () => {
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-accent rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <img
-                src="/public/vira.png"
+                src="/vira.png"
                 alt="ویرا افزار پاسارگاد"
                 className="w-6 h-6 text-primary-foreground"
               />
