@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { apiClient } from "@/lib/api";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
@@ -17,7 +17,7 @@ interface Profile {
 }
 
 const Dashboard = () => {
-  const { user, loading: authLoading } = useAuthStore();
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,18 +29,15 @@ const Dashboard = () => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
-        }
-
-        setProfile(data);
+        // For now, use the user data directly as profile since they have the same structure
+        setProfile({
+          id: user.id,
+          user_id: user.id,
+          full_name: user.full_name || null,
+          role: user.role,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
       } catch (error) {
         console.error('Error:', error);
       } finally {
