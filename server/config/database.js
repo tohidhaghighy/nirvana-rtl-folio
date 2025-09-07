@@ -1,5 +1,8 @@
-const sql = require('mssql');
-require('dotenv').config();
+import sql from 'mssql';
+import 'dotenv/config';
+
+// const sql = require('mssql');
+// require('dotenv').config();
 
 const config = {
   user: process.env.DB_USER,
@@ -19,7 +22,7 @@ const config = {
 
 let poolPromise;
 
-const getConnection = async () => {
+export const getConnection = async () => {
   try {
     if (!poolPromise) {
       poolPromise = new sql.ConnectionPool(config).connect();
@@ -31,7 +34,10 @@ const getConnection = async () => {
   }
 };
 
-module.exports = {
-  sql,
-  getConnection
-};
+export { sql };
+
+
+// module.exports = {
+//   sql,
+//   getConnection
+// };

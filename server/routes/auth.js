@@ -1,8 +1,14 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { getConnection, sql } = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { getConnection, sql } from '../config/database.js';
+import { authenticateToken } from '../middleware/auth.js';
+
+// const express = require('express');
+// const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
+// const { getConnection, sql } = require('../config/database');
+// const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -145,4 +151,6 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
+
+// module.exports = router;

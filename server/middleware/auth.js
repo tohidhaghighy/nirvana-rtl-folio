@@ -1,6 +1,8 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const authenticateToken = (req, res, next) => {
+// const jwt = require('jsonwebtoken');
+
+export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -17,14 +19,16 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-const requireAdmin = (req, res, next) => {
+export const requireAdmin = (req, res, next) => {
   if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();
 };
 
-module.exports = {
-  authenticateToken,
-  requireAdmin
-};
+
+
+// module.exports = {
+//   authenticateToken,
+//   requireAdmin
+// };

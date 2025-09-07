@@ -1,10 +1,22 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
-const path = require('path');
+import { spawn } from 'child_process';
+import path from 'path';
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const serverPath = path.join(__dirname, '../server', 'server.js');
+
+
+// const { spawn } = require('child_process');
+// const path = require('path');
 
 // Start the Express server
-const serverProcess = spawn('node', ['server/server.js'], {
+const serverProcess = spawn('node', [serverPath], {
   cwd: process.cwd(),
   stdio: 'inherit'
 });
