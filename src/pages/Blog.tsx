@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, ChevronRight, ChevronLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 interface BlogPost {
@@ -27,13 +27,7 @@ const Blog = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blogs")
-        .select("*")
-        .eq("published", true)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const data = await apiClient.request('/blogs?published=true');
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);

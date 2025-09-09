@@ -28,7 +28,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api";
 import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
 
 const Home = () => {
@@ -36,15 +36,13 @@ const Home = () => {
 
   useEffect(() => {
     const fetchLatestBlogs = async () => {
-      const { data } = await supabase
-        .from("blogs")
-        .select("id, title, excerpt, featured_image_url, created_at, slug")
-        .eq("published", true)
-        .order("created_at", { ascending: false })
-        .limit(6);
-
-      if (data) {
-        setLatestBlogs(data);
+      try {
+        const data = await apiClient.request('/blogs?published=true&limit=6');
+        if (data) {
+          setLatestBlogs(data);
+        }
+      } catch (error) {
+        console.error("Error fetching latest blogs:", error);
       }
     };
 

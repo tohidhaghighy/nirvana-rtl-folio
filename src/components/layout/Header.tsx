@@ -15,7 +15,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,19 +24,7 @@ const Header = () => {
 
   useEffect(() => {
     if (user) {
-      const fetchUserRole = async () => {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-
-        if (data && !error) {
-          setUserRole(data.role);
-        }
-      };
-
-      fetchUserRole();
+      setUserRole(user.role);
     } else {
       setUserRole(null);
     }

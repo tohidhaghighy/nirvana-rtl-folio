@@ -17,9 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { apiClient } from "@/lib/api";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 const contactSchema = z.object({
@@ -50,36 +50,20 @@ const Contact = () => {
 
   // Auto-fill form for authenticated users
   useEffect(() => {
-    const fillUserData = async () => {
-      if (user) {
-        // Get user's profile data
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", user.id)
-          .single();
-
-        // Pre-fill form fields
-        if (profile?.full_name) {
-          form.setValue("name", profile.full_name);
-        }
-        if (user.email) {
-          form.setValue("email", user.email);
-        }
+    if (user) {
+      // Pre-fill form fields
+      if (user.full_name) {
+        form.setValue("name", user.full_name);
       }
-    };
-
-    fillUserData();
+      if (user.email) {
+        form.setValue("email", user.email);
+      }
+    }
   }, [user, form]);
 
   const handleSubmit = async (data: ContactForm) => {
     setLoading(true);
     try {
-      // Get current user if authenticated
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       // Prepare submission data
       const submissionData = {
         name: data.name,
@@ -91,26 +75,10 @@ const Contact = () => {
       };
 
       // Save to database
-      const { error: dbError } = await supabase
-        .from("contact_submissions")
-        .insert(submissionData);
-
-      if (dbError) {
-        throw dbError;
-      }
-
-      // Send email notification
-      const { error: emailError } = await supabase.functions.invoke(
-        "send-contact-email",
-        {
-          body: data,
-        }
-      );
-
-      if (emailError) {
-        console.warn("Email notification failed:", emailError);
-        // Don't throw error as the main submission was successful
-      }
+      await apiClient.request('/contact', {
+        method: 'POST',
+        body: JSON.stringify(submissionData)
+      });
 
       toast({
         title: "پیام شما ارسال شد",

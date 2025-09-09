@@ -3,8 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowLeft, Share2, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { 
   Carousel,
@@ -51,14 +51,7 @@ const BlogPost = () => {
 
   const fetchPost = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blogs")
-        .select("*")
-        .eq("slug", slug)
-        .eq("published", true)
-        .single();
-
-      if (error) throw error;
+      const data = await apiClient.request(`/blogs/${slug}`);
       setPost(data);
     } catch (error) {
       console.error("Error fetching post:", error);
@@ -74,16 +67,9 @@ const BlogPost = () => {
 
   const fetchRelatedBlogs = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blogs")
-        .select("id, title, excerpt, featured_image_url, created_at, slug")
-        .eq("published", true)
-        .neq("slug", slug) // Exclude current post
-        .order("created_at", { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-      setRelatedBlogs(data || []);
+      const data = await apiClient.request('/blogs?published=true&limit=6');
+      const filteredData = data.filter((blog: any) => blog.slug !== slug);
+      setRelatedBlogs(filteredData || []);
     } catch (error) {
       console.error("Error fetching related blogs:", error);
     }

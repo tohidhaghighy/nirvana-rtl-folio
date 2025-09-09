@@ -43,10 +43,11 @@ const Auth = () => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
 
-    const { error } = await signIn(formData.email, formData.password);
-
-    if (!error) {
+    try {
+      await signIn(formData.email, formData.password);
       navigate("/dashboard", { replace: true });
+    } catch (error) {
+      // Error handling is done in the signIn function
     }
   };
 
