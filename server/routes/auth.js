@@ -12,7 +12,7 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Sign up
+// Sign up - Simplified without email verification
 router.post('/signup', async (req, res) => {
   try {
     const { email, password, fullName } = req.body;
@@ -49,9 +49,30 @@ router.post('/signup', async (req, res) => {
       .input('user_id', sql.UniqueIdentifier, userId)
       .input('email', sql.NVarChar, email)
       .input('full_name', sql.NVarChar, fullName)
-      .query('INSERT INTO profiles (user_id, email, full_name) VALUES (@user_id, @email, @full_name)');
+      .input('role', sql.NVarChar, 'client')
+      .query('INSERT INTO profiles (user_id, email, full_name, role) VALUES (@user_id, @email, @full_name, @role)');
 
-    res.status(201).json({ message: 'User created successfully' });
+    // Generate JWT token immediately (no email verification needed)
+    const token = jwt.sign(
+      { 
+        id: userId,
+        email: email,
+        role: 'client'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({ 
+      message: 'User created successfully',
+      token: token,
+      user: {
+        id: userId,
+        email: email,
+        full_name: fullName,
+        role: 'client'
+      }
+    });
 
   } catch (error) {
     console.error('Signup error:', error);
