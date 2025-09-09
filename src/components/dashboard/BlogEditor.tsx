@@ -127,24 +127,13 @@ export const BlogEditor = ({ post, onClose }: BlogEditorProps) => {
         author_id: user.id,
       };
 
-      let error;
-
       if (post) {
         // Update existing post
-        const { error: updateError } = await supabase
-          .from("blogs")
-          .update(postData)
-          .eq("id", post.id);
-        error = updateError;
+        await apiClient.updateBlog(post.id, postData);
       } else {
         // Create new post
-        const { error: insertError } = await supabase
-          .from("blogs")
-          .insert(postData);
-        error = insertError;
+        await apiClient.createBlog(postData);
       }
-
-      if (error) throw error;
 
       toast({
         title: "موفق",

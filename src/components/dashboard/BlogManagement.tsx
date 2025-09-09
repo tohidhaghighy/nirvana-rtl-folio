@@ -39,12 +39,7 @@ export const BlogManagement = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await apiClient.getBlogs();
       setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -60,12 +55,7 @@ export const BlogManagement = () => {
 
   const handleTogglePublish = async (post: BlogPost) => {
     try {
-      const { error } = await supabase
-        .from('blogs')
-        .update({ published: !post.published })
-        .eq('id', post.id);
-
-      if (error) throw error;
+      await apiClient.toggleBlogPublish(post.id, !post.published);
 
       setPosts(posts.map(p => 
         p.id === post.id 
@@ -91,13 +81,7 @@ export const BlogManagement = () => {
     if (!confirm('آیا از حذف این مقاله مطمئن هستید؟')) return;
 
     try {
-      const { error } = await supabase
-        .from('blogs')
-        .delete()
-        .eq('id', postId);
-
-      if (error) throw error;
-
+      await apiClient.deleteBlog(postId);
       setPosts(posts.filter(p => p.id !== postId));
       toast({
         title: "موفق",

@@ -89,13 +89,7 @@ const ContactRequestModal = ({
     if (!submission) return;
 
     try {
-      const { data, error } = await supabase
-        .from("ticket_responses")
-        .select("*")
-        .eq("submission_id", submission.id)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
+      const data = await apiClient.getTicketResponses(submission.id);
       setResponses(data || []);
     } catch (error) {
       console.error("Error fetching responses:", error);
@@ -107,16 +101,10 @@ const ContactRequestModal = ({
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("contact_submissions")
-        .update({
-          status,
-          admin_notes: adminNotes,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", submission.id);
-
-      if (error) throw error;
+      await apiClient.updateSubmission(submission.id, {
+        status,
+        admin_notes: adminNotes,
+      });
 
       toast({
         title: "ذخیره شد",
@@ -141,13 +129,7 @@ const ContactRequestModal = ({
 
     setSendingResponse(true);
     try {
-      const { error } = await supabase.from("ticket_responses").insert({
-        submission_id: submission.id,
-        message: newResponse.trim(),
-        is_admin_response: true,
-      });
-
-      if (error) throw error;
+      await apiClient.addTicketResponse(submission.id, newResponse.trim(), true);
 
       toast({
         title: "پاسخ ارسال شد",

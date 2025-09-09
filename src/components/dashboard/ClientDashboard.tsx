@@ -75,13 +75,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from("contact_submissions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const data = await apiClient.getUserSubmissions(user.id);
       setSubmissions(data || []);
     } catch (error: any) {
       toast({
@@ -96,38 +90,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
   useEffect(() => {
     fetchSubmissions();
-
-    // Set up real-time subscription for user's own submissions
-    const channel = supabase
-      .channel("user_contact_submissions")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "contact_submissions",
-          filter: `user_id=eq.${user?.id}`,
-        },
-        () => {
-          fetchSubmissions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user]);
 
   const fetchTicketResponses = async (submissionId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("ticket_responses")
-        .select("*")
-        .eq("submission_id", submissionId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
+      const data = await apiClient.getTicketResponses(submissionId);
       setResponses(data || []);
     } catch (error) {
       console.error("Error fetching responses:", error);
@@ -145,13 +112,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
     setSendingResponse(true);
     try {
-      const { error } = await supabase.from("ticket_responses").insert({
-        submission_id: selectedSubmission.id,
-        message: newResponse.trim(),
-        is_admin_response: false,
-      });
-
-      if (error) throw error;
+      await apiClient.addTicketResponse(selectedSubmission.id, newResponse.trim(), false);
 
       toast({
         title: "پیام ارسال شد",

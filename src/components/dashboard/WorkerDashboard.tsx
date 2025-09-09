@@ -41,28 +41,26 @@ export const WorkerDashboard: React.FC = () => {
       getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
     );
 
-    const { data, error } = await supabase
-      .from("time_logs")
-      .select("*")
-      .eq("worker_id", user.id)
-      .gte("date", startDate)
-      .lte("date", endDate);
+    try {
+      const data = await apiClient.getTimeLogs({
+        startDate,
+        endDate,
+        workerId: user.id
+      });
 
-    if (error) {
+      setTimeLogs(data || []);
+      const total = (data || []).reduce(
+        (sum, log) => sum + Number(log.hours_worked),
+        0
+      );
+      setTotalHours(total);
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در دریافت ساعات کاری",
         variant: "destructive",
       });
-      return;
     }
-
-    setTimeLogs(data || []);
-    const total = (data || []).reduce(
-      (sum, log) => sum + Number(log.hours_worked),
-      0
-    );
-    setTotalHours(total);
   }, [user, currentMonth]);
 
   const fetchDayOffRequests = useCallback(async () => {
@@ -75,20 +73,21 @@ export const WorkerDashboard: React.FC = () => {
       getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
     );
 
-    const { data, error } = await supabase
-      .from("day_off_requests")
-      .select("*")
-      .eq("worker_id", user.id)
-      .gte("request_date", startDate)
-      .lte("request_date", endDate);
+    try {
+      const data = await apiClient.getDayOffRequests({
+        startDate,
+        endDate,
+        workerId: user.id
+      });
 
-    if (error) return;
-
-    const typedData = (data || []).map((request) => ({
-      ...request,
-      status: request.status as "pending" | "approved" | "rejected",
-    }));
-    setDayOffRequests(typedData);
+      const typedData = (data || []).map((request) => ({
+        ...request,
+        status: request.status as "pending" | "approved" | "rejected",
+      }));
+      setDayOffRequests(typedData);
+    } catch (error) {
+      // Handle error silently for now
+    }
   }, [user, currentMonth]);
 
   useEffect(() => {

@@ -107,12 +107,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const fetchSubmissions = async () => {
     try {
-      const { data, error } = await supabase
-        .from("contact_submissions")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const data = await apiClient.getSubmissions();
       setSubmissions(data || []);
     } catch (error: any) {
       toast({
@@ -127,38 +122,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
   const fetchDashboardStats = async () => {
     try {
-      // Fetch published blogs count
-      const { count: blogsCount } = await supabase
-        .from("blogs")
-        .select("*", { count: "exact", head: true })
-        .eq("published", true);
-
-      // Fetch total users count
-      const { count: usersCount } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
-
-      // Calculate monthly visits based on user activity
-      // This is an approximation - in a real app you'd use proper analytics
-      const { count: monthlySubmissions } = await supabase
-        .from("contact_submissions")
-        .select("*", { count: "exact", head: true })
-        .gte(
-          "created_at",
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        );
-
-      // Calculate estimated monthly visits (submissions * average visitor-to-submission ratio)
-      const estimatedVisits = Math.max(
-        (monthlySubmissions || 0) * 50 +
-          (usersCount || 0) * 25 +
-          (blogsCount || 0) * 100,
-        (usersCount || 0) * 10 // minimum baseline
-      );
-
-      setPublishedBlogsCount(blogsCount || 0);
-      setTotalUsers(usersCount || 0);
-      setMonthlyVisits(estimatedVisits);
+      const stats = await apiClient.getDashboardStats();
+      setPublishedBlogsCount(stats.publishedBlogsCount || 0);
+      setTotalUsers(stats.totalUsers || 0);
+      setMonthlyVisits(stats.monthlyVisits || 0);
     } catch (error: any) {
       console.error("Error fetching dashboard stats:", error);
     }
@@ -167,93 +134,36 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const updateUserRole = async () => {
     if (!selectedClient || !newRole) return;
 
-    // Update the 'profiles' table where the 'id' matches the selected client's id
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", selectedClient.id);
+    try {
+      await apiClient.updateUserRole(selectedClient.id, newRole);
+      
+      toast({
+        title: "موفقیت",
+        description: "نقش کاربر با موفقیت بروزرسانی شد",
+      });
 
-    if (error) {
+      // Close the modal and refresh the list of clients
+      setClientModalOpen(false);
+      fetchClients(); // Make sure you have a function that fetches all clients
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در بروزرسانی نقش کاربر",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "موفقیت",
-      description: "نقش کاربر با موفقیت بروزرسانی شد",
-    });
-
-    // Close the modal and refresh the list of clients
-    setClientModalOpen(false);
-    fetchClients(); // Make sure you have a function that fetches all clients
   };
 
   useEffect(() => {
     fetchSubmissions();
     fetchDashboardStats();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel("contact_submissions_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "contact_submissions",
-        },
-        () => {
-          fetchSubmissions();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const fetchClients = async () => {
     setClientsLoading(true);
     try {
-      // Get all user profiles (both clients and admins)
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (profilesError) throw profilesError;
-
-      // Get submission counts for each user
-      const usersWithStats = await Promise.all(
-        (profilesData || []).map(async (profile) => {
-          const { count } = await supabase
-            .from("contact_submissions")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", profile.user_id);
-
-          // Get last submission date
-          const { data: lastSubmission } = await supabase
-            .from("contact_submissions")
-            .select("created_at")
-            .eq("user_id", profile.user_id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          return {
-            ...profile,
-            submission_count: count || 0,
-            last_submission: lastSubmission?.created_at || null,
-          };
-        })
-      );
-
-      setClients(usersWithStats);
+      const data = await apiClient.getProfiles();
+      setClients(data || []);
     } catch (error: any) {
       toast({
         title: "خطا",

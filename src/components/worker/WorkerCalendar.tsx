@@ -73,7 +73,6 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       selectedDate.jm,
       selectedDate.jd
     );
-    const existingLog = timeLogs.find((log) => log.date === dateStr);
 
     const logData = {
       worker_id: user.id,
@@ -82,34 +81,25 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       description: description || null,
     };
 
-    let result;
-    if (existingLog) {
-      result = await supabase
-        .from("time_logs")
-        .update(logData)
-        .eq("id", existingLog.id);
-    } else {
-      result = await supabase.from("time_logs").insert(logData);
-    }
+    try {
+      await apiClient.saveTimeLog(logData);
 
-    if (result.error) {
+      toast({
+        title: "موفقیت",
+        description: "ساعات کاری با موفقیت ذخیره شد",
+      });
+
+      setIsLogDialogOpen(false);
+      setHours("");
+      setDescription("");
+      onDataChange();
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در ذخیره ساعات کاری",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "موفقیت",
-      description: "ساعات کاری با موفقیت ذخیره شد",
-    });
-
-    setIsLogDialogOpen(false);
-    setHours("");
-    setDescription("");
-    onDataChange();
   };
 
   const requestDayOff = async () => {
@@ -121,29 +111,28 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       selectedDate.jd
     );
 
-    const { error } = await supabase.from("day_off_requests").insert({
-      worker_id: user.id,
-      request_date: dateStr,
-      reason: dayOffReason,
-    });
+    try {
+      await apiClient.createDayOffRequest({
+        worker_id: user.id,
+        request_date: dateStr,
+        reason: dayOffReason,
+      });
 
-    if (error) {
+      toast({
+        title: "موفقیت",
+        description: "درخواست مرخصی ثبت شد",
+      });
+
+      setIsDayOffDialogOpen(false);
+      setDayOffReason("");
+      onDataChange();
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در ثبت درخواست مرخصی",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "موفقیت",
-      description: "درخواست مرخصی ثبت شد",
-    });
-
-    setIsDayOffDialogOpen(false);
-    setDayOffReason("");
-    onDataChange();
   };
 
   const openLogDialog = (jy: number, jm: number, jd: number) => {

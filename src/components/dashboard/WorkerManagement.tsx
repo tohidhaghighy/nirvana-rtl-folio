@@ -79,7 +79,6 @@ export const WorkerManagement: React.FC = () => {
   const [currentMonth] = useState(getCurrentJalaliDate());
 
   useEffect(() => {
-    debugger;
     fetchWorkers();
     fetchTimeLogs();
     fetchDayOffRequests();
@@ -92,22 +91,16 @@ export const WorkerManagement: React.FC = () => {
   }, [workers, timeLogs, dayOffRequests]);
 
   const fetchWorkers = async () => {
-    debugger;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, user_id, full_name, email")
-      .eq("role", "worker");
-
-    if (error) {
+    try {
+      const data = await apiClient.getWorkers();
+      setWorkers(data || []);
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در دریافت لیست کارمندان",
         variant: "destructive",
       });
-      return;
     }
-
-    setWorkers(data || []);
   };
 
   const fetchTimeLogs = async () => {
@@ -118,39 +111,16 @@ export const WorkerManagement: React.FC = () => {
       getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
     );
 
-    const { data, error } = await supabase
-      .from("time_logs")
-      .select("*")
-      .order("date", { ascending: false })
-      .gte("date", startDate)
-      .lte("date", endDate);
-
-    if (error) {
+    try {
+      const data = await apiClient.getTimeLogs({ startDate, endDate });
+      setTimeLogs(data || []);
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در دریافت ساعات کاری",
         variant: "destructive",
       });
-      return;
     }
-
-    // Get worker names separately
-    const logsWithNames = await Promise.all(
-      (data || []).map(async (log) => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", log.worker_id)
-          .single();
-
-        return {
-          ...log,
-          worker_name: profile?.full_name || "نامشخص",
-        };
-      })
-    );
-
-    setTimeLogs(logsWithNames);
   };
 
   const fetchDayOffRequests = async () => {
@@ -161,40 +131,20 @@ export const WorkerManagement: React.FC = () => {
       getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
     );
 
-    const { data, error } = await supabase
-      .from("day_off_requests")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .gte("request_date", startDate)
-      .lte("request_date", endDate);
-
-    if (error) {
+    try {
+      const data = await apiClient.getDayOffRequests({ startDate, endDate });
+      const typedData = (data || []).map((request) => ({
+        ...request,
+        status: request.status as "pending" | "approved" | "rejected",
+      }));
+      setDayOffRequests(typedData);
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در دریافت درخواست‌های مرخصی",
         variant: "destructive",
       });
-      return;
     }
-
-    // Get worker names separately
-    const requestsWithNames = await Promise.all(
-      (data || []).map(async (request) => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", request.worker_id)
-          .single();
-
-        return {
-          ...request,
-          worker_name: profile?.full_name || "نامشخص",
-          status: request.status as "pending" | "approved" | "rejected",
-        };
-      })
-    );
-
-    setDayOffRequests(requestsWithNames);
   };
 
   const calculateWorkerSummaries = () => {
@@ -224,61 +174,52 @@ export const WorkerManagement: React.FC = () => {
   const updateTimeLog = async () => {
     if (!selectedTimeLog) return;
 
-    const { error } = await supabase
-      .from("time_logs")
-      .update({
+    try {
+      await apiClient.updateTimeLog(selectedTimeLog.id, {
         hours_worked: parseFloat(editHours),
         description: editDescription,
-      })
-      .eq("id", selectedTimeLog.id);
+      });
 
-    if (error) {
+      toast({
+        title: "موفقیت",
+        description: "ساعات کاری بروزرسانی شد",
+      });
+
+      setIsEditDialogOpen(false);
+      fetchTimeLogs();
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در بروزرسانی ساعات کاری",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "موفقیت",
-      description: "ساعات کاری بروزرسانی شد",
-    });
-
-    setIsEditDialogOpen(false);
-    fetchTimeLogs();
   };
 
   const handleDayOffRequest = async (
     requestId: string,
     status: "approved" | "rejected"
   ) => {
-    const { error } = await supabase
-      .from("day_off_requests")
-      .update({
+    try {
+      await apiClient.updateDayOffRequest(requestId, {
         status,
-        reviewed_at: new Date().toISOString(),
         admin_notes: adminNotes || null,
-      })
-      .eq("id", requestId);
+      });
 
-    if (error) {
+      toast({
+        title: "موفقیت",
+        description: `درخواست مرخصی ${status === "approved" ? "تایید" : "رد"} شد`,
+      });
+
+      setAdminNotes("");
+      fetchDayOffRequests();
+    } catch (error) {
       toast({
         title: "خطا",
         description: "خطا در بروزرسانی درخواست مرخصی",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "موفقیت",
-      description: `درخواست مرخصی ${status === "approved" ? "تایید" : "رد"} شد`,
-    });
-
-    setAdminNotes("");
-    fetchDayOffRequests();
   };
 
   const openEditDialog = (timeLog: TimeLog) => {
