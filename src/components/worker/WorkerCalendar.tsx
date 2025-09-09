@@ -13,7 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Calendar, Clock, Coffee, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import {
   getCurrentJalaliDate,

@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Users, Clock, Coffee, CheckCircle, XCircle, Edit } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api";
 import {
   getCurrentJalaliDate,
   getJalaliMonthName,

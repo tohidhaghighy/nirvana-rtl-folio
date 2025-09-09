@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Calendar, Coffee, TrendingUp } from "lucide-react";
 import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import {
   formatDateForDB,

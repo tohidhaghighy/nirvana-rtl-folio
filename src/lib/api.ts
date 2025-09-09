@@ -61,6 +61,139 @@ class ApiClient {
   isAuthenticated() {
     return !!localStorage.getItem('auth_token');
   }
+
+  // Blog methods
+  async getBlogs() {
+    return this.request('/blogs');
+  }
+
+  async getBlogBySlug(slug: string) {
+    return this.request(`/blogs/slug/${slug}`);
+  }
+
+  async createBlog(blogData: any) {
+    return this.request('/blogs', {
+      method: 'POST',
+      body: JSON.stringify(blogData)
+    });
+  }
+
+  async updateBlog(id: string, blogData: any) {
+    return this.request(`/blogs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(blogData)
+    });
+  }
+
+  async deleteBlog(id: string) {
+    return this.request(`/blogs/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async toggleBlogPublish(id: string, published: boolean) {
+    return this.request(`/blogs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ published })
+    });
+  }
+
+  // Contact submissions
+  async submitContact(contactData: any) {
+    return this.request('/contact', {
+      method: 'POST',
+      body: JSON.stringify(contactData)
+    });
+  }
+
+  async getSubmissions() {
+    return this.request('/submissions');
+  }
+
+  async getUserSubmissions(userId: string) {
+    return this.request(`/submissions/user/${userId}`);
+  }
+
+  async updateSubmission(id: string, data: any) {
+    return this.request(`/submissions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getDashboardStats() {
+    return this.request('/submissions/stats/dashboard');
+  }
+
+  // Ticket responses
+  async getTicketResponses(submissionId: string) {
+    return this.request(`/tickets/${submissionId}/responses`);
+  }
+
+  async addTicketResponse(submissionId: string, message: string, isAdminResponse: boolean) {
+    return this.request(`/tickets/${submissionId}/responses`, {
+      method: 'POST',
+      body: JSON.stringify({
+        message,
+        is_admin_response: isAdminResponse
+      })
+    });
+  }
+
+  // Profiles
+  async getProfiles() {
+    return this.request('/profiles');
+  }
+
+  async updateUserRole(profileId: string, role: string) {
+    return this.request(`/profiles/${profileId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role })
+    });
+  }
+
+  // Workers
+  async getWorkers() {
+    return this.request('/workers');
+  }
+
+  async getTimeLogs(params?: { startDate?: string; endDate?: string; workerId?: string }) {
+    const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+    return this.request(`/workers/time-logs${queryString}`);
+  }
+
+  async saveTimeLog(data: any) {
+    return this.request('/workers/time-logs', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateTimeLog(id: string, data: any) {
+    return this.request(`/workers/time-logs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getDayOffRequests(params?: { startDate?: string; endDate?: string; workerId?: string }) {
+    const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+    return this.request(`/workers/day-off-requests${queryString}`);
+  }
+
+  async createDayOffRequest(data: any) {
+    return this.request('/workers/day-off-requests', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateDayOffRequest(id: string, data: any) {
+    return this.request(`/workers/day-off-requests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

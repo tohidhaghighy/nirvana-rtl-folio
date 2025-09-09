@@ -11,7 +11,7 @@ import {
   Calendar,
   FileText 
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { BlogEditor } from "./BlogEditor";
 
