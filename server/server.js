@@ -1,14 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
 
-const authRoutes = require('./routes/auth');
-const blogRoutes = require('./routes/blogs');
-const contactRoutes = require('./routes/contact');
-const submissionRoutes = require('./routes/submissions');
-const ticketRoutes = require('./routes/tickets');
-const profileRoutes = require('./routes/profiles');
-const workerRoutes = require('./routes/workers');
+import authRoutes from './routes/auth.js';
+import blogRoutes from './routes/blogs.js';
+import contactRoutes from './routes/contact.js';
+import submissionRoutes from './routes/submissions.js';
+import ticketRoutes from './routes/tickets.js';
+import profileRoutes from './routes/profiles.js';
+import workerRoutes from './routes/workers.js';
+
+// const express = require('express');
+// const cors = require('cors');
+// require('dotenv').config();
+
+// const authRoutes = require('./routes/auth');
+// const blogRoutes = require('./routes/blogs');
+// const contactRoutes = require('./routes/contact');
+// const submissionRoutes = require('./routes/submissions');
+// const ticketRoutes = require('./routes/tickets');
+// const profileRoutes = require('./routes/profiles');
+// const workerRoutes = require('./routes/workers');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
