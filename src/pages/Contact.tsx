@@ -75,10 +75,7 @@ const Contact = () => {
       };
 
       // Save to database
-      await apiClient.request('/contact', {
-        method: 'POST',
-        body: JSON.stringify(submissionData)
-      });
+      await apiClient.submitContact(submissionData);
 
       toast({
         title: "پیام شما ارسال شد",

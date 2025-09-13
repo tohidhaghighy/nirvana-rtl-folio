@@ -127,11 +127,11 @@ class ApiClient {
 
   // Ticket responses
   async getTicketResponses(submissionId: string) {
-    return this.request(`/tickets/${submissionId}/responses`);
+    return this.request(`/contact/${submissionId}/responses`);
   }
 
   async addTicketResponse(submissionId: string, message: string, isAdminResponse: boolean) {
-    return this.request(`/tickets/${submissionId}/responses`, {
+    return this.request(`/contact/${submissionId}/responses`, {
       method: 'POST',
       body: JSON.stringify({
         message,

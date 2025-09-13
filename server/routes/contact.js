@@ -7,19 +7,23 @@ import { authenticateToken } from '../middleware/auth.js';
 router.post('/', async (req, res) => {
     try {
         const pool = await getConnection();
-        const { name, email, phone, subject, message } = req.body;
+        const { name, email, phone, subject, message, user_id } = req.body;
 
         const result = await pool.request()
+            .input('id', sql.UniqueIdentifier, sql.newGuid())
             .input('name', sql.NVarChar, name)
             .input('email', sql.NVarChar, email)
             .input('phone', sql.NVarChar, phone)
             .input('subject', sql.NVarChar, subject)
             .input('message', sql.NText, message)
-            .input('user_id', sql.UniqueIdentifier, req.user ? req.user.id : null)
+            .input('user_id', sql.UniqueIdentifier, user_id || null)
+            .input('status', sql.NVarChar, 'pending')
+            .input('createdAt', sql.DateTime2, new Date())
+            .input('updatedAt', sql.DateTime2, new Date())
             .query(`
-                INSERT INTO contact_submissions (name, email, phone, subject, message, user_id)
+                INSERT INTO contact_submissions (id, name, email, phone, subject, message, user_id, status, created_at, updated_at)
                 OUTPUT INSERTED.*
-                VALUES (@name, @email, @phone, @subject, @message, @user_id)
+                VALUES (@id, @name, @email, @phone, @subject, @message, @user_id, @status, @createdAt, @updatedAt)
             `);
 
         res.status(201).json(result.recordset[0]);
@@ -98,7 +102,7 @@ router.get('/:id/responses', authenticateToken, async (req, res) => {
             .input('user_id', sql.UniqueIdentifier, req.user.id)
             .query(`
                 SELECT * FROM contact_submissions
-                WHERE id = @id AND (user_id = @user_id OR @user_id IN (SELECT id FROM users WHERE role = 'admin'))
+                WHERE id = @id AND (user_id = @user_id OR @user_id IN (SELECT user_id FROM profiles WHERE role = 'admin'))
             `);
 
         if (submissionResult.recordset.length === 0) {
@@ -129,7 +133,7 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
             .input('user_id', sql.UniqueIdentifier, req.user.id)
             .query(`
                 SELECT * FROM contact_submissions
-                WHERE id = @id AND (user_id = @user_id OR @user_id IN (SELECT id FROM users WHERE role = 'admin'))
+                WHERE id = @id AND (user_id = @user_id OR @user_id IN (SELECT user_id FROM profiles WHERE role = 'admin'))
             `);
 
         if (submissionResult.recordset.length === 0) {
@@ -140,13 +144,16 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
         const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
         const result = await pool.request()
+            .input('id', sql.UniqueIdentifier, sql.newGuid())
             .input('submission_id', sql.UniqueIdentifier, id)
             .input('message', sql.NText, message)
             .input('is_admin_response', sql.Bit, isAdmin)
+            .input('createdAt', sql.DateTime2, new Date())
+            .input('updatedAt', sql.DateTime2, new Date())
             .query(`
-                INSERT INTO ticket_responses (submission_id, message, is_admin_response)
+                INSERT INTO ticket_responses (id, submission_id, message, is_admin_response, created_at, updated_at)
                 OUTPUT INSERTED.*
-                VALUES (@submission_id, @message, @is_admin_response)
+                VALUES (@id, @submission_id, @message, @is_admin_response, @createdAt, @updatedAt)
             `);
 
         res.status(201).json(result.recordset[0]);
