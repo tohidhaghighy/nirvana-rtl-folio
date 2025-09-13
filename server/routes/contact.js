@@ -10,7 +10,6 @@ router.post('/', async (req, res) => {
         const { name, email, phone, subject, message, user_id } = req.body;
 
         const result = await pool.request()
-            .input('id', sql.UniqueIdentifier, sql.newGuid())
             .input('name', sql.NVarChar, name)
             .input('email', sql.NVarChar, email)
             .input('phone', sql.NVarChar, phone)
@@ -21,9 +20,9 @@ router.post('/', async (req, res) => {
             .input('createdAt', sql.DateTime2, new Date())
             .input('updatedAt', sql.DateTime2, new Date())
             .query(`
-                INSERT INTO contact_submissions (id, name, email, phone, subject, message, user_id, status, created_at, updated_at)
+                INSERT INTO contact_submissions (name, email, phone, subject, message, user_id, status, created_at, updated_at)
                 OUTPUT INSERTED.*
-                VALUES (@id, @name, @email, @phone, @subject, @message, @user_id, @status, @createdAt, @updatedAt)
+                VALUES (@name, @email, @phone, @subject, @message, @user_id, @status, @createdAt, @updatedAt)
             `);
 
         res.status(201).json(result.recordset[0]);
@@ -144,16 +143,15 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
         const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
         const result = await pool.request()
-            .input('id', sql.UniqueIdentifier, sql.newGuid())
             .input('submission_id', sql.UniqueIdentifier, id)
             .input('message', sql.NText, message)
             .input('is_admin_response', sql.Bit, isAdmin)
             .input('createdAt', sql.DateTime2, new Date())
             .input('updatedAt', sql.DateTime2, new Date())
             .query(`
-                INSERT INTO ticket_responses (id, submission_id, message, is_admin_response, created_at, updated_at)
+                INSERT INTO ticket_responses (submission_id, message, is_admin_response, created_at, updated_at)
                 OUTPUT INSERTED.*
-                VALUES (@id, @submission_id, @message, @is_admin_response, @createdAt, @updatedAt)
+                VALUES (@submission_id, @message, @is_admin_response, @createdAt, @updatedAt)
             `);
 
         res.status(201).json(result.recordset[0]);

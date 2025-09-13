@@ -91,8 +91,7 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
         `);
     } else {
       // Create new log
-      await pool.request()
-        .input('id', sql.UniqueIdentifier, sql.newGuid())
+      const result = await pool.request()
         .input('workerId', sql.UniqueIdentifier, worker_id)
         .input('date', sql.Date, date)
         .input('hoursWorked', sql.Decimal(5, 2), hours_worked)
@@ -100,8 +99,8 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
         .input('createdAt', sql.DateTime2, new Date())
         .input('updatedAt', sql.DateTime2, new Date())
         .query(`
-          INSERT INTO time_logs (id, worker_id, date, hours_worked, description, created_at, updated_at)
-          VALUES (@id, @workerId, @date, @hoursWorked, @description, @createdAt, @updatedAt)
+          INSERT INTO time_logs (worker_id, date, hours_worked, description, created_at, updated_at)
+          VALUES (@workerId, @date, @hoursWorked, @description, @createdAt, @updatedAt)
         `);
     }
     
@@ -184,7 +183,6 @@ router.post('/day-off-requests', authenticateToken, async (req, res) => {
     
     const pool = await getConnection();
     await pool.request()
-      .input('id', sql.UniqueIdentifier, sql.newGuid())
       .input('workerId', sql.UniqueIdentifier, worker_id)
       .input('requestDate', sql.Date, request_date)
       .input('reason', sql.NVarChar, reason)
@@ -192,8 +190,8 @@ router.post('/day-off-requests', authenticateToken, async (req, res) => {
       .input('createdAt', sql.DateTime2, new Date())
       .input('updatedAt', sql.DateTime2, new Date())
       .query(`
-        INSERT INTO day_off_requests (id, worker_id, request_date, reason, status, created_at, updated_at)
-        VALUES (@id, @workerId, @requestDate, @reason, @status, @createdAt, @updatedAt)
+        INSERT INTO day_off_requests (worker_id, request_date, reason, status, created_at, updated_at)
+        VALUES (@workerId, @requestDate, @reason, @status, @createdAt, @updatedAt)
       `);
     
     res.json({ success: true });
