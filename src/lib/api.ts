@@ -92,9 +92,25 @@ class ApiClient {
   }
 
   async toggleBlogPublish(id: string, published: boolean) {
+    // First get the current blog data
+    const currentBlog = await this.request(`/blogs`);
+    const blog = currentBlog.find((b: any) => b.id === id);
+    
+    if (!blog) {
+      throw new Error('Blog not found');
+    }
+
+    // Update with all required fields
     return this.request(`/blogs/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ published })
+      body: JSON.stringify({
+        title: blog.title,
+        content: blog.content,
+        excerpt: blog.excerpt,
+        slug: blog.slug,
+        featured_image_url: blog.featured_image_url,
+        published
+      })
     });
   }
 

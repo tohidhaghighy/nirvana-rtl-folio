@@ -102,15 +102,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 SET title = @title, content = @content, excerpt = @excerpt,
                     slug = @slug, published = @published, featured_image_url = @featured_image_url,
                     updated_at = GETDATE()
-                OUTPUT INSERTED.*
                 WHERE id = @id
             `);
 
-        if (result.recordset.length === 0) {
+        // Fetch the updated record
+        const updatedResult = await pool.request()
+            .input('id', sql.UniqueIdentifier, id)
+            .query('SELECT * FROM blogs WHERE id = @id');
+
+        if (result.rowsAffected[0] === 0) {
             return res.status(404).json({ error: 'Blog post not found' });
         }
 
-        res.json(result.recordset[0]);
+        res.json(updatedResult.recordset[0]);
     } catch (error) {
         console.error('Error updating blog:', error);
         res.status(500).json({ error: 'Database error' });
