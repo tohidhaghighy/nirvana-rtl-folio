@@ -45,7 +45,7 @@ export const WorkerDashboard: React.FC = () => {
       const data = await apiClient.getTimeLogs({
         startDate,
         endDate,
-        workerId: user.id
+        workerId: user.id,
       });
 
       setTimeLogs(data || []);
@@ -77,7 +77,7 @@ export const WorkerDashboard: React.FC = () => {
       const data = await apiClient.getDayOffRequests({
         startDate,
         endDate,
-        workerId: user.id
+        workerId: user.id,
       });
 
       const typedData = (data || []).map((request) => ({
@@ -103,7 +103,8 @@ export const WorkerDashboard: React.FC = () => {
     currentMonth.jd
   );
   const hoursToday =
-    timeLogs.find((log) => log.date === todayDateStr)?.hours_worked || 0;
+    timeLogs.find((log) => log.date.substring(0, 10) === todayDateStr)
+      ?.hours_worked || 0;
   const daysWorked = new Set(timeLogs.map((log) => log.date)).size;
   const pendingRequests = dayOffRequests.filter(
     (req) => req.status === "pending"

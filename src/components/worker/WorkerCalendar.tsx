@@ -159,9 +159,11 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
   const getDayInfo = (jd: number) => {
     const dateStr = formatDateForDB(currentMonth.jy, currentMonth.jm, jd);
-    const timeLog = timeLogs.find((log) => log.date === dateStr);
+    const timeLog = timeLogs.find(
+      (log) => log.date.substring(0, 10) === dateStr
+    );
     const dayOffRequest = dayOffRequests.find(
-      (req) => req.request_date === dateStr
+      (req) => req.request_date.substring(0, 10) === dateStr
     );
 
     return { timeLog, dayOffRequest };

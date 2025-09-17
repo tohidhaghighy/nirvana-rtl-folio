@@ -71,6 +71,10 @@ class ApiClient {
     return this.request(`/blogs/slug/${slug}`);
   }
 
+  async getBlogById(id: string) {
+    return this.request(`/blogs/${id}`);
+  }
+
   async createBlog(blogData: any) {
     return this.request('/blogs', {
       method: 'POST',
@@ -92,26 +96,30 @@ class ApiClient {
   }
 
   async toggleBlogPublish(id: string, published: boolean) {
-    // First get the current blog data
-    const currentBlog = await this.request(`/blogs`);
-    const blog = currentBlog.find((b: any) => b.id === id);
-    
-    if (!blog) {
-      throw new Error('Blog not found');
-    }
+    try {
+      // First get the specific blog data by ID
+      const blog = await this.getBlogById(id);
+      
+      if (!blog) {
+        throw new Error('Blog not found');
+      }
 
-    // Update with all required fields
-    return this.request(`/blogs/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        title: blog.title,
-        content: blog.content,
-        excerpt: blog.excerpt,
-        slug: blog.slug,
-        featured_image_url: blog.featured_image_url,
-        published
-      })
-    });
+      // Update with all required fields
+      return this.request(`/blogs/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: blog.title,
+          content: blog.content,
+          excerpt: blog.excerpt,
+          slug: blog.slug,
+          featured_image_url: blog.featured_image_url || null,
+          published
+        })
+      });
+    } catch (error) {
+      console.error('Error in toggleBlogPublish:', error);
+      throw error;
+    }
   }
 
   // Contact submissions

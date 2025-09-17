@@ -55,25 +55,39 @@ export const BlogManagement = () => {
 
   const handleTogglePublish = async (post: BlogPost) => {
     try {
+      // Show loading toast
+      const loadingToast = toast({
+        title: "در حال پردازش",
+        description: "در حال تغییر وضعیت انتشار مقاله...",
+      });
+      
+      // Call API to toggle publish status
       await apiClient.toggleBlogPublish(post.id, !post.published);
 
+      // Update local state
       setPosts(posts.map(p => 
         p.id === post.id 
           ? { ...p, published: !p.published }
           : p
       ));
 
+      // Show success toast
       toast({
         title: "موفق",
         description: post.published ? "مقاله از حالت انتشار خارج شد" : "مقاله منتشر شد",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling publish:', error);
+      
+      // Show detailed error message
       toast({
         variant: "destructive",
         title: "خطا",
-        description: "خطا در تغییر وضعیت انتشار",
+        description: error.message || "خطا در تغییر وضعیت انتشار",
       });
+      
+      // Refresh posts to ensure UI is in sync with server
+      fetchPosts();
     }
   };
 

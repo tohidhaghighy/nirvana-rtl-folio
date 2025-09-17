@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get blog by slug
-router.get('/:slug', async (req, res) => {
+router.get('/slug/:slug', async (req, res) => {
     try {
         const pool = await getConnection();
         const { slug } = req.params;
@@ -43,6 +43,27 @@ router.get('/:slug', async (req, res) => {
         res.json(result.recordset[0]);
     } catch (error) {
         console.error('Error fetching blog:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Get blog by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const { id } = req.params;
+
+        const result = await pool.request()
+            .input('id', sql.UniqueIdentifier, id)
+            .query('SELECT * FROM blogs WHERE id = @id');
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ error: 'Blog post not found' });
+        }
+
+        res.json(result.recordset[0]);
+    } catch (error) {
+        console.error('Error fetching blog by ID:', error);
         res.status(500).json({ error: 'Database error' });
     }
 });
