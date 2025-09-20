@@ -1,8 +1,22 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Calendar, Coffee, TrendingUp, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Clock,
+  Calendar,
+  Coffee,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+} from "lucide-react";
 import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { apiClient } from "@/lib/api";
@@ -42,7 +56,7 @@ export const WorkerDashboard: React.FC = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const currentDate = getCurrentJalaliDate();
 
   // Set default worker ID for non-admins
@@ -64,7 +78,7 @@ export const WorkerDashboard: React.FC = () => {
 
     try {
       const params: any = { startDate, endDate };
-      
+
       // For admins, use selected worker ID if available, otherwise get all workers' data
       if (isAdmin) {
         if (selectedWorkerId) {
@@ -105,7 +119,7 @@ export const WorkerDashboard: React.FC = () => {
 
     try {
       const params: any = { startDate, endDate };
-      
+
       // For admins, use selected worker ID if available, otherwise get all workers' data
       if (isAdmin) {
         if (selectedWorkerId) {
@@ -131,7 +145,7 @@ export const WorkerDashboard: React.FC = () => {
 
   const fetchWorkers = useCallback(async () => {
     if (!isAdmin) return;
-    
+
     try {
       const data = await apiClient.getWorkers();
       setWorkers(data || []);
@@ -154,9 +168,9 @@ export const WorkerDashboard: React.FC = () => {
     }
   }, [user, fetchTimeLogs, fetchDayOffRequests, fetchWorkers, isAdmin]);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const navigateMonth = (direction: "prev" | "next") => {
     const newMonth = { ...selectedMonth };
-    if (direction === 'next') {
+    if (direction === "next") {
       if (newMonth.jm === 12) {
         newMonth.jy += 1;
         newMonth.jm = 1;
@@ -174,11 +188,31 @@ export const WorkerDashboard: React.FC = () => {
     setSelectedMonth(newMonth);
   };
 
-  const canNavigate = (direction: 'prev' | 'next') => {
+  const canNavigate = (direction: "prev" | "next") => {
     if (isAdmin) return true;
-    
-    // Workers can navigate freely between months
-    return true;
+
+    // Workers can navigate through the current year
+    const isSameMonth = (d1, d2) => d1.jy === d2.jy && d1.jm === d2.jm;
+
+    const isSelectedMonthBeforeCurrentYearStart = () => {
+      return selectedMonth.jy < currentDate.jy;
+    };
+
+    if (direction === "prev") {
+      // Workers can't go to previous years. They can go back to the first month of the current year.
+      // So, disable the 'prev' button if the selected month is the first month of the current year.
+      return (
+        !isSelectedMonthBeforeCurrentYearStart() &&
+        !(selectedMonth.jy === currentDate.jy && selectedMonth.jm === 1)
+      );
+    }
+
+    if (direction === "next") {
+      // Workers cannot go to the next month if they are already in the current month.
+      return !isSameMonth(selectedMonth, currentDate);
+    }
+
+    return false;
   };
 
   const todayDateStr = formatDateForDB(
@@ -226,8 +260,8 @@ export const WorkerDashboard: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateMonth('prev')}
-              disabled={!canNavigate('prev')}
+              onClick={() => navigateMonth("prev")}
+              disabled={!canNavigate("prev")}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -237,8 +271,8 @@ export const WorkerDashboard: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateMonth('next')}
-              disabled={!canNavigate('next')}
+              onClick={() => navigateMonth("next")}
+              disabled={!canNavigate("next")}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>

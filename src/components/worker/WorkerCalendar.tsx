@@ -143,38 +143,53 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
   const canEditDate = (jy: number, jm: number, jd: number) => {
     if (isAdmin) return true;
-    
+
     const targetDateStr = formatDateForDB(jy, jm, jd);
-    const currentDateStr = formatDateForDB(currentDate.jy, currentDate.jm, currentDate.jd);
+    const currentDateStr = formatDateForDB(
+      currentDate.jy,
+      currentDate.jm,
+      currentDate.jd
+    );
     const currentMonthStr = formatDateForDB(currentDate.jy, currentDate.jm, 1);
-    
+
     // Workers can edit current month + 5 days into next month
     if (jy === currentDate.jy && jm === currentDate.jm) {
       return true; // Current month
     }
-    
+
     // Check if it's within 5 days after current month
-    const currentMonthEnd = formatDateForDB(
-      currentDate.jy,
-      currentDate.jm,
-      getDaysInJalaliMonth(currentDate.jy, currentDate.jm)
-    );
-    
-    const nextMonth = currentDate.jm === 12 ? 1 : currentDate.jm + 1;
-    const nextYear = currentDate.jm === 12 ? currentDate.jy + 1 : currentDate.jy;
-    
-    if (jy === nextYear && jm === nextMonth && jd <= 5) {
-      return true; // First 5 days of next month
-    }
-    
-    return false;
+    // const currentMonthEnd = formatDateForDB(
+    //   currentDate.jy,
+    //   currentDate.jm,
+    //   getDaysInJalaliMonth(currentDate.jy, currentDate.jm)
+    // );
+
+    // const nextMonth = currentDate.jm === 12 ? 1 : currentDate.jm + 1;
+    // const nextYear =
+    //   currentDate.jm === 12 ? currentDate.jy + 1 : currentDate.jy;
+
+    // if (jy === nextYear && jm === nextMonth && jd <= 5) {
+    //   return true; // First 5 days of next month
+    // }
+
+    const isNextMonthGracePeriod =
+      (currentDate.jy === jy &&
+        currentDate.jm === jm + 1 &&
+        currentDate.jd <= 5) ||
+      (jy === currentDate.jy - 1 &&
+        jm === 12 &&
+        currentDate.jm === 1 &&
+        currentDate.jd <= 5);
+
+    return isNextMonthGracePeriod;
+    // return false;
   };
 
   const openLogDialog = (jy: number, jm: number, jd: number) => {
     if (!canEditDate(jy, jm, jd)) {
       toast({
         title: "دسترسی محدود",
-        description: "شما فقط می‌توانید ماه جاری و ۵ روز ابتدای ماه آینده را ویرایش کنید",
+        description: "شما فقط می‌توانید ماه جاری را ویرایش کنید",
         variant: "destructive",
       });
       return;
@@ -199,7 +214,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     if (!canEditDate(jy, jm, jd)) {
       toast({
         title: "دسترسی محدود",
-        description: "شما فقط می‌توانید ماه جاری و ۵ روز ابتدای ماه آینده را ویرایش کنید",
+        description: "شما فقط می‌توانید ماه جاری را ویرایش کنید",
         variant: "destructive",
       });
       return;
@@ -231,9 +246,20 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     );
     const dayOfWeek = gregorianDate.getDay();
 
-    const isThursday = dayOfWeek === 4; // Thursday
-    const isFriday = dayOfWeek === 5; // Friday
-    const isWeekend = isThursday || isFriday;
+    let isThursday; // Thursday
+    let isFriday; // Friday
+    let isWeekend;
+
+    if (
+      selectedMonth.jy === currentDate.jy &&
+      selectedMonth.jm === currentDate.jm
+    ) {
+      isThursday = dayOfWeek === 4; // Thursday
+      isFriday = dayOfWeek === 5; // Friday
+      isWeekend = isThursday || isFriday;
+    } else {
+      isWeekend = true;
+    }
 
     const dateStr = formatDateForDB(selectedMonth.jy, selectedMonth.jm, day);
     const isToday = dateStr === today;
@@ -265,7 +291,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
               }
               disabled={!canEdit}
             >
-              <Clock className={`h-3 w-3 ${!canEdit ? 'text-muted-foreground' : ''}`} />
+              <Clock
+                className={`h-3 w-3 ${!canEdit ? "text-muted-foreground" : ""}`}
+              />
             </Button>
             <Button
               size="sm"
@@ -276,7 +304,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
               }
               disabled={!canEdit}
             >
-              <Coffee className={`h-3 w-3 ${!canEdit ? 'text-muted-foreground' : ''}`} />
+              <Coffee
+                className={`h-3 w-3 ${!canEdit ? "text-muted-foreground" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -323,9 +353,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span>مجموع ساعات کاری: {totalHours} ساعت</span>
             {!isAdmin && (
-              <span className="text-amber-600">
-                ویرایش فقط برای ماه جاری + ۵ روز ماه آینده
-              </span>
+              <span className="text-amber-600">ویرایش فقط برای ماه جاری</span>
             )}
           </div>
         </CardHeader>
