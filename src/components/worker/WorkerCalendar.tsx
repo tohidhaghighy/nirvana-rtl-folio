@@ -39,21 +39,26 @@ interface DayOffRequest {
 
 interface WorkerCalendarProps {
   today: string;
+  currentDate: { jy: number; jm: number; jd: number };
+  selectedMonth: { jy: number; jm: number; jd: number };
   totalHours: number;
   timeLogs: TimeLog[];
   dayOffRequests: DayOffRequest[];
+  isAdmin: boolean;
   onDataChange: () => void;
 }
 
 export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   today,
+  currentDate,
+  selectedMonth,
   totalHours,
   timeLogs,
   dayOffRequests,
+  isAdmin,
   onDataChange,
 }) => {
   const { user } = useAuthStore();
-  const [currentMonth] = useState(getCurrentJalaliDate());
   const [selectedDate, setSelectedDate] = useState<{
     jy: number;
     jm: number;
@@ -135,7 +140,45 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     }
   };
 
+  const canEditDate = (jy: number, jm: number, jd: number) => {
+    if (isAdmin) return true;
+    
+    const targetDateStr = formatDateForDB(jy, jm, jd);
+    const currentDateStr = formatDateForDB(currentDate.jy, currentDate.jm, currentDate.jd);
+    const currentMonthStr = formatDateForDB(currentDate.jy, currentDate.jm, 1);
+    
+    // Workers can edit current month + 5 days into next month
+    if (jy === currentDate.jy && jm === currentDate.jm) {
+      return true; // Current month
+    }
+    
+    // Check if it's within 5 days after current month
+    const currentMonthEnd = formatDateForDB(
+      currentDate.jy,
+      currentDate.jm,
+      getDaysInJalaliMonth(currentDate.jy, currentDate.jm)
+    );
+    
+    const nextMonth = currentDate.jm === 12 ? 1 : currentDate.jm + 1;
+    const nextYear = currentDate.jm === 12 ? currentDate.jy + 1 : currentDate.jy;
+    
+    if (jy === nextYear && jm === nextMonth && jd <= 5) {
+      return true; // First 5 days of next month
+    }
+    
+    return false;
+  };
+
   const openLogDialog = (jy: number, jm: number, jd: number) => {
+    if (!canEditDate(jy, jm, jd)) {
+      toast({
+        title: "دسترسی محدود",
+        description: "شما فقط می‌توانید ماه جاری و ۵ روز ابتدای ماه آینده را ویرایش کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedDate({ jy, jm, jd });
     const dateStr = formatDateForDB(jy, jm, jd);
     const existingLog = timeLogs.find((log) => log.date === dateStr);
@@ -152,13 +195,22 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   };
 
   const openDayOffDialog = (jy: number, jm: number, jd: number) => {
+    if (!canEditDate(jy, jm, jd)) {
+      toast({
+        title: "دسترسی محدود",
+        description: "شما فقط می‌توانید ماه جاری و ۵ روز ابتدای ماه آینده را ویرایش کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedDate({ jy, jm, jd });
     setDayOffReason("");
     setIsDayOffDialogOpen(true);
   };
 
   const getDayInfo = (jd: number) => {
-    const dateStr = formatDateForDB(currentMonth.jy, currentMonth.jm, jd);
+    const dateStr = formatDateForDB(selectedMonth.jy, selectedMonth.jm, jd);
     const timeLog = timeLogs.find(
       (log) => log.date.substring(0, 10) === dateStr
     );
@@ -172,8 +224,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const renderCalendarDay = (day: number) => {
     const { timeLog, dayOffRequest } = getDayInfo(day);
     const gregorianDate = jalaliToGregorian(
-      currentMonth.jy,
-      currentMonth.jm,
+      selectedMonth.jy,
+      selectedMonth.jm,
       day
     );
     const dayOfWeek = gregorianDate.getDay();
@@ -182,8 +234,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const isFriday = dayOfWeek === 5; // Friday
     const isWeekend = isThursday || isFriday;
 
-    const dateStr = formatDateForDB(currentMonth.jy, currentMonth.jm, day);
+    const dateStr = formatDateForDB(selectedMonth.jy, selectedMonth.jm, day);
     const isToday = dateStr === today;
+    const canEdit = canEditDate(selectedMonth.jy, selectedMonth.jm, day);
 
     return (
       <div
@@ -207,20 +260,22 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
               variant="ghost"
               className="h-6 w-6 p-0"
               onClick={() =>
-                openLogDialog(currentMonth.jy, currentMonth.jm, day)
+                openLogDialog(selectedMonth.jy, selectedMonth.jm, day)
               }
+              disabled={!canEdit}
             >
-              <Clock className="h-3 w-3" />
+              <Clock className={`h-3 w-3 ${!canEdit ? 'text-muted-foreground' : ''}`} />
             </Button>
             <Button
               size="sm"
               variant="ghost"
               className="h-6 w-6 p-0"
               onClick={() =>
-                openDayOffDialog(currentMonth.jy, currentMonth.jm, day)
+                openDayOffDialog(selectedMonth.jy, selectedMonth.jm, day)
               }
+              disabled={!canEdit}
             >
-              <Coffee className="h-3 w-3" />
+              <Coffee className={`h-3 w-3 ${!canEdit ? 'text-muted-foreground' : ''}`} />
             </Button>
           </div>
         </div>
@@ -253,7 +308,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     );
   };
 
-  const daysInMonth = getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm);
+  const daysInMonth = getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -262,10 +317,15 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            {getJalaliMonthName(currentMonth.jm)} {currentMonth.jy}
+            {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
           </CardTitle>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span>مجموع ساعات کاری: {totalHours} ساعت</span>
+            {!isAdmin && (
+              <span className="text-amber-600">
+                ویرایش فقط برای ماه جاری + ۵ روز ماه آینده
+              </span>
+            )}
           </div>
         </CardHeader>
         <CardContent>
