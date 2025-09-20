@@ -236,25 +236,63 @@ export const WorkerDashboard: React.FC = () => {
         </h1>
         <div className="flex items-center gap-4">
           {isAdmin && (
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <Select
-                value={selectedWorkerId}
-                onValueChange={(value) => setSelectedWorkerId(value)}
-              >
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="انتخاب کارمند" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">همه کارمندان</SelectItem>
-                  {workers.map((worker) => (
-                    <SelectItem key={worker.id} value={worker.id}>
-                      {worker.full_name || worker.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedWorkerId}
+                  onValueChange={(value) => setSelectedWorkerId(value)}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="انتخاب کارمند" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">همه کارمندان</SelectItem>
+                    {workers.map((worker) => (
+                      <SelectItem key={worker.id} value={worker.id}>
+                        {worker.full_name || worker.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedMonth.jy.toString()}
+                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedMonth.jm.toString()}
+                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                      "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+                    ].map((month, index) => (
+                      <SelectItem key={index + 1} value={(index + 1).toString()}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           )}
           <div className="flex items-center gap-2">
             <Button
