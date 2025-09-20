@@ -45,6 +45,7 @@ interface WorkerCalendarProps {
   timeLogs: TimeLog[];
   dayOffRequests: DayOffRequest[];
   isAdmin: boolean;
+  selectedWorkerId?: string;
   onDataChange: () => void;
 }
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, Coffee, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Clock, Calendar, Coffee, TrendingUp, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { apiClient } from "@/lib/api";
@@ -26,15 +27,30 @@ interface DayOffRequest {
   status: "pending" | "approved" | "rejected";
 }
 
+interface Worker {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 export const WorkerDashboard: React.FC = () => {
   const { user } = useAuthStore();
   const [selectedMonth, setSelectedMonth] = useState(getCurrentJalaliDate());
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
   const [totalHours, setTotalHours] = useState(0);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const currentDate = getCurrentJalaliDate();
+
+  // Set default worker ID for non-admins
+  useEffect(() => {
+    if (user && !isAdmin && !selectedWorkerId) {
+      setSelectedWorkerId(user.id);
+    }
+  }, [user, isAdmin, selectedWorkerId]);
 
   const fetchTimeLogs = useCallback(async () => {
     if (!user) return;
@@ -47,11 +63,20 @@ export const WorkerDashboard: React.FC = () => {
     );
 
     try {
-      const data = await apiClient.getTimeLogs({
-        startDate,
-        endDate,
-        workerId: user.id,
-      });
+      const params: any = { startDate, endDate };
+      
+      // For admins, use selected worker ID if available, otherwise get all workers' data
+      if (isAdmin) {
+        if (selectedWorkerId) {
+          params.workerId = selectedWorkerId;
+        }
+        // If no worker selected, don't add workerId to get all workers' data
+      } else {
+        // For workers, always use their own ID
+        params.workerId = user.id;
+      }
+
+      const data = await apiClient.getTimeLogs(params);
 
       setTimeLogs(data || []);
       const total = (data || []).reduce(
@@ -79,11 +104,20 @@ export const WorkerDashboard: React.FC = () => {
     );
 
     try {
-      const data = await apiClient.getDayOffRequests({
-        startDate,
-        endDate,
-        workerId: user.id,
-      });
+      const params: any = { startDate, endDate };
+      
+      // For admins, use selected worker ID if available, otherwise get all workers' data
+      if (isAdmin) {
+        if (selectedWorkerId) {
+          params.workerId = selectedWorkerId;
+        }
+        // If no worker selected, don't add workerId to get all workers' data
+      } else {
+        // For workers, always use their own ID
+        params.workerId = user.id;
+      }
+
+      const data = await apiClient.getDayOffRequests(params);
 
       const typedData = (data || []).map((request) => ({
         ...request,
@@ -93,14 +127,32 @@ export const WorkerDashboard: React.FC = () => {
     } catch (error) {
       // Handle error silently for now
     }
-  }, [user, selectedMonth]);
+  }, [user, selectedMonth, selectedWorkerId, isAdmin]);
+
+  const fetchWorkers = useCallback(async () => {
+    if (!isAdmin) return;
+    
+    try {
+      const data = await apiClient.getWorkers();
+      setWorkers(data || []);
+    } catch (error) {
+      toast({
+        title: "خطا",
+        description: "خطا در دریافت لیست کارمندان",
+        variant: "destructive",
+      });
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     if (user) {
       fetchTimeLogs();
       fetchDayOffRequests();
+      if (isAdmin) {
+        fetchWorkers();
+      }
     }
-  }, [user, fetchTimeLogs, fetchDayOffRequests]);
+  }, [user, fetchTimeLogs, fetchDayOffRequests, fetchWorkers, isAdmin]);
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const newMonth = { ...selectedMonth };
@@ -125,25 +177,8 @@ export const WorkerDashboard: React.FC = () => {
   const canNavigate = (direction: 'prev' | 'next') => {
     if (isAdmin) return true;
     
-    const targetMonth = { ...selectedMonth };
-    if (direction === 'next') {
-      if (targetMonth.jm === 12) {
-        targetMonth.jy += 1;
-        targetMonth.jm = 1;
-      } else {
-        targetMonth.jm += 1;
-      }
-    } else {
-      if (targetMonth.jm === 1) {
-        targetMonth.jy -= 1;
-        targetMonth.jm = 12;
-      } else {
-        targetMonth.jm -= 1;
-      }
-    }
-    
-    // Workers can only navigate to current month
-    return targetMonth.jy === currentDate.jy && targetMonth.jm === currentDate.jm;
+    // Workers can navigate freely between months
+    return true;
   };
 
   const todayDateStr = formatDateForDB(
@@ -162,27 +197,52 @@ export const WorkerDashboard: React.FC = () => {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">داشبورد کارمند</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth('prev')}
-            disabled={!canNavigate('prev')}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <div className="text-sm font-medium min-w-32 text-center">
-            {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+        <h1 className="text-3xl font-bold text-foreground">
+          {isAdmin ? "مدیریت کارمندان" : "داشبورد کارمند"}
+        </h1>
+        <div className="flex items-center gap-4">
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={selectedWorkerId}
+                onValueChange={(value) => setSelectedWorkerId(value)}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="انتخاب کارمند" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">همه کارمندان</SelectItem>
+                  {workers.map((worker) => (
+                    <SelectItem key={worker.id} value={worker.id}>
+                      {worker.full_name || worker.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('prev')}
+              disabled={!canNavigate('prev')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <div className="text-sm font-medium min-w-32 text-center">
+              {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('next')}
+              disabled={!canNavigate('next')}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth('next')}
-            disabled={!canNavigate('next')}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
@@ -239,6 +299,7 @@ export const WorkerDashboard: React.FC = () => {
         timeLogs={timeLogs}
         dayOffRequests={dayOffRequests}
         isAdmin={isAdmin}
+        selectedWorkerId={selectedWorkerId}
         onDataChange={() => {
           fetchTimeLogs();
           fetchDayOffRequests();
