@@ -20,7 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Users, Clock, Coffee, CheckCircle, XCircle, Edit } from "lucide-react";
+import { Users, Clock, Coffee, CheckCircle, XCircle, Edit, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api";
 import {
@@ -76,13 +77,19 @@ export const WorkerManagement: React.FC = () => {
   const [editDescription, setEditDescription] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentMonth] = useState(getCurrentJalaliDate());
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentJalaliDate());
+  const [selectedWorkerId, setSelectedWorkerId] = useState("");
+  
+  const currentDate = getCurrentJalaliDate();
 
   useEffect(() => {
     fetchWorkers();
+  }, []);
+
+  useEffect(() => {
     fetchTimeLogs();
     fetchDayOffRequests();
-  }, []);
+  }, [selectedMonth, selectedWorkerId]);
 
   useEffect(() => {
     if (workers.length && timeLogs.length) {
@@ -104,15 +111,19 @@ export const WorkerManagement: React.FC = () => {
   };
 
   const fetchTimeLogs = async () => {
-    const startDate = formatDateForDB(currentMonth.jy, currentMonth.jm, 1);
+    const startDate = formatDateForDB(selectedMonth.jy, selectedMonth.jm, 1);
     const endDate = formatDateForDB(
-      currentMonth.jy,
-      currentMonth.jm,
-      getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
+      selectedMonth.jy,
+      selectedMonth.jm,
+      getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm)
     );
 
     try {
-      const data = await apiClient.getTimeLogs({ startDate, endDate });
+      const params: any = { startDate, endDate };
+      if (selectedWorkerId) {
+        params.workerId = selectedWorkerId;
+      }
+      const data = await apiClient.getTimeLogs(params);
       setTimeLogs(data || []);
     } catch (error) {
       toast({
@@ -124,15 +135,19 @@ export const WorkerManagement: React.FC = () => {
   };
 
   const fetchDayOffRequests = async () => {
-    const startDate = formatDateForDB(currentMonth.jy, currentMonth.jm, 1);
+    const startDate = formatDateForDB(selectedMonth.jy, selectedMonth.jm, 1);
     const endDate = formatDateForDB(
-      currentMonth.jy,
-      currentMonth.jm,
-      getDaysInJalaliMonth(currentMonth.jy, currentMonth.jm)
+      selectedMonth.jy,
+      selectedMonth.jm,
+      getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm)
     );
 
     try {
-      const data = await apiClient.getDayOffRequests({ startDate, endDate });
+      const params: any = { startDate, endDate };
+      if (selectedWorkerId) {
+        params.workerId = selectedWorkerId;
+      }
+      const data = await apiClient.getDayOffRequests(params);
       const typedData = (data || []).map((request) => ({
         ...request,
         status: request.status as "pending" | "approved" | "rejected",
@@ -148,7 +163,11 @@ export const WorkerManagement: React.FC = () => {
   };
 
   const calculateWorkerSummaries = () => {
-    const summaries = workers.map((worker) => {
+    const filteredWorkers = selectedWorkerId 
+      ? workers.filter(worker => worker.user_id === selectedWorkerId)
+      : workers;
+
+    const summaries = filteredWorkers.map((worker) => {
       const workerLogs = timeLogs.filter(
         (log) => log.worker_id === worker.user_id
       );
@@ -169,6 +188,24 @@ export const WorkerManagement: React.FC = () => {
     });
 
     setWorkerSummaries(summaries);
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setSelectedMonth(prev => {
+      if (direction === 'prev') {
+        if (prev.jm === 1) {
+          return { jy: prev.jy - 1, jm: 12, jd: prev.jd };
+        } else {
+          return { ...prev, jm: prev.jm - 1 };
+        }
+      } else {
+        if (prev.jm === 12) {
+          return { jy: prev.jy + 1, jm: 1, jd: prev.jd };
+        } else {
+          return { ...prev, jm: prev.jm + 1 };
+        }
+      }
+    });
   };
 
   const updateTimeLog = async () => {
@@ -243,9 +280,82 @@ export const WorkerManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">مدیریت کارمندان</h2>
-        <Badge variant="outline">
-          {getJalaliMonthName(currentMonth.jm)} {currentMonth.jy}
-        </Badge>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <Select
+              value={selectedWorkerId}
+              onValueChange={(value) => setSelectedWorkerId(value)}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="انتخاب کارمند" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">همه کارمندان</SelectItem>
+                {workers.map((worker) => (
+                  <SelectItem key={worker.id} value={worker.user_id}>
+                    {worker.full_name || worker.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Select
+              value={selectedMonth.jy.toString()}
+              onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedMonth.jm.toString()}
+              onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                  "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+                ].map((month, index) => (
+                  <SelectItem key={index + 1} value={(index + 1).toString()}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('prev')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Badge variant="outline" className="min-w-[120px] text-center">
+              {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('next')}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="summary" className="space-y-6" dir="rtl">
