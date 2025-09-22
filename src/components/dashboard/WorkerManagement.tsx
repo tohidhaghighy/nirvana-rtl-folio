@@ -1,4 +1,37 @@
 import React, { useState, useEffect } from "react";
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    console.error("WorkerManagement Error:", error);
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("WorkerManagement Error Details:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div className="p-6 text-center">
+        <h2 className="text-xl font-bold text-red-600 mb-4">خطا در بارگذاری مدیریت کارمندان</h2>
+        <p className="text-gray-600">لطفاً صفحه را بازخوانی کنید یا با پشتیبانی تماس بگیرید.</p>
+        <button 
+          onClick={() => this.setState({ hasError: false })}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          تلاش مجدد
+        </button>
+      </div>;
+    }
+
+    return this.props.children;
+  }
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +101,8 @@ interface WorkerSummary {
 }
 
 export const WorkerManagement: React.FC = () => {
+  console.log("WorkerManagement component rendering");
+  
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
@@ -81,6 +116,8 @@ export const WorkerManagement: React.FC = () => {
   const [selectedWorkerId, setSelectedWorkerId] = useState("");
   
   const currentDate = getCurrentJalaliDate();
+  
+  console.log("WorkerManagement state:", { workers: workers.length, timeLogs: timeLogs.length });
 
   useEffect(() => {
     fetchWorkers();
@@ -276,327 +313,341 @@ export const WorkerManagement: React.FC = () => {
     (req) => req.status === "pending"
   );
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">مدیریت کارمندان</h2>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <Select
-              value={selectedWorkerId}
-              onValueChange={(value) => setSelectedWorkerId(value)}
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="انتخاب کارمند" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">همه کارمندان</SelectItem>
-                {workers.map((worker) => (
-                  <SelectItem key={worker.id} value={worker.user_id}>
-                    {worker.full_name || worker.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  try {
+    console.log("Rendering WorkerManagement component");
+    
+    return (
+      <ErrorBoundary>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">مدیریت کارمندان</h2>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedWorkerId}
+                  onValueChange={(value) => setSelectedWorkerId(value)}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="انتخاب کارمند" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">همه کارمندان</SelectItem>
+                    {workers.map((worker) => (
+                      <SelectItem key={worker.id} value={worker.user_id}>
+                        {worker.full_name || worker.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedMonth.jy.toString()}
+                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedMonth.jm.toString()}
+                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                      "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+                    ].map((month, index) => (
+                      <SelectItem key={index + 1} value={(index + 1).toString()}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth('prev')}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Badge variant="outline" className="min-w-[120px] text-center">
+                  {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth('next')}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select
-              value={selectedMonth.jy.toString()}
-              onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
-            >
-              <SelectTrigger className="w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={selectedMonth.jm.toString()}
-              onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[
-                  "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-                  "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-                ].map((month, index) => (
-                  <SelectItem key={index + 1} value={(index + 1).toString()}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('prev')}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Badge variant="outline" className="min-w-[120px] text-center">
-              {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('next')}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
+
+          <Tabs defaultValue="summary" className="space-y-6" dir="rtl">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="summary">خلاصه کارمندان</TabsTrigger>
+              <TabsTrigger value="time-logs">ساعات کاری</TabsTrigger>
+              <TabsTrigger value="day-off-requests">درخواست‌های مرخصی</TabsTrigger>
+              <TabsTrigger value="pending">
+                در انتظار بررسی ({pendingRequests.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="summary">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    خلاصه عملکرد کارمندان
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>نام کارمند</TableHead>
+                        <TableHead>مجموع ساعات</TableHead>
+                        <TableHead>روزهای کاری</TableHead>
+                        <TableHead>مرخصی‌های تایید شده</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {workerSummaries.map((summary) => (
+                        <TableRow key={summary.worker_id}>
+                          <TableCell className="font-medium">
+                            {summary.worker_name}
+                          </TableCell>
+                          <TableCell>{summary.total_hours} ساعت</TableCell>
+                          <TableCell>{summary.days_worked} روز</TableCell>
+                          <TableCell>{summary.approved_days_off} روز</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="time-logs">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    ساعات کاری ثبت شده
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>نام کارمند</TableHead>
+                        <TableHead>تاریخ</TableHead>
+                        <TableHead>ساعات کاری</TableHead>
+                        <TableHead>توضیحات</TableHead>
+                        <TableHead>عملیات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {timeLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-medium">
+                            {log.worker_name}
+                          </TableCell>
+                          <TableCell>{formatDateDisplay(log.date)}</TableCell>
+                          <TableCell>{log.hours_worked} ساعت</TableCell>
+                          <TableCell>{log.description || "-"}</TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(log)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="day-off-requests">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Coffee className="h-5 w-5" />
+                    همه درخواست‌های مرخصی
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>نام کارمند</TableHead>
+                        <TableHead>تاریخ مرخصی</TableHead>
+                        <TableHead>دلیل</TableHead>
+                        <TableHead>وضعیت</TableHead>
+                        <TableHead>تاریخ درخواست</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dayOffRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell className="font-medium">
+                            {request.worker_name}
+                          </TableCell>
+                          <TableCell>
+                            {formatDateDisplay(request.request_date)}
+                          </TableCell>
+                          <TableCell>{request.reason}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                request.status === "approved"
+                                  ? "default"
+                                  : request.status === "rejected"
+                                  ? "destructive"
+                                  : "outline"
+                              }
+                            >
+                              {request.status === "pending"
+                                ? "در انتظار"
+                                : request.status === "approved"
+                                ? "تایید شده"
+                                : "رد شده"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {formatDateDisplay(request.created_at)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="pending">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Coffee className="h-5 w-5" />
+                    درخواست‌های در انتظار بررسی
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>نام کارمند</TableHead>
+                        <TableHead>تاریخ مرخصی</TableHead>
+                        <TableHead>دلیل</TableHead>
+                        <TableHead>تاریخ درخواست</TableHead>
+                        <TableHead>عملیات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell className="font-medium">
+                            {request.worker_name}
+                          </TableCell>
+                          <TableCell>
+                            {formatDateDisplay(request.request_date)}
+                          </TableCell>
+                          <TableCell>{request.reason}</TableCell>
+                          <TableCell>
+                            {formatDateDisplay(request.created_at)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleDayOffRequest(request.id, "approved")
+                                }
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() =>
+                                  handleDayOffRequest(request.id, "rejected")
+                                }
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>ویرایش ساعات کاری</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-hours">ساعات کاری</Label>
+                  <Input
+                    id="edit-hours"
+                    type="number"
+                    step="0.5"
+                    value={editHours}
+                    onChange={(e) => setEditHours(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-description">توضیحات</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                  />
+                </div>
+                <Button onClick={updateTimeLog} className="w-full">
+                  بروزرسانی
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
+      </ErrorBoundary>
+    );
+  } catch (error) {
+    console.error("WorkerManagement render error:", error);
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-xl font-bold text-red-600 mb-4">خطا در بارگذاری مدیریت کارمندان</h2>
+        <p className="text-gray-600">خطای رندر: {String(error)}</p>
       </div>
-
-      <Tabs defaultValue="summary" className="space-y-6" dir="rtl">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="summary">خلاصه کارمندان</TabsTrigger>
-          <TabsTrigger value="time-logs">ساعات کاری</TabsTrigger>
-          <TabsTrigger value="day-off-requests">درخواست‌های مرخصی</TabsTrigger>
-          <TabsTrigger value="pending">
-            در انتظار بررسی ({pendingRequests.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="summary">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                خلاصه عملکرد کارمندان
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>نام کارمند</TableHead>
-                    <TableHead>مجموع ساعات</TableHead>
-                    <TableHead>روزهای کاری</TableHead>
-                    <TableHead>مرخصی‌های تایید شده</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workerSummaries.map((summary) => (
-                    <TableRow key={summary.worker_id}>
-                      <TableCell className="font-medium">
-                        {summary.worker_name}
-                      </TableCell>
-                      <TableCell>{summary.total_hours} ساعت</TableCell>
-                      <TableCell>{summary.days_worked} روز</TableCell>
-                      <TableCell>{summary.approved_days_off} روز</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="time-logs">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                ساعات کاری ثبت شده
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>نام کارمند</TableHead>
-                    <TableHead>تاریخ</TableHead>
-                    <TableHead>ساعات کاری</TableHead>
-                    <TableHead>توضیحات</TableHead>
-                    <TableHead>عملیات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {timeLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-medium">
-                        {log.worker_name}
-                      </TableCell>
-                      <TableCell>{formatDateDisplay(log.date)}</TableCell>
-                      <TableCell>{log.hours_worked} ساعت</TableCell>
-                      <TableCell>{log.description || "-"}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditDialog(log)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="day-off-requests">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Coffee className="h-5 w-5" />
-                همه درخواست‌های مرخصی
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>نام کارمند</TableHead>
-                    <TableHead>تاریخ مرخصی</TableHead>
-                    <TableHead>دلیل</TableHead>
-                    <TableHead>وضعیت</TableHead>
-                    <TableHead>تاریخ درخواست</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {dayOffRequests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell className="font-medium">
-                        {request.worker_name}
-                      </TableCell>
-                      <TableCell>
-                        {formatDateDisplay(request.request_date)}
-                      </TableCell>
-                      <TableCell>{request.reason}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            request.status === "approved"
-                              ? "default"
-                              : request.status === "rejected"
-                              ? "destructive"
-                              : "outline"
-                          }
-                        >
-                          {request.status === "pending"
-                            ? "در انتظار"
-                            : request.status === "approved"
-                            ? "تایید شده"
-                            : "رد شده"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {formatDateDisplay(request.created_at)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="pending">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Coffee className="h-5 w-5" />
-                درخواست‌های در انتظار بررسی
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>نام کارمند</TableHead>
-                    <TableHead>تاریخ مرخصی</TableHead>
-                    <TableHead>دلیل</TableHead>
-                    <TableHead>تاریخ درخواست</TableHead>
-                    <TableHead>عملیات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingRequests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell className="font-medium">
-                        {request.worker_name}
-                      </TableCell>
-                      <TableCell>
-                        {formatDateDisplay(request.request_date)}
-                      </TableCell>
-                      <TableCell>{request.reason}</TableCell>
-                      <TableCell>
-                        {formatDateDisplay(request.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleDayOffRequest(request.id, "approved")
-                            }
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() =>
-                              handleDayOffRequest(request.id, "rejected")
-                            }
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>ویرایش ساعات کاری</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-hours">ساعات کاری</Label>
-              <Input
-                id="edit-hours"
-                type="number"
-                step="0.5"
-                value={editHours}
-                onChange={(e) => setEditHours(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-description">توضیحات</Label>
-              <Textarea
-                id="edit-description"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-              />
-            </div>
-            <Button onClick={updateTimeLog} className="w-full">
-              بروزرسانی
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+    );
+  }
 };
