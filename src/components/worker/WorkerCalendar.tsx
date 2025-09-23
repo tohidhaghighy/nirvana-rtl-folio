@@ -352,7 +352,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
           </CardTitle>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span>مجموع ساعات کاری: {totalHours} ساعت</span>
-            {!isAdmin && (
+            {!isAdmin && selectedMonth.jm == currentDate.jm && (
               <span className="text-amber-600">ویرایش فقط برای ماه جاری</span>
             )}
           </div>
