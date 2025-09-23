@@ -325,14 +325,14 @@ export const WorkerManagement: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <Select
-                  value={selectedWorkerId}
-                  onValueChange={(value) => setSelectedWorkerId(value)}
+                  value={selectedWorkerId || "all"}
+                  onValueChange={(value) => setSelectedWorkerId(value === "all" ? "" : value)}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="انتخاب کارمند" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">همه کارمندان</SelectItem>
+                    <SelectItem value="all">همه کارمندان</SelectItem>
                     {workers.map((worker) => (
                       <SelectItem key={worker.id} value={worker.user_id}>
                         {worker.full_name || worker.email}
