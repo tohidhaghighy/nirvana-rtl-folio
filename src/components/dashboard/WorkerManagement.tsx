@@ -124,15 +124,15 @@ export const WorkerManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchTimeLogs();
-    fetchDayOffRequests();
-  }, [selectedMonth, selectedWorkerId]);
+    if (workers.length > 0) {
+      fetchTimeLogs();
+      fetchDayOffRequests();
+    }
+  }, [selectedMonth.jy, selectedMonth.jm, selectedWorkerId, workers.length]);
 
   useEffect(() => {
-    if (workers.length && timeLogs.length) {
-      calculateWorkerSummaries();
-    }
-  }, [workers, timeLogs, dayOffRequests]);
+    calculateWorkerSummaries();
+  }, [workers, timeLogs, dayOffRequests, selectedWorkerId]);
 
   const fetchWorkers = async () => {
     try {
@@ -157,17 +157,19 @@ export const WorkerManagement: React.FC = () => {
 
     try {
       const params: any = { startDate, endDate };
-      if (selectedWorkerId) {
+      if (selectedWorkerId && selectedWorkerId !== "all") {
         params.workerId = selectedWorkerId;
       }
       const data = await apiClient.getTimeLogs(params);
       setTimeLogs(data || []);
     } catch (error) {
+      console.error("Error fetching time logs:", error);
       toast({
         title: "خطا",
         description: "خطا در دریافت ساعات کاری",
         variant: "destructive",
       });
+      setTimeLogs([]);
     }
   };
 
@@ -181,7 +183,7 @@ export const WorkerManagement: React.FC = () => {
 
     try {
       const params: any = { startDate, endDate };
-      if (selectedWorkerId) {
+      if (selectedWorkerId && selectedWorkerId !== "all") {
         params.workerId = selectedWorkerId;
       }
       const data = await apiClient.getDayOffRequests(params);
@@ -191,16 +193,18 @@ export const WorkerManagement: React.FC = () => {
       }));
       setDayOffRequests(typedData);
     } catch (error) {
+      console.error("Error fetching day off requests:", error);
       toast({
         title: "خطا",
         description: "خطا در دریافت درخواست‌های مرخصی",
         variant: "destructive",
       });
+      setDayOffRequests([]);
     }
   };
 
   const calculateWorkerSummaries = () => {
-    const filteredWorkers = selectedWorkerId 
+    const filteredWorkers = selectedWorkerId && selectedWorkerId !== "all"
       ? workers.filter(worker => worker.user_id === selectedWorkerId)
       : workers;
 
