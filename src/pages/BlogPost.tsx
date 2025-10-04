@@ -51,7 +51,7 @@ const BlogPost = () => {
 
   const fetchPost = async () => {
     try {
-      const data = await apiClient.request(`/blogs/${slug}`);
+      const data = await apiClient.getBlogBySlug(slug!);
       setPost(data);
     } catch (error) {
       console.error("Error fetching post:", error);
