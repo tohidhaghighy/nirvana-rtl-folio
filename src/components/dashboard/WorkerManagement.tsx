@@ -77,7 +77,9 @@ interface TimeLog {
   id: string;
   worker_id: string;
   date: string;
-  hours_worked: number;
+  start_time: string;
+  end_time: string;
+  hours_worked: string;
   description: string;
   worker_name: string;
 }
@@ -108,7 +110,8 @@ export const WorkerManagement: React.FC = () => {
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
   const [workerSummaries, setWorkerSummaries] = useState<WorkerSummary[]>([]);
   const [selectedTimeLog, setSelectedTimeLog] = useState<TimeLog | null>(null);
-  const [editHours, setEditHours] = useState("");
+  const [editStartTime, setEditStartTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -203,6 +206,12 @@ export const WorkerManagement: React.FC = () => {
     }
   };
 
+  const convertTimeToHours = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours + (minutes || 0) / 60;
+  };
+
   const calculateWorkerSummaries = () => {
     const filteredWorkers = selectedWorkerId && selectedWorkerId !== "all"
       ? workers.filter(worker => worker.user_id === selectedWorkerId)
@@ -220,7 +229,7 @@ export const WorkerManagement: React.FC = () => {
         worker_id: worker.user_id,
         worker_name: worker.full_name || "نامشخص",
         total_hours: workerLogs.reduce(
-          (sum, log) => sum + Number(log.hours_worked),
+          (sum, log) => sum + convertTimeToHours(log.hours_worked),
           0
         ),
         days_worked: workerLogs.length,
@@ -249,12 +258,32 @@ export const WorkerManagement: React.FC = () => {
     });
   };
 
+  const calculateHoursTime = (start: string, end: string): string => {
+    if (!start || !end) return "00:00";
+    
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+    
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    
+    const diffMinutes = Math.max(0, endMinutes - startMinutes);
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   const updateTimeLog = async () => {
     if (!selectedTimeLog) return;
 
+    const hoursWorked = calculateHoursTime(editStartTime, editEndTime);
+
     try {
       await apiClient.updateTimeLog(selectedTimeLog.id, {
-        hours_worked: parseFloat(editHours),
+        start_time: editStartTime + ":00",
+        end_time: editEndTime + ":00",
+        hours_worked: hoursWorked + ":00",
         description: editDescription,
       });
 
@@ -302,7 +331,8 @@ export const WorkerManagement: React.FC = () => {
 
   const openEditDialog = (timeLog: TimeLog) => {
     setSelectedTimeLog(timeLog);
-    setEditHours(timeLog.hours_worked.toString());
+    setEditStartTime(timeLog.start_time ? timeLog.start_time.substring(0, 5) : "");
+    setEditEndTime(timeLog.end_time ? timeLog.end_time.substring(0, 5) : "");
     setEditDescription(timeLog.description || "");
     setIsEditDialogOpen(true);
   };
@@ -474,7 +504,7 @@ export const WorkerManagement: React.FC = () => {
                             {log.worker_name}
                           </TableCell>
                           <TableCell>{formatDateDisplay(log.date)}</TableCell>
-                          <TableCell>{log.hours_worked} ساعت</TableCell>
+                          <TableCell>{log.hours_worked ? log.hours_worked.substring(0, 5) : "0:00"}</TableCell>
                           <TableCell>{log.description || "-"}</TableCell>
                           <TableCell>
                             <Button
@@ -618,16 +648,31 @@ export const WorkerManagement: React.FC = () => {
                 <DialogTitle>ویرایش ساعات کاری</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-hours">ساعات کاری</Label>
-                  <Input
-                    id="edit-hours"
-                    type="number"
-                    step="0.5"
-                    value={editHours}
-                    onChange={(e) => setEditHours(e.target.value)}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-start-time">زمان شروع</Label>
+                    <Input
+                      id="edit-start-time"
+                      type="time"
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-end-time">زمان پایان</Label>
+                    <Input
+                      id="edit-end-time"
+                      type="time"
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                    />
+                  </div>
                 </div>
+                {editStartTime && editEndTime && (
+                  <div className="text-sm text-muted-foreground text-center">
+                    مجموع: {calculateHoursTime(editStartTime, editEndTime)}
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="edit-description">توضیحات</Label>
                   <Textarea

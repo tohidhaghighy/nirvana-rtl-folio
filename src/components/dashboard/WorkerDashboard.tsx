@@ -32,7 +32,9 @@ import {
 interface TimeLog {
   id: string;
   date: string;
-  hours_worked: number;
+  start_time: string;
+  end_time: string;
+  hours_worked: string;
   description: string;
 }
 interface DayOffRequest {
@@ -95,7 +97,10 @@ export const WorkerDashboard: React.FC = () => {
 
       setTimeLogs(data || []);
       const total = (data || []).reduce(
-        (sum, log) => sum + Number(log.hours_worked),
+        (sum, log) => {
+          const [hours, minutes] = (log.hours_worked || "0:00").split(':').map(Number);
+          return sum + hours + (minutes || 0) / 60;
+        },
         0
       );
       setTotalHours(total);
@@ -216,14 +221,21 @@ export const WorkerDashboard: React.FC = () => {
     return false;
   };
 
+  const convertTimeToHours = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours + (minutes || 0) / 60;
+  };
+
   const todayDateStr = formatDateForDB(
     currentDate.jy,
     currentDate.jm,
     currentDate.jd
   );
-  const hoursToday =
+  const hoursToday = convertTimeToHours(
     timeLogs.find((log) => log.date.substring(0, 10) === todayDateStr)
-      ?.hours_worked || 0;
+      ?.hours_worked || "0:00"
+  );
   const daysWorked = new Set(timeLogs.map((log) => log.date)).size;
   const pendingRequests = dayOffRequests.filter(
     (req) => req.status === "pending"

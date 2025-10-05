@@ -26,7 +26,9 @@ import {
 interface TimeLog {
   id: string;
   date: string;
-  hours_worked: number;
+  start_time: string;
+  end_time: string;
+  hours_worked: string;
   description: string;
 }
 
@@ -72,8 +74,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
   const [isDayOffDialogOpen, setIsDayOffDialogOpen] = useState(false);
 
-  const calculateHours = (start: string, end: string): number => {
-    if (!start || !end) return 0;
+  const calculateHoursTime = (start: string, end: string): string => {
+    if (!start || !end) return "00:00";
     
     const [startHour, startMinute] = start.split(':').map(Number);
     const [endHour, endMinute] = end.split(':').map(Number);
@@ -81,16 +83,19 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
     
-    const diffMinutes = endMinutes - startMinutes;
-    return Math.max(0, diffMinutes / 60);
+    const diffMinutes = Math.max(0, endMinutes - startMinutes);
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
   const saveTimeLog = async () => {
     if (!user || !selectedDate || !startTime || !endTime) return;
 
-    const hours = calculateHours(startTime, endTime);
+    const hoursWorked = calculateHoursTime(startTime, endTime);
     
-    if (hours <= 0) {
+    if (hoursWorked === "00:00") {
       toast({
         title: "خطا",
         description: "زمان پایان باید بعد از زمان شروع باشد",
@@ -108,7 +113,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const logData = {
       worker_id: user.id,
       date: dateStr,
-      hours_worked: hours,
+      start_time: startTime + ":00",
+      end_time: endTime + ":00",
+      hours_worked: hoursWorked + ":00",
       description: description || null,
     };
 
@@ -226,14 +233,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const existingLog = timeLogs.find((log) => log.date === dateStr);
 
     if (existingLog) {
-      // Convert hours back to default times (e.g., 8am start)
-      const hours = existingLog.hours_worked;
-      const startHour = 8;
-      const endHour = startHour + Math.floor(hours);
-      const endMinutes = Math.round((hours - Math.floor(hours)) * 60);
-      
-      setStartTime(`${startHour.toString().padStart(2, '0')}:00`);
-      setEndTime(`${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`);
+      // Use the actual start_time and end_time from the log
+      setStartTime(existingLog.start_time ? existingLog.start_time.substring(0, 5) : "");
+      setEndTime(existingLog.end_time ? existingLog.end_time.substring(0, 5) : "");
       setDescription(existingLog.description || "");
     } else {
       setStartTime("");
@@ -347,7 +349,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
         {timeLog && (
           <Badge variant="secondary" className="text-xs mb-1">
-            {timeLog.hours_worked} ساعت
+            {timeLog.hours_worked ? timeLog.hours_worked.substring(0, 5) : "0:00"}
           </Badge>
         )}
 
@@ -447,7 +449,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
             </div>
             {startTime && endTime && (
               <div className="text-sm text-muted-foreground text-center">
-                مجموع: {calculateHours(startTime, endTime).toFixed(2)} ساعت
+                مجموع: {calculateHoursTime(startTime, endTime)}
               </div>
             )}
             <div>

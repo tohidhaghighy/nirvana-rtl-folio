@@ -67,7 +67,7 @@ router.get('/time-logs', authenticateToken, async (req, res) => {
 // Create or update time log
 router.post('/time-logs', authenticateToken, async (req, res) => {
   try {
-    const { worker_id, date, hours_worked, description } = req.body;
+    const { worker_id, date, start_time, end_time, hours_worked, description } = req.body;
     
     const pool = await getConnection();
     
@@ -81,12 +81,14 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
       // Update existing log
       await pool.request()
         .input('id', sql.UniqueIdentifier, existingResult.recordset[0].id)
-        .input('hoursWorked', sql.Decimal(5, 2), hours_worked)
+        .input('startTime', sql.Time, start_time)
+        .input('endTime', sql.Time, end_time)
+        .input('hoursWorked', sql.Time, hours_worked)
         .input('description', sql.NVarChar, description)
         .input('updatedAt', sql.DateTime2, new Date())
         .query(`
           UPDATE time_logs 
-          SET hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
+          SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
           WHERE id = @id
         `);
     } else {
@@ -94,13 +96,15 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
       const result = await pool.request()
         .input('workerId', sql.UniqueIdentifier, worker_id)
         .input('date', sql.Date, date)
-        .input('hoursWorked', sql.Decimal(5, 2), hours_worked)
+        .input('startTime', sql.Time, start_time)
+        .input('endTime', sql.Time, end_time)
+        .input('hoursWorked', sql.Time, hours_worked)
         .input('description', sql.NVarChar, description)
         .input('createdAt', sql.DateTime2, new Date())
         .input('updatedAt', sql.DateTime2, new Date())
         .query(`
-          INSERT INTO time_logs (worker_id, date, hours_worked, description, created_at, updated_at)
-          VALUES (@workerId, @date, @hoursWorked, @description, @createdAt, @updatedAt)
+          INSERT INTO time_logs (worker_id, date, start_time, end_time, hours_worked, description, created_at, updated_at)
+          VALUES (@workerId, @date, @startTime, @endTime, @hoursWorked, @description, @createdAt, @updatedAt)
         `);
     }
     
@@ -115,17 +119,19 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
 router.put('/time-logs/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hours_worked, description } = req.body;
+    const { start_time, end_time, hours_worked, description } = req.body;
 
     const pool = await getConnection();
     await pool.request()
       .input('id', sql.UniqueIdentifier, id)
-      .input('hoursWorked', sql.Decimal(5, 2), hours_worked)
+      .input('startTime', sql.Time, start_time)
+      .input('endTime', sql.Time, end_time)
+      .input('hoursWorked', sql.Time, hours_worked)
       .input('description', sql.NVarChar, description)
       .input('updatedAt', sql.DateTime2, new Date())
       .query(`
         UPDATE time_logs 
-        SET hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
+        SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
         WHERE id = @id
       `);
     
