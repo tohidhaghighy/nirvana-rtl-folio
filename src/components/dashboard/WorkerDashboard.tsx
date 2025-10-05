@@ -26,6 +26,7 @@ import {
   getDaysInJalaliMonth,
   getCurrentJalaliDate,
   getJalaliMonthName,
+  jalaliToGregorian,
 } from "@/utils/jalali";
 
 interface TimeLog {
@@ -260,13 +261,18 @@ export const WorkerDashboard: React.FC = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <Select
                   value={selectedMonth.jy.toString()}
-                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
+                  onValueChange={(value) =>
+                    setSelectedMonth({ ...selectedMonth, jy: parseInt(value) })
+                  }
                 >
                   <SelectTrigger className="w-24">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
+                    {Array.from(
+                      { length: 10 },
+                      (_, i) => currentDate.jy - 5 + i
+                    ).map((year) => (
                       <SelectItem key={year} value={year.toString()}>
                         {year}
                       </SelectItem>
@@ -275,17 +281,32 @@ export const WorkerDashboard: React.FC = () => {
                 </Select>
                 <Select
                   value={selectedMonth.jm.toString()}
-                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
+                  onValueChange={(value) =>
+                    setSelectedMonth({ ...selectedMonth, jm: parseInt(value) })
+                  }
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {[
-                      "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-                      "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+                      "فروردین",
+                      "اردیبهشت",
+                      "خرداد",
+                      "تیر",
+                      "مرداد",
+                      "شهریور",
+                      "مهر",
+                      "آبان",
+                      "آذر",
+                      "دی",
+                      "بهمن",
+                      "اسفند",
                     ].map((month, index) => (
-                      <SelectItem key={index + 1} value={(index + 1).toString()}>
+                      <SelectItem
+                        key={index + 1}
+                        value={(index + 1).toString()}
+                      >
                         {month}
                       </SelectItem>
                     ))}

@@ -341,6 +341,13 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
   const daysInMonth = getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const firstDayGregorian = jalaliToGregorian(
+    selectedMonth.jy,
+    selectedMonth.jm,
+    1
+  );
+  const startDayOfWeek = firstDayGregorian.getDay(); // Sunday=0 ... Saturday=6
+  const startIndex = startDayOfWeek === 6 ? 0 : startDayOfWeek + 1; // mapped to Persian week index
 
   return (
     <div className="space-y-6">
@@ -365,7 +372,14 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
               </div>
             ))}
           </div>
+
           <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: startIndex }).map((_, i) => (
+              <div
+                key={`empty-${i}`}
+                className="min-h-24 border border-border p-2 bg-background"
+              />
+            ))}
             {days.map((day) => renderCalendarDay(day))}
           </div>
         </CardContent>
