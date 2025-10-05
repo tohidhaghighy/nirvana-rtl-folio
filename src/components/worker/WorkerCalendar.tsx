@@ -65,14 +65,39 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     jm: number;
     jd: number;
   } | null>(null);
-  const [hours, setHours] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [dayOffReason, setDayOffReason] = useState("");
   const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
   const [isDayOffDialogOpen, setIsDayOffDialogOpen] = useState(false);
 
+  const calculateHours = (start: string, end: string): number => {
+    if (!start || !end) return 0;
+    
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+    
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    
+    const diffMinutes = endMinutes - startMinutes;
+    return Math.max(0, diffMinutes / 60);
+  };
+
   const saveTimeLog = async () => {
-    if (!user || !selectedDate || !hours) return;
+    if (!user || !selectedDate || !startTime || !endTime) return;
+
+    const hours = calculateHours(startTime, endTime);
+    
+    if (hours <= 0) {
+      toast({
+        title: "خطا",
+        description: "زمان پایان باید بعد از زمان شروع باشد",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const dateStr = formatDateForDB(
       selectedDate.jy,
@@ -83,7 +108,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const logData = {
       worker_id: user.id,
       date: dateStr,
-      hours_worked: parseFloat(hours),
+      hours_worked: hours,
       description: description || null,
     };
 
@@ -96,7 +121,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       });
 
       setIsLogDialogOpen(false);
-      setHours("");
+      setStartTime("");
+      setEndTime("");
       setDescription("");
       onDataChange();
     } catch (error) {
@@ -200,10 +226,18 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     const existingLog = timeLogs.find((log) => log.date === dateStr);
 
     if (existingLog) {
-      setHours(existingLog.hours_worked.toString());
+      // Convert hours back to default times (e.g., 8am start)
+      const hours = existingLog.hours_worked;
+      const startHour = 8;
+      const endHour = startHour + Math.floor(hours);
+      const endMinutes = Math.round((hours - Math.floor(hours)) * 60);
+      
+      setStartTime(`${startHour.toString().padStart(2, '0')}:00`);
+      setEndTime(`${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`);
       setDescription(existingLog.description || "");
     } else {
-      setHours("");
+      setStartTime("");
+      setEndTime("");
       setDescription("");
     }
 
@@ -391,19 +425,31 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
             <DialogTitle>ثبت ساعات کاری</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="hours">ساعات کاری</Label>
-              <Input
-                id="hours"
-                type="number"
-                step="0.5"
-                min="0"
-                max="24"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
-                placeholder="مثال: 8.5"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startTime">زمان شروع</Label>
+                <Input
+                  id="startTime"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="endTime">زمان پایان</Label>
+                <Input
+                  id="endTime"
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
             </div>
+            {startTime && endTime && (
+              <div className="text-sm text-muted-foreground text-center">
+                مجموع: {calculateHours(startTime, endTime).toFixed(2)} ساعت
+              </div>
+            )}
             <div>
               <Label htmlFor="description">توضیحات (اختیاری)</Label>
               <Textarea
