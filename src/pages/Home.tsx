@@ -15,19 +15,22 @@ import {
   User,
   CircleCheckBig,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
 
@@ -326,7 +329,7 @@ const Home = () => {
                 </p>
               </div>
 
-              <div className="relative max-w-6xl mx-auto">
+              <div className="relative max-w-6xl mx-auto" dir="ltr">
                 <Carousel
                   opts={{
                     align: "start",
@@ -374,8 +377,8 @@ const Home = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="hidden md:flex -right-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
-                  <CarouselNext className="hidden md:flex -left-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                  <CarouselPrevious className="bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                  <CarouselNext className="bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
                 </Carousel>
               </div>
 
@@ -407,7 +410,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="relative max-w-6xl mx-auto">
+            <div className="relative max-w-6xl mx-auto" dir="ltr">
               <Carousel
                 opts={{
                   align: "start",
@@ -493,8 +496,8 @@ const Home = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="hidden md:flex -right-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
-                <CarouselNext className="hidden md:flex -left-12 bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                <CarouselPrevious className="bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
+                <CarouselNext className="bg-card border-card-border text-foreground hover:bg-accent hover:text-accent-foreground" />
               </Carousel>
             </div>
 
