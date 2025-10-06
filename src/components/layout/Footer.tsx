@@ -70,7 +70,7 @@ const Footer = () => {
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-accent" />
                 <span className="persian-body text-background/80 ltr-content">
-                  021-86096368
+                  ۰۲۱-۸۶۰۹۶۳۶۸{" "}
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-background/20 mt-12 pt-8 text-center">
           <p className="persian-body text-background/60">
-            © ۱۴۰۳ شرکت ویراپ تمامی حقوق محفوظ است.
+            © ۱۴۰۴ شرکت ویراپ تمامی حقوق محفوظ است.
           </p>
         </div>
       </div>

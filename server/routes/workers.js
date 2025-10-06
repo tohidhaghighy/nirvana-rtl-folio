@@ -30,13 +30,27 @@ router.get('/time-logs', authenticateToken, async (req, res) => {
     const { startDate, endDate, workerId } = req.query;
     
     const pool = await getConnection();
-    let query = `
-      SELECT tl.*, p.full_name as worker_name
-      FROM time_logs tl
-      INNER JOIN profiles p ON tl.worker_id = p.user_id
-      WHERE 1=1
-    `;
-    
+    // let query = `
+    //   SELECT tl.*, p.full_name as worker_name
+    //   FROM time_logs tl
+    //   INNER JOIN profiles p ON tl.worker_id = p.user_id
+    //   WHERE 1=1
+    // `;    
+    let query = `SELECT tl.id, 
+    tl.worker_id,
+    tl.date, 
+    tl.description, 
+    tl.created_at,
+    tl.updated_at, 
+    tl.hours_worked, 
+    tl.start_time, 
+    tl.end_time, 
+    p.full_name as worker_name, 
+    SUBSTRING(tl.hours_worked , 1, 5) AS hours_worked_str
+    FROM time_logs tl
+    INNER JOIN profiles p ON tl.worker_id = p.user_id
+    WHERE 1=1`;
+
     const request = pool.request();
     
     if (startDate) {
@@ -74,31 +88,31 @@ router.post('/time-logs', authenticateToken, async (req, res) => {
     // Check if log exists for this date
     const existingResult = await pool.request()
       .input('workerId', sql.UniqueIdentifier, worker_id)
-      .input('date', sql.Date, date)
+      .input('date', sql.Date, new Date(date))
       .query('SELECT id FROM time_logs WHERE worker_id = @workerId AND date = @date');
     
     if (existingResult.recordset.length > 0) {
       // Update existing log
       await pool.request()
         .input('id', sql.UniqueIdentifier, existingResult.recordset[0].id)
-        .input('startTime', sql.Time, start_time)
-        .input('endTime', sql.Time, end_time)
-        .input('hoursWorked', sql.Time, hours_worked)
+        .input('startTime', sql.VarChar, start_time)
+        .input('endTime', sql.VarChar, end_time)
+        .input('hoursWorked', sql.VarChar, hours_worked)
         .input('description', sql.NVarChar, description)
         .input('updatedAt', sql.DateTime2, new Date())
         .query(`
           UPDATE time_logs 
           SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
           WHERE id = @id
-        `);
+        `); 
     } else {
       // Create new log
       const result = await pool.request()
         .input('workerId', sql.UniqueIdentifier, worker_id)
         .input('date', sql.Date, date)
-        .input('startTime', sql.Time, start_time)
-        .input('endTime', sql.Time, end_time)
-        .input('hoursWorked', sql.Time, hours_worked)
+        .input('startTime', sql.VarChar, start_time)
+        .input('endTime', sql.VarChar, end_time)
+        .input('hoursWorked', sql.VarChar, hours_worked)
         .input('description', sql.NVarChar, description)
         .input('createdAt', sql.DateTime2, new Date())
         .input('updatedAt', sql.DateTime2, new Date())
@@ -124,9 +138,9 @@ router.put('/time-logs/:id', authenticateToken, requireAdmin, async (req, res) =
     const pool = await getConnection();
     await pool.request()
       .input('id', sql.UniqueIdentifier, id)
-      .input('startTime', sql.Time, start_time)
-      .input('endTime', sql.Time, end_time)
-      .input('hoursWorked', sql.Time, hours_worked)
+      .input('startTime', sql.VarChar, start_time)
+      .input('endTime', sql.VarChar, end_time)
+      .input('hoursWorked', sql.VarChar, hours_worked)
       .input('description', sql.NVarChar, description)
       .input('updatedAt', sql.DateTime2, new Date())
       .query(`

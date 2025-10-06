@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/table";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
+import { convertToPersianDigits } from "@/lib/utils";
 
 interface Profile {
   id: string;
@@ -136,7 +137,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
     try {
       await apiClient.updateUserRole(selectedClient.id, newRole);
-      
+
       toast({
         title: "موفقیت",
         description: "نقش کاربر با موفقیت بروزرسانی شد",
@@ -296,7 +297,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -304,7 +305,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   کل درخواست‌ها
                 </p>
                 <p className="persian-heading text-3xl font-bold text-foreground">
-                  {stats.total}
+                  {stats.total.toLocaleString("fa-IR")}
                 </p>
               </div>
               <MessageSquare className="w-8 h-8 text-primary" />
@@ -318,7 +319,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   تعداد کاربران
                 </p>
                 <p className="persian-heading text-3xl font-bold text-orange-500">
-                  {totalUsers}
+                  {totalUsers.toLocaleString("fa-IR")}
                 </p>
               </div>
               <Users className="w-8 h-8 text-orange-500" />
@@ -332,14 +333,14 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                   مقالات منتشر شده
                 </p>
                 <p className="persian-heading text-3xl font-bold text-blue-500">
-                  {publishedBlogsCount}
+                  {publishedBlogsCount.toLocaleString("fa-IR")}
                 </p>
               </div>
               <FileText className="w-8 h-8 text-blue-500" />
             </div>
           </Card>
 
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="persian-body text-sm text-muted-foreground mb-1">
@@ -351,7 +352,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               </div>
               <TrendingUp className="w-8 h-8 text-green-500" />
             </div>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Main Content */}
@@ -386,7 +387,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         کل درخواست‌ها
                       </p>
                       <p className="persian-heading text-3xl font-bold text-foreground">
-                        {stats.total}
+                        {stats.total.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <MessageSquare className="w-8 h-8 text-primary" />
@@ -400,7 +401,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         در انتظار
                       </p>
                       <p className="persian-heading text-3xl font-bold text-orange-500">
-                        {stats.pending}
+                        {stats.pending.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <Clock className="w-8 h-8 text-orange-500" />
@@ -414,7 +415,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         در حال بررسی
                       </p>
                       <p className="persian-heading text-3xl font-bold text-blue-500">
-                        {stats.inProgress}
+                        {stats.inProgress.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <AlertCircle className="w-8 h-8 text-blue-500" />
@@ -428,7 +429,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         حل شده
                       </p>
                       <p className="persian-heading text-3xl font-bold text-green-500">
-                        {stats.resolved}
+                        {stats.resolved.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <CheckCircle className="w-8 h-8 text-green-500" />
@@ -478,7 +479,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                                 )}
                               </div>
                               <p className="persian-body text-sm text-muted-foreground mb-1">
-                                {submission.email} • {submission.phone}
+                                {submission.email} •{" "}
+                                {convertToPersianDigits(submission.phone)}
                               </p>
                               <p className="persian-body font-medium text-sm mb-2">
                                 {submission.subject}
@@ -530,7 +532,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         کل کاربران
                       </p>
                       <p className="persian-heading text-3xl font-bold text-foreground">
-                        {clientStats.total}
+                        {clientStats.total.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <Users className="w-8 h-8 text-primary" />
@@ -544,7 +546,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         مدیران
                       </p>
                       <p className="persian-heading text-3xl font-bold text-red-500">
-                        {clientStats.admins}
+                        {clientStats.admins.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <Shield className="w-8 h-8 text-red-500" />
@@ -558,7 +560,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         کاربران عادی
                       </p>
                       <p className="persian-heading text-3xl font-bold text-green-500">
-                        {clientStats.clients}
+                        {clientStats.clients.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <UserCheck className="w-8 h-8 text-green-500" />
@@ -572,7 +574,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                         فعالیت هفته اخیر
                       </p>
                       <p className="persian-heading text-3xl font-bold text-blue-500">
-                        {clientStats.recent}
+                        {clientStats.recent.toLocaleString("fa-IR")}
                       </p>
                     </div>
                     <Calendar className="w-8 h-8 text-blue-500" />
@@ -642,7 +644,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                               <TableCell className="persian-body">
                                 <div className="flex items-center gap-2">
                                   <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                                  {client.submission_count || 0}
+                                  {client.submission_count.toLocaleString(
+                                    "fa-IR"
+                                  ) || "۰"}
                                 </div>
                               </TableCell>
                               <TableCell className="persian-body text-sm text-muted-foreground">
@@ -752,7 +756,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                       تعداد درخواست‌ها
                     </p>
                     <p className="persian-body font-medium">
-                      {selectedClient.submission_count || 0}
+                      {selectedClient.submission_count.toLocaleString(
+                        "fa-IR"
+                      ) || "۰"}
                     </p>
                   </div>
                 </div>
@@ -825,7 +831,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                       کل درخواست‌ها:
                     </span>
                     <span className="persian-body font-medium">
-                      {selectedClient.submission_count || 0}
+                      {selectedClient.submission_count.toLocaleString(
+                        "fa-IR"
+                      ) || "۰"}
                     </span>
                   </div>
                   <div className="flex justify-between">

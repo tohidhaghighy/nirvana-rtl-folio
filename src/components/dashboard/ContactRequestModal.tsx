@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   UserX,
 } from "lucide-react";
+import { convertToPersianDigits } from "@/lib/utils";
 
 interface ContactSubmission {
   id: string;
@@ -129,7 +130,11 @@ const ContactRequestModal = ({
 
     setSendingResponse(true);
     try {
-      await apiClient.addTicketResponse(submission.id, newResponse.trim(), true);
+      await apiClient.addTicketResponse(
+        submission.id,
+        newResponse.trim(),
+        true
+      );
 
       toast({
         title: "پاسخ ارسال شد",
@@ -234,7 +239,7 @@ const ContactRequestModal = ({
                   تلفن
                 </p>
                 <p className="persian-body font-medium ltr-content">
-                  {submission.phone}
+                  {convertToPersianDigits(submission.phone)}
                 </p>
               </div>
             </div>
@@ -292,8 +297,8 @@ const ContactRequestModal = ({
                       key={response.id}
                       className={`p-3 rounded-lg ${
                         response.is_admin_response
-                          ? "bg-blue-50 border-r-4 border-blue-500 mr-4"
-                          : "bg-green-50 border-r-4 border-green-500 ml-4"
+                          ? "bg-blue-50 border-l-4 border-blue-500 mr-10"
+                          : "bg-green-50 border-r-4 border-green-500 ml-10"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">

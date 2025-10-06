@@ -112,7 +112,11 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
 
     setSendingResponse(true);
     try {
-      await apiClient.addTicketResponse(selectedSubmission.id, newResponse.trim(), false);
+      await apiClient.addTicketResponse(
+        selectedSubmission.id,
+        newResponse.trim(),
+        false
+      );
 
       toast({
         title: "پیام ارسال شد",
@@ -231,7 +235,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 کل درخواست‌ها
               </p>
               <p className="persian-heading text-3xl font-bold text-foreground">
-                {stats.total}
+                {stats.total.toLocaleString("fa-IR")}
               </p>
             </div>
             <MessageSquare className="w-8 h-8 text-primary" />
@@ -245,7 +249,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 در انتظار
               </p>
               <p className="persian-heading text-3xl font-bold text-orange-500">
-                {stats.pending}
+                {stats.pending.toLocaleString("fa-IR")}
               </p>
             </div>
             <Clock className="w-8 h-8 text-orange-500" />
@@ -259,7 +263,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 در حال بررسی
               </p>
               <p className="persian-heading text-3xl font-bold text-blue-500">
-                {stats.inProgress}
+                {stats.inProgress.toLocaleString("fa-IR")}
               </p>
             </div>
             <AlertCircle className="w-8 h-8 text-blue-500" />
@@ -273,7 +277,7 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                 حل شده
               </p>
               <p className="persian-heading text-3xl font-bold text-green-500">
-                {stats.resolved}
+                {stats.resolved.toLocaleString("fa-IR")}
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-500" />
@@ -434,8 +438,8 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
                         key={response.id}
                         className={`p-3 rounded-lg ${
                           response.is_admin_response
-                            ? "bg-blue-50 border-r-4 border-blue-500 mr-4"
-                            : "bg-green-50 border-r-4 border-green-500 ml-4"
+                            ? "bg-blue-50 border-l-4 border-blue-500 mr-10"
+                            : "bg-green-50 border-r-4 border-green-500 ml-10"
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">

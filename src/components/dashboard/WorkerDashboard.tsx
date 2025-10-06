@@ -28,6 +28,7 @@ import {
   getJalaliMonthName,
   jalaliToGregorian,
 } from "@/utils/jalali";
+import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
 
 interface TimeLog {
   id: string;
@@ -36,6 +37,7 @@ interface TimeLog {
   end_time: string;
   hours_worked: string;
   description: string;
+  hours_worked_str: string;
 }
 interface DayOffRequest {
   id: string;
@@ -96,13 +98,11 @@ export const WorkerDashboard: React.FC = () => {
       const data = await apiClient.getTimeLogs(params);
 
       setTimeLogs(data || []);
-      const total = (data || []).reduce(
-        (sum, log) => {
-          const [hours, minutes] = (log.hours_worked || "0:00").split(':').map(Number);
-          return sum + hours + (minutes || 0) / 60;
-        },
-        0
-      );
+      const total = (data || []).reduce((sum, log) => {
+        let d = log.hours_worked_str || "0:00";
+        const [hours, minutes] = (d || "0:00").split(":").map(Number);
+        return sum + hours + (minutes || 0) / 60;
+      }, 0);
       setTotalHours(total);
     } catch (error) {
       toast({
@@ -223,7 +223,7 @@ export const WorkerDashboard: React.FC = () => {
 
   const convertTimeToHours = (timeStr: string): number => {
     if (!timeStr) return 0;
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    const [hours, minutes] = timeStr.split(":").map(Number);
     return hours + (minutes || 0) / 60;
   };
 
@@ -232,6 +232,7 @@ export const WorkerDashboard: React.FC = () => {
     currentDate.jm,
     currentDate.jd
   );
+
   const hoursToday = convertTimeToHours(
     timeLogs.find((log) => log.date.substring(0, 10) === todayDateStr)
       ?.hours_worked || "0:00"
@@ -337,7 +338,8 @@ export const WorkerDashboard: React.FC = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
             <div className="text-sm font-medium min-w-32 text-center">
-              {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+              {getJalaliMonthName(selectedMonth.jm)}{" "}
+              {selectedMonth.jy.toLocaleString("fa-IR", { useGrouping: false })}
             </div>
             <Button
               variant="outline"
@@ -358,7 +360,10 @@ export const WorkerDashboard: React.FC = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{hoursToday} ساعت</div>
+            <div className="text-2xl font-bold">
+              {convertToPersianDigits(formatDecimalHoursToTime(hoursToday))}{" "}
+              ساعت
+            </div>
             <p className="text-xs text-muted-foreground">
               {hoursToday > 0 ? "ثبت شده برای امروز" : "برای امروز ثبت نشده"}
             </p>
@@ -370,7 +375,10 @@ export const WorkerDashboard: React.FC = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalHours} ساعت</div>
+            <div className="text-2xl font-bold">
+              {convertToPersianDigits(formatDecimalHoursToTime(totalHours))}{" "}
+              ساعت
+            </div>
             <p className="text-xs text-muted-foreground">ساعات کاری ماه جاری</p>
           </CardContent>
         </Card>
@@ -380,7 +388,9 @@ export const WorkerDashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{daysWorked} روز</div>
+            <div className="text-2xl font-bold">
+              {daysWorked.toLocaleString("fa-IR")} روز
+            </div>
             <p className="text-xs text-muted-foreground">از ابتدای ماه</p>
           </CardContent>
         </Card>
@@ -390,7 +400,9 @@ export const WorkerDashboard: React.FC = () => {
             <Coffee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingRequests}</div>
+            <div className="text-2xl font-bold">
+              {pendingRequests.toLocaleString("fa-IR")}
+            </div>
             <p className="text-xs text-muted-foreground">در انتظار بررسی</p>
           </CardContent>
         </Card>

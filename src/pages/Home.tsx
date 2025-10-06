@@ -37,7 +37,7 @@ const Home = () => {
   useEffect(() => {
     const fetchLatestBlogs = async () => {
       try {
-        const data = await apiClient.request('/blogs?published=true&limit=6');
+        const data = await apiClient.request("/blogs?published=true&limit=6");
         if (data) {
           setLatestBlogs(data);
         }
@@ -480,7 +480,10 @@ const Home = () => {
                               ))}
                               {project.tags.length > 3 && (
                                 <span className="px-2 py-1 bg-muted rounded-md text-xs text-muted-foreground">
-                                  +{project.tags.length - 3}
+                                  +
+                                  {(project.tags.length - 3).toLocaleString(
+                                    "fa-IR"
+                                  )}
                                 </span>
                               )}
                             </div>

@@ -22,6 +22,7 @@ import {
   jalaliToGregorian,
   formatDateForDB,
 } from "@/utils/jalali";
+import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
 
 interface TimeLog {
   id: string;
@@ -76,25 +77,27 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
   const calculateHoursTime = (start: string, end: string): string => {
     if (!start || !end) return "00:00";
-    
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
-    
+
+    const [startHour, startMinute] = start.split(":").map(Number);
+    const [endHour, endMinute] = end.split(":").map(Number);
+
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
-    
+
     const diffMinutes = Math.max(0, endMinutes - startMinutes);
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const saveTimeLog = async () => {
     if (!user || !selectedDate || !startTime || !endTime) return;
 
     const hoursWorked = calculateHoursTime(startTime, endTime);
-    
+
     if (hoursWorked === "00:00") {
       toast({
         title: "خطا",
@@ -230,12 +233,18 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
     setSelectedDate({ jy, jm, jd });
     const dateStr = formatDateForDB(jy, jm, jd);
-    const existingLog = timeLogs.find((log) => log.date === dateStr);
+    const existingLog = timeLogs.find(
+      (log) => log.date.substring(0, 10) === dateStr
+    );
 
     if (existingLog) {
       // Use the actual start_time and end_time from the log
-      setStartTime(existingLog.start_time ? existingLog.start_time.substring(0, 5) : "");
-      setEndTime(existingLog.end_time ? existingLog.end_time.substring(0, 5) : "");
+      setStartTime(
+        existingLog.start_time ? existingLog.start_time.substring(0, 5) : ""
+      );
+      setEndTime(
+        existingLog.end_time ? existingLog.end_time.substring(0, 5) : ""
+      );
       setDescription(existingLog.description || "");
     } else {
       setStartTime("");
@@ -316,7 +325,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   `}
       >
         <div className="flex justify-between items-start mb-2">
-          <span className="text-sm font-medium">{day}</span>
+          <span className="text-sm font-medium">
+            {day.toLocaleString("fa-IR")}
+          </span>
           <div className="flex gap-1">
             <Button
               size="sm"
@@ -349,7 +360,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
 
         {timeLog && (
           <Badge variant="secondary" className="text-xs mb-1">
-            {timeLog.hours_worked ? timeLog.hours_worked.substring(0, 5) : "0:00"}
+            {timeLog.hours_worked
+              ? convertToPersianDigits(timeLog.hours_worked.substring(0, 5))
+              : "۰۰:۰۰"}
           </Badge>
         )}
 
@@ -391,10 +404,15 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+            {getJalaliMonthName(selectedMonth.jm)}{" "}
+            {selectedMonth.jy.toLocaleString("fa-IR", { useGrouping: false })}
           </CardTitle>
           <div className="flex gap-4 text-sm text-muted-foreground">
-            <span>مجموع ساعات کاری: {totalHours} ساعت</span>
+            <span>
+              مجموع ساعات کاری:{" "}
+              {convertToPersianDigits(formatDecimalHoursToTime(totalHours))}{" "}
+              ساعت
+            </span>
             {!isAdmin && selectedMonth.jm == currentDate.jm && (
               <span className="text-amber-600">ویرایش فقط برای ماه جاری</span>
             )}
@@ -449,7 +467,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
             </div>
             {startTime && endTime && (
               <div className="text-sm text-muted-foreground text-center">
-                مجموع: {calculateHoursTime(startTime, endTime)}
+                مجموع:{" "}
+                {convertToPersianDigits(calculateHoursTime(startTime, endTime))}
               </div>
             )}
             <div>

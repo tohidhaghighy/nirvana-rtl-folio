@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
-  constructor(props: {children: React.ReactNode}) {
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -17,16 +20,22 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
   render() {
     if (this.state.hasError) {
-      return <div className="p-6 text-center">
-        <h2 className="text-xl font-bold text-red-600 mb-4">خطا در بارگذاری مدیریت کارمندان</h2>
-        <p className="text-gray-600">لطفاً صفحه را بازخوانی کنید یا با پشتیبانی تماس بگیرید.</p>
-        <button 
-          onClick={() => this.setState({ hasError: false })}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          تلاش مجدد
-        </button>
-      </div>;
+      return (
+        <div className="p-6 text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-4">
+            خطا در بارگذاری مدیریت کارمندان
+          </h2>
+          <p className="text-gray-600">
+            لطفاً صفحه را بازخوانی کنید یا با پشتیبانی تماس بگیرید.
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            تلاش مجدد
+          </button>
+        </div>
+      );
     }
 
     return this.props.children;
@@ -53,8 +62,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Users, Clock, Coffee, CheckCircle, XCircle, Edit, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Users,
+  Clock,
+  Coffee,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api";
 import {
@@ -65,6 +90,7 @@ import {
   gregorianToJalali,
   formatJalaliDate,
 } from "@/utils/jalali";
+import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
 
 interface Worker {
   id: string;
@@ -104,7 +130,7 @@ interface WorkerSummary {
 
 export const WorkerManagement: React.FC = () => {
   console.log("WorkerManagement component rendering");
-  
+
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
@@ -117,10 +143,13 @@ export const WorkerManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentJalaliDate());
   const [selectedWorkerId, setSelectedWorkerId] = useState("");
-  
+
   const currentDate = getCurrentJalaliDate();
-  
-  console.log("WorkerManagement state:", { workers: workers.length, timeLogs: timeLogs.length });
+
+  console.log("WorkerManagement state:", {
+    workers: workers.length,
+    timeLogs: timeLogs.length,
+  });
 
   useEffect(() => {
     fetchWorkers();
@@ -208,14 +237,15 @@ export const WorkerManagement: React.FC = () => {
 
   const convertTimeToHours = (timeStr: string): number => {
     if (!timeStr) return 0;
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    const [hours, minutes] = timeStr.split(":").map(Number);
     return hours + (minutes || 0) / 60;
   };
 
   const calculateWorkerSummaries = () => {
-    const filteredWorkers = selectedWorkerId && selectedWorkerId !== "all"
-      ? workers.filter(worker => worker.user_id === selectedWorkerId)
-      : workers;
+    const filteredWorkers =
+      selectedWorkerId && selectedWorkerId !== "all"
+        ? workers.filter((worker) => worker.user_id === selectedWorkerId)
+        : workers;
 
     const summaries = filteredWorkers.map((worker) => {
       const workerLogs = timeLogs.filter(
@@ -240,9 +270,9 @@ export const WorkerManagement: React.FC = () => {
     setWorkerSummaries(summaries);
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setSelectedMonth(prev => {
-      if (direction === 'prev') {
+  const navigateMonth = (direction: "prev" | "next") => {
+    setSelectedMonth((prev) => {
+      if (direction === "prev") {
         if (prev.jm === 1) {
           return { jy: prev.jy - 1, jm: 12, jd: prev.jd };
         } else {
@@ -260,21 +290,24 @@ export const WorkerManagement: React.FC = () => {
 
   const calculateHoursTime = (start: string, end: string): string => {
     if (!start || !end) return "00:00";
-    
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
-    
+
+    const [startHour, startMinute] = start.split(":").map(Number);
+    const [endHour, endMinute] = end.split(":").map(Number);
+
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
-    
+
     const diffMinutes = Math.max(0, endMinutes - startMinutes);
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const updateTimeLog = async () => {
+    debugger;
     if (!selectedTimeLog) return;
 
     const hoursWorked = calculateHoursTime(editStartTime, editEndTime);
@@ -315,7 +348,9 @@ export const WorkerManagement: React.FC = () => {
 
       toast({
         title: "موفقیت",
-        description: `درخواست مرخصی ${status === "approved" ? "تایید" : "رد"} شد`,
+        description: `درخواست مرخصی ${
+          status === "approved" ? "تایید" : "رد"
+        } شد`,
       });
 
       setAdminNotes("");
@@ -331,7 +366,9 @@ export const WorkerManagement: React.FC = () => {
 
   const openEditDialog = (timeLog: TimeLog) => {
     setSelectedTimeLog(timeLog);
-    setEditStartTime(timeLog.start_time ? timeLog.start_time.substring(0, 5) : "");
+    setEditStartTime(
+      timeLog.start_time ? timeLog.start_time.substring(0, 5) : ""
+    );
     setEditEndTime(timeLog.end_time ? timeLog.end_time.substring(0, 5) : "");
     setEditDescription(timeLog.description || "");
     setIsEditDialogOpen(true);
@@ -349,7 +386,7 @@ export const WorkerManagement: React.FC = () => {
 
   try {
     console.log("Rendering WorkerManagement component");
-    
+
     return (
       <ErrorBoundary>
         <div className="space-y-6">
@@ -360,7 +397,9 @@ export const WorkerManagement: React.FC = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <Select
                   value={selectedWorkerId || "all"}
-                  onValueChange={(value) => setSelectedWorkerId(value === "all" ? "" : value)}
+                  onValueChange={(value) =>
+                    setSelectedWorkerId(value === "all" ? "" : value)
+                  }
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="انتخاب کارمند" />
@@ -379,32 +418,52 @@ export const WorkerManagement: React.FC = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <Select
                   value={selectedMonth.jy.toString()}
-                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jy: parseInt(value)})}
+                  onValueChange={(value) =>
+                    setSelectedMonth({ ...selectedMonth, jy: parseInt(value) })
+                  }
                 >
                   <SelectTrigger className="w-24">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({length: 10}, (_, i) => currentDate.jy - 5 + i).map((year) => (
+                    {Array.from(
+                      { length: 10 },
+                      (_, i) => currentDate.jy - 5 + i
+                    ).map((year) => (
                       <SelectItem key={year} value={year.toString()}>
-                        {year}
+                        {year.toLocaleString("fa-IR", { useGrouping: false })}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Select
                   value={selectedMonth.jm.toString()}
-                  onValueChange={(value) => setSelectedMonth({...selectedMonth, jm: parseInt(value)})}
+                  onValueChange={(value) =>
+                    setSelectedMonth({ ...selectedMonth, jm: parseInt(value) })
+                  }
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {[
-                      "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-                      "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+                      "فروردین",
+                      "اردیبهشت",
+                      "خرداد",
+                      "تیر",
+                      "مرداد",
+                      "شهریور",
+                      "مهر",
+                      "آبان",
+                      "آذر",
+                      "دی",
+                      "بهمن",
+                      "اسفند",
                     ].map((month, index) => (
-                      <SelectItem key={index + 1} value={(index + 1).toString()}>
+                      <SelectItem
+                        key={index + 1}
+                        value={(index + 1).toString()}
+                      >
                         {month}
                       </SelectItem>
                     ))}
@@ -415,17 +474,20 @@ export const WorkerManagement: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigateMonth('prev')}
+                  onClick={() => navigateMonth("prev")}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Badge variant="outline" className="min-w-[120px] text-center">
-                  {getJalaliMonthName(selectedMonth.jm)} {selectedMonth.jy}
+                  {getJalaliMonthName(selectedMonth.jm)}{" "}
+                  {selectedMonth.jy.toLocaleString("fa-IR", {
+                    useGrouping: false,
+                  })}
                 </Badge>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigateMonth('next')}
+                  onClick={() => navigateMonth("next")}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -437,9 +499,12 @@ export const WorkerManagement: React.FC = () => {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="summary">خلاصه کارمندان</TabsTrigger>
               <TabsTrigger value="time-logs">ساعات کاری</TabsTrigger>
-              <TabsTrigger value="day-off-requests">درخواست‌های مرخصی</TabsTrigger>
+              <TabsTrigger value="day-off-requests">
+                درخواست‌های مرخصی
+              </TabsTrigger>
               <TabsTrigger value="pending">
-                در انتظار بررسی ({pendingRequests.length})
+                در انتظار بررسی (
+                {pendingRequests.length.toLocaleString("fa-IR")})
               </TabsTrigger>
             </TabsList>
 
@@ -467,9 +532,19 @@ export const WorkerManagement: React.FC = () => {
                           <TableCell className="font-medium">
                             {summary.worker_name}
                           </TableCell>
-                          <TableCell>{summary.total_hours} ساعت</TableCell>
-                          <TableCell>{summary.days_worked} روز</TableCell>
-                          <TableCell>{summary.approved_days_off} روز</TableCell>
+                          <TableCell>
+                            {convertToPersianDigits(
+                              formatDecimalHoursToTime(summary.total_hours)
+                            )}{" "}
+                            ساعت
+                          </TableCell>
+                          <TableCell>
+                            {summary.days_worked.toLocaleString("fa-IR")} روز
+                          </TableCell>
+                          <TableCell>
+                            {summary.approved_days_off.toLocaleString("fa-IR")}{" "}
+                            روز
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -503,8 +578,18 @@ export const WorkerManagement: React.FC = () => {
                           <TableCell className="font-medium">
                             {log.worker_name}
                           </TableCell>
-                          <TableCell>{formatDateDisplay(log.date)}</TableCell>
-                          <TableCell>{log.hours_worked ? log.hours_worked.substring(0, 5) : "0:00"}</TableCell>
+                          <TableCell>
+                            {convertToPersianDigits(
+                              formatDateDisplay(log.date)
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {log.hours_worked
+                              ? convertToPersianDigits(
+                                  log.hours_worked.substring(0, 5)
+                                )
+                              : "۰۰:۰۰"}
+                          </TableCell>
                           <TableCell>{log.description || "-"}</TableCell>
                           <TableCell>
                             <Button
@@ -549,7 +634,9 @@ export const WorkerManagement: React.FC = () => {
                             {request.worker_name}
                           </TableCell>
                           <TableCell>
-                            {formatDateDisplay(request.request_date)}
+                            {convertToPersianDigits(
+                              formatDateDisplay(request.request_date)
+                            )}
                           </TableCell>
                           <TableCell>{request.reason}</TableCell>
                           <TableCell>
@@ -570,7 +657,9 @@ export const WorkerManagement: React.FC = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {formatDateDisplay(request.created_at)}
+                            {convertToPersianDigits(
+                              formatDateDisplay(request.created_at)
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -606,11 +695,15 @@ export const WorkerManagement: React.FC = () => {
                             {request.worker_name}
                           </TableCell>
                           <TableCell>
-                            {formatDateDisplay(request.request_date)}
+                            {convertToPersianDigits(
+                              formatDateDisplay(request.request_date)
+                            )}
                           </TableCell>
                           <TableCell>{request.reason}</TableCell>
                           <TableCell>
-                            {formatDateDisplay(request.created_at)}
+                            {convertToPersianDigits(
+                              formatDateDisplay(request.created_at)
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -670,7 +763,10 @@ export const WorkerManagement: React.FC = () => {
                 </div>
                 {editStartTime && editEndTime && (
                   <div className="text-sm text-muted-foreground text-center">
-                    مجموع: {calculateHoursTime(editStartTime, editEndTime)}
+                    مجموع:{" "}
+                    {convertToPersianDigits(
+                      calculateHoursTime(editStartTime, editEndTime)
+                    )}
                   </div>
                 )}
                 <div>
@@ -694,7 +790,9 @@ export const WorkerManagement: React.FC = () => {
     console.error("WorkerManagement render error:", error);
     return (
       <div className="p-6 text-center">
-        <h2 className="text-xl font-bold text-red-600 mb-4">خطا در بارگذاری مدیریت کارمندان</h2>
+        <h2 className="text-xl font-bold text-red-600 mb-4">
+          خطا در بارگذاری مدیریت کارمندان
+        </h2>
         <p className="text-gray-600">خطای رندر: {String(error)}</p>
       </div>
     );
