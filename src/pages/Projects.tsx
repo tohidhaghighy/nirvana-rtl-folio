@@ -1,12 +1,55 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, ArrowLeft, CircleCheckBig } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  tags: string[];
+  client: string;
+  link: string;
+}
 
 const Projects = () => {
-  const projects = [
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await apiClient.getProjects();
+        setProjects(data);
+      } catch (error) {
+        toast.error("Failed to load projects");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const staticProjects = [
     {
       id: 1,
       title: "میز خدمت تعزیرات حکومتی و اپلیکیشن موبایل آن",

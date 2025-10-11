@@ -25,6 +25,8 @@ import { useToast } from "@/hooks/use-toast";
 import ContactRequestModal from "./ContactRequestModal";
 import { BlogManagement } from "./BlogManagement";
 import { WorkerManagement } from "./WorkerManagement";
+import ServiceManagement from "./ServiceManagement";
+import ProjectManagement from "./ProjectManagement";
 import {
   Dialog,
   DialogContent,
@@ -357,7 +359,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -369,10 +371,16 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               کاربران
             </TabsTrigger>
             <TabsTrigger value="workers" className="persian-body">
-              مدیریت کارمندان
+              کارمندان
             </TabsTrigger>
             <TabsTrigger value="blogs" className="persian-body">
               مقالات
+            </TabsTrigger>
+            <TabsTrigger value="services" className="persian-body">
+              خدمات
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="persian-body">
+              پروژه‌ها
             </TabsTrigger>
           </TabsList>
 
@@ -688,6 +696,14 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
           <TabsContent value="blogs">
             <BlogManagement />
+          </TabsContent>
+
+          <TabsContent value="services">
+            <ServiceManagement />
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <ProjectManagement />
           </TabsContent>
         </Tabs>
       </div>

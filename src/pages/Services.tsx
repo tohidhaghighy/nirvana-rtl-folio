@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,9 +16,60 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
+
+const iconMap: Record<string, any> = {
+  Code2,
+  Database,
+  BarChart3,
+  Brain,
+  Smartphone,
+  Cloud,
+  Shield,
+  Zap,
+  Globe,
+};
+
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  features: string[];
+}
 
 const Services = () => {
-  const services = [
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const data = await apiClient.getServices();
+        setServices(data);
+      } catch (error) {
+        toast.error("Failed to load services");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const staticServices = [
     {
       icon: Code2,
       title: "توسعه نرم‌افزار",
@@ -147,11 +199,13 @@ const Services = () => {
       <section className="py-20">
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="service-card h-full">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary via-primary/100 to-primary/80 shadow-xl shadow-primary-500 rounded-xl flex items-center justify-center mb-6">
-                  <service.icon className="w-8 h-8 text-white" />
-                </div>
+            {services.map((service, index) => {
+              const IconComponent = iconMap[service.icon] || Code2;
+              return (
+                <Card key={service.id || index} className="service-card h-full">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary via-primary/100 to-primary/80 shadow-xl shadow-primary-500 rounded-xl flex items-center justify-center mb-6">
+                    <IconComponent className="w-8 h-8 text-white" />
+                  </div>
 
                 <h3 className="persian-heading text-2xl font-semibold text-foreground mb-4">
                   {service.title}
@@ -181,7 +235,8 @@ const Services = () => {
                   </Link>
                 </div>
               </Card>
-            ))}
+            );
+            })}
           </div>
         </div>
       </section>

@@ -9,6 +9,8 @@ import submissionRoutes from './routes/submissions.js';
 import ticketRoutes from './routes/tickets.js';
 import profileRoutes from './routes/profiles.js';
 import workerRoutes from './routes/workers.js';
+import serviceRoutes from './routes/services.js';
+import projectRoutes from './routes/projects.js';
 
 // const express = require('express');
 // const cors = require('cors');
@@ -37,6 +39,8 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/workers', workerRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

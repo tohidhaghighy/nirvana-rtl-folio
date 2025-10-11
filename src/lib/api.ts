@@ -237,6 +237,64 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Services
+  async getServices() {
+    return this.request("/services");
+  }
+
+  async getServiceById(id: string) {
+    return this.request(`/services/${id}`);
+  }
+
+  async createService(serviceData: any) {
+    return this.request("/services", {
+      method: "POST",
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async updateService(id: string, serviceData: any) {
+    return this.request(`/services/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async deleteService(id: string) {
+    return this.request(`/services/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Projects
+  async getProjects() {
+    return this.request("/projects");
+  }
+
+  async getProjectById(id: string) {
+    return this.request(`/projects/${id}`);
+  }
+
+  async createProject(projectData: any) {
+    return this.request("/projects", {
+      method: "POST",
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async updateProject(id: string, projectData: any) {
+    return this.request(`/projects/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async deleteProject(id: string) {
+    return this.request(`/projects/${id}`, {
+      method: "DELETE",
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
