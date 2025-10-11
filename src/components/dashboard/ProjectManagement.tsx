@@ -36,6 +36,8 @@ const ProjectManagement = () => {
     client: "",
     link: ""
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   useEffect(() => {
     fetchProjects();
@@ -52,17 +54,55 @@ const ProjectManagement = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (): Promise<string> => {
+    if (!imageFile) return formData.image;
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('image', imageFile);
+
+    const response = await fetch('http://localhost:5000/api/uploads/project-image', {
+      method: 'POST',
+      body: formDataToSend,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+
+    const data = await response.json();
+    return `http://localhost:5000${data.imageUrl}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       const tags = formData.tags.filter(t => t.trim() !== "");
       
+      let imageUrl = formData.image;
+      if (imageFile) {
+        imageUrl = await uploadImage();
+      }
+
+      const projectData = { ...formData, tags, image: imageUrl };
+      
       if (editingProject) {
-        await apiClient.updateProject(editingProject.id, { ...formData, tags });
+        await apiClient.updateProject(editingProject.id, projectData);
         toast.success("Project updated successfully");
       } else {
-        await apiClient.createProject({ ...formData, tags });
+        await apiClient.createProject(projectData);
         toast.success("Project created successfully");
       }
       
@@ -97,6 +137,7 @@ const ProjectManagement = () => {
       client: project.client,
       link: project.link
     });
+    setImagePreview(project.image || "");
     setShowDialog(true);
   };
 
@@ -111,6 +152,8 @@ const ProjectManagement = () => {
       link: ""
     });
     setEditingProject(null);
+    setImageFile(null);
+    setImagePreview("");
   };
 
   const addTag = () => {
@@ -208,13 +251,22 @@ const ProjectManagement = () => {
             </div>
 
             <div>
-              <Label htmlFor="image">Image URL</Label>
+              <Label htmlFor="image">Project Image</Label>
               <Input
                 id="image"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
               />
+              {imagePreview && (
+                <div className="mt-2">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
