@@ -93,16 +93,22 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       .query(`
         UPDATE projects
         SET title = @title, description = @description, image = @image, 
-            category = @category, tags = @tags, client = @client, link = @link
-        OUTPUT INSERTED.*
-        WHERE id = @id
+            category = @category, tags = @tags, client = @client, link = @link, updated_at = GETDATE()
+        WHERE id = @id;
+        
+        SELECT * FROM projects WHERE id = @id;
       `);
     
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    res.json(result.recordset[0]);
+    const project = {
+      ...result.recordset[0],
+      tags: result.recordset[0].tags ? JSON.parse(result.recordset[0].tags) : []
+    };
+    
+    res.json(project);
   } catch (error) {
     console.error('Error updating project:', error);
     res.status(500).json({ error: 'Failed to update project' });

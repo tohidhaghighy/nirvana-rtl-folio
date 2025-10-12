@@ -86,16 +86,22 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       .input('features', sql.NText, JSON.stringify(features || []))
       .query(`
         UPDATE services
-        SET title = @title, description = @description, icon = @icon, features = @features
-        OUTPUT INSERTED.*
-        WHERE id = @id
+        SET title = @title, description = @description, icon = @icon, features = @features, updated_at = GETDATE()
+        WHERE id = @id;
+        
+        SELECT * FROM services WHERE id = @id;
       `);
     
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Service not found' });
     }
     
-    res.json(result.recordset[0]);
+    const service = {
+      ...result.recordset[0],
+      features: result.recordset[0].features ? JSON.parse(result.recordset[0].features) : []
+    };
+    
+    res.json(service);
   } catch (error) {
     console.error('Error updating service:', error);
     res.status(500).json({ error: 'Failed to update service' });
