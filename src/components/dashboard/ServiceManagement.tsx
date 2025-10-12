@@ -4,10 +4,47 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Pencil, Trash2, Plus, X, ChevronDown, Code2 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { convertToPersianDigits, iconMap } from "@/lib/utils";
+
+const availableIcons: string[] = [
+  "Code",
+  "Smartphone",
+  "Globe",
+  "Heart",
+  "Star",
+  "Camera",
+  "Settings",
+  "Rocket",
+  "User",
+  "Feather",
+  "Zap",
+  "Calendar",
+  "Briefcase",
+  "Coffee",
+  "Palette",
+];
+
+const DynamicIcon: React.FC<{
+  name: string;
+  size?: number;
+  className?: string;
+}> = ({ name, ...props }) => {
+  const Icon = LucideIcons[
+    name as keyof typeof LucideIcons
+  ] as React.ComponentType<any>;
+  return Icon ? <Icon {...props} /> : null;
+};
 
 interface Service {
   id: string;
@@ -28,8 +65,16 @@ const ServiceManagement = () => {
     title: "",
     description: "",
     icon: "",
-    features: [""]
+    features: [""],
   });
+
+  const SelectedIcon = formData.icon ? (
+    <DynamicIcon name={formData.icon} size={20} className="mr-2" />
+  ) : null;
+
+  const handleSelectIcon = (iconName: string) => {
+    setFormData({ ...formData, icon: iconName });
+  };
 
   useEffect(() => {
     fetchServices();
@@ -40,7 +85,7 @@ const ServiceManagement = () => {
       const data = await apiClient.getServices();
       setServices(data);
     } catch (error) {
-      toast.error("Failed to load services");
+      toast.error("خطا در بارگذاری خدمات");
     } finally {
       setLoading(false);
     }
@@ -48,35 +93,40 @@ const ServiceManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const features = formData.features.filter(f => f.trim() !== "");
-      
+      const features = formData.features.filter((f) => f.trim() !== "");
+
       if (editingService) {
-        await apiClient.updateService(editingService.id, { ...formData, features });
-        toast.success("Service updated successfully");
+        await apiClient.updateService(editingService.id, {
+          ...formData,
+          features,
+        });
+        toast.success("سرویس با موفقیت به روزرسانی شد");
       } else {
         await apiClient.createService({ ...formData, features });
-        toast.success("Service created successfully");
+        toast.success("سرویس جدید با موفقیت ایجاد شد");
       }
-      
+
       setShowDialog(false);
       resetForm();
       fetchServices();
     } catch (error) {
-      toast.error(editingService ? "Failed to update service" : "Failed to create service");
+      toast.error(
+        editingService ? "خطا در به روزرسانی سرویس" : "خطا در ایجاد سرویس"
+      );
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
-    
+    if (!confirm("آیا از حذف این سرویس مطمئن هستید؟")) return;
+
     try {
       await apiClient.deleteService(id);
-      toast.success("Service deleted successfully");
+      toast.success("سرویس با موفقیت حذف شد");
       fetchServices();
     } catch (error) {
-      toast.error("Failed to delete service");
+      toast.error("خطا در حذف سرویس");
     }
   };
 
@@ -86,7 +136,7 @@ const ServiceManagement = () => {
       title: service.title,
       description: service.description,
       icon: service.icon,
-      features: service.features.length > 0 ? service.features : [""]
+      features: service.features.length > 0 ? service.features : [""],
     });
     setShowDialog(true);
   };
@@ -102,7 +152,10 @@ const ServiceManagement = () => {
 
   const removeFeature = (index: number) => {
     const newFeatures = formData.features.filter((_, i) => i !== index);
-    setFormData({ ...formData, features: newFeatures.length > 0 ? newFeatures : [""] });
+    setFormData({
+      ...formData,
+      features: newFeatures.length > 0 ? newFeatures : [""],
+    });
   };
 
   const updateFeature = (index: number, value: string) => {
@@ -112,80 +165,148 @@ const ServiceManagement = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading...</div>;
+    return <div className="flex justify-center p-8">در حال بارگذاری...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Services Management</h2>
-        <Button onClick={() => { resetForm(); setShowDialog(true); }}>
+        <h2 className="text-2xl font-bold">مدیریت خدمات</h2>
+        <Button
+          onClick={() => {
+            resetForm();
+            setShowDialog(true);
+          }}
+        >
           <Plus className="h-4 w-4 ml-2" />
-          New Service
+          سرویس جدید
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {services.map((service) => (
-          <Card key={service.id} className="p-4">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="font-bold text-lg">{service.title}</h3>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(service)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(service.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+        {services.map((service) => {
+          const IconComponent = iconMap[service.icon] || Code2;
+          return (
+            <Card key={service.id} className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex gap-3">
+                  <p className="text-xs text-primary">
+                    <IconComponent name={service.icon} />
+                  </p>
+                  <h3 className="font-bold text-lg">{service.title}</h3>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(service)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(service.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-            <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
-            <p className="text-xs text-muted-foreground">Icon: {service.icon}</p>
-            <div className="mt-2">
-              <p className="text-xs font-semibold mb-1">Features:</p>
-              <ul className="text-xs list-disc list-inside">
-                {service.features.map((feature, idx) => (
-                  <li key={idx}>{feature}</li>
-                ))}
-              </ul>
-            </div>
-          </Card>
-        ))}
+              <p className="text-sm text-muted-foreground mb-2">
+                {service.description}
+              </p>
+              <div className="mt-2">
+                <p className="text-xs font-semibold mb-1">ویژگی ها:</p>
+                <ul className="text-xs list-disc list-inside text-muted-foreground flex gap-3">
+                  {service.features.map((feature, idx) => (
+                    <li key={idx}>{feature}</li>
+                  ))}
+                </ul>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingService ? "Edit Service" : "Create Service"}</DialogTitle>
+            <DialogTitle>
+              {editingService ? "اصلاح سرویس" : "سرویس جدید"}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">عنوان</Label>
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="icon">Icon Name (Lucide React)</Label>
-              <Input
-                id="icon"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                placeholder="e.g., Code, Smartphone, Globe"
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    // aria-expanded={/* popover state */}
+                    className="w-full justify-between"
+                  >
+                    {/* Display the currently selected icon and its name */}
+                    {formData.icon ? (
+                      <>
+                        {SelectedIcon}
+                        {formData.icon}
+                      </>
+                    ) : (
+                      "یک نماد انتخاب کنید..."
+                    )}
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-[300px] p-0">
+                  {/* Icon Grid */}
+                  <div className="grid grid-cols-4 max-h-[200px] overflow-y-auto p-2 gap-1">
+                    {availableIcons.length > 0 ? (
+                      availableIcons.map((iconName) => (
+                        <Button
+                          key={iconName}
+                          variant={
+                            formData.icon === iconName ? "default" : "ghost"
+                          }
+                          className="flex flex-col items-center justify-center h-16 w-full p-1"
+                          onClick={() => handleSelectIcon(iconName)}
+                        >
+                          <DynamicIcon name={iconName} size={24} />
+                          {/* <span className="text-xs mt-1 truncate w-full text-center">
+                            {iconName}
+                          </span> */}
+                        </Button>
+                      ))
+                    ) : (
+                      <p className="col-span-4 text-center text-sm py-4 text-gray-500">
+                        نماد یافت نشد.
+                      </p>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label htmlFor="description">توضیحات</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows={4}
                 required
               />
@@ -193,10 +314,10 @@ const ServiceManagement = () => {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <Label>Features</Label>
+                <Label>ویژگی ها</Label>
                 <Button type="button" size="sm" onClick={addFeature}>
                   <Plus className="h-4 w-4 ml-2" />
-                  Add Feature
+                  افزودن ویژگی
                 </Button>
               </div>
               {formData.features.map((feature, index) => (
@@ -204,7 +325,9 @@ const ServiceManagement = () => {
                   <Input
                     value={feature}
                     onChange={(e) => updateFeature(index, e.target.value)}
-                    placeholder={`Feature ${index + 1}`}
+                    placeholder={`ویژگی ${convertToPersianDigits(
+                      (index + 1).toString()
+                    )}`}
                   />
                   {formData.features.length > 1 && (
                     <Button
@@ -222,10 +345,14 @@ const ServiceManagement = () => {
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1">
-                {editingService ? "Update" : "Create"}
+                {editingService ? "به روزرسانی" : "ایجاد"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                Cancel
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDialog(false)}
+              >
+                انصراف
               </Button>
             </div>
           </form>

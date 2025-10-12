@@ -4,10 +4,16 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Pencil, Trash2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api";
+import { convertToPersianDigits } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -34,7 +40,7 @@ const ProjectManagement = () => {
     category: "",
     tags: [""],
     client: "",
-    link: ""
+    link: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -48,7 +54,7 @@ const ProjectManagement = () => {
       const data = await apiClient.getProjects();
       setProjects(data);
     } catch (error) {
-      toast.error("Failed to load projects");
+      toast.error("خطا در بارگذاری پروژه ها");
     } finally {
       setLoading(false);
     }
@@ -69,60 +75,67 @@ const ProjectManagement = () => {
   const uploadImage = async (): Promise<string> => {
     if (!imageFile) return formData.image;
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('image', imageFile);
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const API_BASE_ROOT_URL = API_BASE_URL.endsWith("/api")
+      ? API_BASE_URL.slice(0, -4) // -4 is the length of "/api"
+      : API_BASE_URL;
 
-    const response = await fetch('http://localhost:5000/api/uploads/project-image', {
-      method: 'POST',
+    const formDataToSend = new FormData();
+    formDataToSend.append("image", imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/uploads/project-image`, {
+      method: "POST",
       body: formDataToSend,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload image');
+      throw new Error("Failed to upload image");
     }
 
     const data = await response.json();
-    return `http://localhost:5000${data.imageUrl}`;
+    return `${API_BASE_ROOT_URL}${data.imageUrl}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const tags = formData.tags.filter(t => t.trim() !== "");
-      
+      const tags = formData.tags.filter((t) => t.trim() !== "");
+
       let imageUrl = formData.image;
       if (imageFile) {
         imageUrl = await uploadImage();
       }
 
       const projectData = { ...formData, tags, image: imageUrl };
-      
+
       if (editingProject) {
         await apiClient.updateProject(editingProject.id, projectData);
-        toast.success("Project updated successfully");
+        toast.success("پروژه با موفقیت به روزرسانی شد");
       } else {
         await apiClient.createProject(projectData);
-        toast.success("Project created successfully");
+        toast.success("پروژه با موفقیت ایجاد شد");
       }
-      
+
       setShowDialog(false);
       resetForm();
       fetchProjects();
     } catch (error) {
-      toast.error(editingProject ? "Failed to update project" : "Failed to create project");
+      toast.error(
+        editingProject ? "خطا در به روزرسانی پروژه" : "خطا در ایجاد پروژه"
+      );
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
-    
+    if (!confirm("آیا از حذف این پروژه مطمئن هستید؟")) return;
+
     try {
       await apiClient.deleteProject(id);
-      toast.success("Project deleted successfully");
+      toast.success("پروژه با موفقیت حذف شد");
       fetchProjects();
     } catch (error) {
-      toast.error("Failed to delete project");
+      toast.error("خطا در حذف پروژه");
     }
   };
 
@@ -135,7 +148,7 @@ const ProjectManagement = () => {
       category: project.category,
       tags: project.tags.length > 0 ? project.tags : [""],
       client: project.client,
-      link: project.link
+      link: project.link,
     });
     setImagePreview(project.image || "");
     setShowDialog(true);
@@ -149,7 +162,7 @@ const ProjectManagement = () => {
       category: "",
       tags: [""],
       client: "",
-      link: ""
+      link: "",
     });
     setEditingProject(null);
     setImageFile(null);
@@ -172,16 +185,21 @@ const ProjectManagement = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading...</div>;
+    return <div className="flex justify-center p-8">در حال بارگذاری...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Projects Management</h2>
-        <Button onClick={() => { resetForm(); setShowDialog(true); }}>
+        <h2 className="text-2xl font-bold">مدیریت پروژه ها</h2>
+        <Button
+          onClick={() => {
+            resetForm();
+            setShowDialog(true);
+          }}
+        >
           <Plus className="h-4 w-4 ml-2" />
-          New Project
+          پروژه جدید
         </Button>
       </div>
 
@@ -189,33 +207,50 @@ const ProjectManagement = () => {
         {projects.map((project) => (
           <Card key={project.id} className="p-4">
             {project.image && (
-              <img 
-                src={project.image} 
-                alt={project.title} 
+              <img
+                src={project.image}
+                alt={project.title}
                 className="w-full h-40 object-cover rounded mb-3"
               />
             )}
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
                 <h3 className="font-bold text-lg">{project.title}</h3>
-                <p className="text-xs text-muted-foreground">{project.category}</p>
+                <p className="text-xs text-muted-foreground">
+                  {project.category}
+                </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(project)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEdit(project)}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(project.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(project.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              {project.description}
+            </p>
             {project.client && (
-              <p className="text-xs mb-1"><strong>Client:</strong> {project.client}</p>
+              <p className="text-xs mb-1">
+                <strong>مشتری:</strong> {project.client}
+              </p>
             )}
             <div className="flex flex-wrap gap-1 mt-2">
               {project.tags.map((tag, idx) => (
-                <span key={idx} className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded">
+                <span
+                  key={idx}
+                  className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-md"
+                >
                   {tag}
                 </span>
               ))}
@@ -227,31 +262,37 @@ const ProjectManagement = () => {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingProject ? "Edit Project" : "Create Project"}</DialogTitle>
+            <DialogTitle>
+              {editingProject ? "اصلاح پروژه" : "پروژه جدید"}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">عنوان</Label>
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">دسته بندی</Label>
               <Input
                 id="category"
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="image">Project Image</Label>
+              <Label htmlFor="image">تصویر پروژه</Label>
               <Input
                 id="image"
                 type="file"
@@ -260,9 +301,9 @@ const ProjectManagement = () => {
               />
               {imagePreview && (
                 <div className="mt-2">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
                     className="w-full h-48 object-cover rounded-md"
                   />
                 </div>
@@ -270,41 +311,47 @@ const ProjectManagement = () => {
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">توضیحات</Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows={4}
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="client">Client</Label>
+              <Label htmlFor="client">مشتری</Label>
               <Input
                 id="client"
                 value={formData.client}
-                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, client: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <Label htmlFor="link">Link</Label>
+              <Label htmlFor="link">لینک</Label>
               <Input
                 id="link"
                 value={formData.link}
-                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, link: e.target.value })
+                }
                 placeholder="https://example.com"
               />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <Label>Tags</Label>
+                <Label>برچسب ها</Label>
                 <Button type="button" size="sm" onClick={addTag}>
                   <Plus className="h-4 w-4 ml-2" />
-                  Add Tag
+                  افزودن برچسب
                 </Button>
               </div>
               {formData.tags.map((tag, index) => (
@@ -312,7 +359,9 @@ const ProjectManagement = () => {
                   <Input
                     value={tag}
                     onChange={(e) => updateTag(index, e.target.value)}
-                    placeholder={`Tag ${index + 1}`}
+                    placeholder={`برچسب ${convertToPersianDigits(
+                      (index + 1).toString()
+                    )}`}
                   />
                   {formData.tags.length > 1 && (
                     <Button
@@ -330,10 +379,14 @@ const ProjectManagement = () => {
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1">
-                {editingProject ? "Update" : "Create"}
+                {editingProject ? "به روزرسانی" : "ایجاد"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                Cancel
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDialog(false)}
+              >
+                انصراف
               </Button>
             </div>
           </form>

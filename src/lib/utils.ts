@@ -37,3 +37,41 @@ export const convertToPersianDigits = (value: string) => {
 
   return result;
 };
+
+import {
+  Code2,
+  Code,
+  Smartphone,
+  Zap,
+  Globe,
+  Heart,
+  Star,
+  Camera,
+  Settings,
+  Rocket,
+  User,
+  Feather,
+  Calendar,
+  Briefcase,
+  Coffee,
+  Palette,
+} from "lucide-react";
+
+export const iconMap: Record<string, any> = {
+  Code2,
+  Code,
+  Smartphone,
+  Globe,
+  Heart,
+  Star,
+  Camera,
+  Settings,
+  Rocket,
+  User,
+  Feather,
+  Zap,
+  Calendar,
+  Briefcase,
+  Coffee,
+  Palette,
+};

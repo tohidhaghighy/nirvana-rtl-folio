@@ -14,6 +14,8 @@ import {
   FileText,
   TrendingUp,
   Save,
+  Briefcase,
+  ClipboardCheck,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,8 +99,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [loading, setLoading] = useState(true);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [servicesCount, setServicesCount] = useState(0);
+  const [projectsCount, setProjectsCount] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [monthlyVisits, setMonthlyVisits] = useState(0);
+  // const [monthlyVisits, setMonthlyVisits] = useState(0);
   const [selectedSubmission, setSelectedSubmission] =
     useState<ContactSubmission | null>(null);
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(
@@ -127,10 +131,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     try {
       const stats = await apiClient.getDashboardStats();
       setPublishedBlogsCount(stats.publishedBlogsCount || 0);
+      setServicesCount(stats.servicesCount || 0);
+      setProjectsCount(stats.projectsCount || 0);
       setTotalUsers(stats.totalUsers || 0);
-      setMonthlyVisits(stats.monthlyVisits || 0);
+      // setMonthlyVisits(stats.monthlyVisits || 0);
     } catch (error: any) {
-      console.error("Error fetching dashboard stats:", error);
+      console.error("خطا در دریافت اطلاعات داشبورد:", error);
     }
   };
 
@@ -299,7 +305,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -339,6 +345,34 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                 </p>
               </div>
               <FileText className="w-8 h-8 text-blue-500" />
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  خدمات ارائه شده
+                </p>
+                <p className="persian-heading text-3xl font-bold text-red-400">
+                  {servicesCount.toLocaleString("fa-IR")}
+                </p>
+              </div>
+              <Briefcase className="w-8 h-8 text-red-400" />
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="persian-body text-sm text-muted-foreground mb-1">
+                  پروژه‌ها
+                </p>
+                <p className="persian-heading text-3xl font-bold text-indigo-400">
+                  {projectsCount.toLocaleString("fa-IR")}
+                </p>
+              </div>
+              <ClipboardCheck className="w-8 h-8 text-indigo-400" />
             </div>
           </Card>
 

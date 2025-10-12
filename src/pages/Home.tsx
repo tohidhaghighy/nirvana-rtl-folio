@@ -33,26 +33,53 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
+import { toast } from "sonner";
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  tags: string[];
+  client: string;
+  link: string;
+}
 
 const Home = () => {
   const [latestBlogs, setLatestBlogs] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchLatestBlogs = async () => {
-      try {
-        const data = await apiClient.request("/blogs?published=true&limit=6");
-        if (data) {
-          setLatestBlogs(data);
-        }
-      } catch (error) {
-        console.error("Error fetching latest blogs:", error);
-      }
-    };
-
     fetchLatestBlogs();
+    fetchProjects();
   }, []);
 
-  const projects = [
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLatestBlogs = async () => {
+    try {
+      const data = await apiClient.request("/blogs?published=true&limit=6");
+      if (data) {
+        setLatestBlogs(data);
+      }
+    } catch (error) {
+      console.error("Error fetching latest blogs:", error);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const data = await apiClient.getProjects();
+      setProjects(data);
+    } catch (error) {
+      toast.error("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const staticProjects = [
     {
       id: 1,
       title: "میز خدمت تعزیرات حکومتی و اپلیکیشن موبایل آن",
@@ -160,6 +187,10 @@ const Home = () => {
         "راه‌حل‌های هدفمند که مستقیماً به اهداف کسب‌وکار شما کمک می‌کند",
     },
   ];
+
+  if (loading) {
+    return <div className="flex justify-center p-8">در حال بارگذاری...</div>;
+  }
 
   return (
     <>
@@ -363,11 +394,17 @@ const Home = () => {
                                   )}
                                 </span>
                               </div>
-                              <h3 className="persian-heading text-lg font-semibold text-foreground mb-3 line-clamp-2">
+                              <h3
+                                className="persian-heading text-lg font-semibold text-foreground mb-3 line-clamp-2"
+                                style={{ textAlign: "right" }}
+                              >
                                 {blog.title}
                               </h3>
                               {blog.excerpt && (
-                                <p className="persian-body text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                                <p
+                                  className="persian-body text-muted-foreground text-sm leading-relaxed line-clamp-3"
+                                  style={{ textAlign: "right" }}
+                                >
                                   {blog.excerpt}
                                 </p>
                               )}
@@ -445,7 +482,7 @@ const Home = () => {
                         </div>
 
                         <div className="p-6">
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="mb-3" style={{ textAlign: "right" }}>
                             <Badge
                               variant="secondary"
                               className="bg-primary/10 text-primary"
@@ -454,16 +491,22 @@ const Home = () => {
                             </Badge>
                           </div>
 
-                          <h3 className="persian-heading text-lg md:text-xl font-semibold text-foreground mb-3 line-clamp-2">
+                          <h3
+                            className="persian-heading text-lg md:text-xl font-semibold text-foreground mb-3 line-clamp-2"
+                            style={{ textAlign: "right" }}
+                          >
                             {project.title}
                           </h3>
 
-                          <p className="persian-body text-muted-foreground text-sm mb-4 leading-relaxed line-clamp-3">
+                          <p
+                            className="persian-body text-muted-foreground text-sm mb-4 leading-relaxed line-clamp-3"
+                            style={{ textAlign: "right" }}
+                          >
                             {project.description}
                           </p>
 
-                          <div className="space-y-3">
-                            <div>
+                          <div className="space-y-3" dir="rtl">
+                            <div style={{ textAlign: "right" }}>
                               <span className="persian-body text-sm font-medium text-foreground">
                                 مشتری:{" "}
                               </span>
