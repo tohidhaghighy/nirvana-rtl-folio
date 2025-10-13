@@ -14,7 +14,12 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../public/uploads/projects');
     if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+      try {
+      fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
+      }
+      catch{
+        return cb(new Error('Failed to create upload directory: ' + err.message));
+      }
     }
     cb(null, uploadDir);
   },
