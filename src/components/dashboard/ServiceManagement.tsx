@@ -33,6 +33,11 @@ const availableIcons: string[] = [
   "Briefcase",
   "Coffee",
   "Palette",
+  "Code2",
+  "Database",
+  "BarChart3",
+  "Brain",
+  "Shield",
 ];
 
 const DynamicIcon: React.FC<{
