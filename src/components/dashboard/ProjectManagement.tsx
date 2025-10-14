@@ -73,19 +73,30 @@ const ProjectManagement = () => {
   };
 
   const uploadImage = async (): Promise<string> => {
-    if (!imageFile) return formData.image;
+    if (!imageFile) return formData.image; // no new image to upload, return existing URL
+
+    // Convert imageFile (File) to base64 string
+    const toBase64 = (file: File): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          if (typeof reader.result === "string") resolve(reader.result);
+          else reject("Failed to convert file to base64");
+        };
+        reader.onerror = (error) => reject(error);
+      });
+
+    const base64Image = await toBase64(imageFile);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const API_BASE_ROOT_URL = API_BASE_URL.endsWith("/api")
-      ? API_BASE_URL.slice(0, -4) // -4 is the length of "/api"
-      : API_BASE_URL;
 
-    const formDataToSend = new FormData();
-    formDataToSend.append("image", imageFile);
-
-    const response = await fetch(`${API_BASE_URL}/uploads/project-image`, {
+    const response = await fetch(`${API_BASE_URL}/project-image`, {
       method: "POST",
-      body: formDataToSend,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image: base64Image }),
     });
 
     if (!response.ok) {
@@ -93,6 +104,12 @@ const ProjectManagement = () => {
     }
 
     const data = await response.json();
+
+    // API_BASE_ROOT_URL to remove '/api' if needed
+    const API_BASE_ROOT_URL = API_BASE_URL.endsWith("/api")
+      ? API_BASE_URL.slice(0, -4)
+      : API_BASE_URL;
+
     return `${API_BASE_ROOT_URL}${data.imageUrl}`;
   };
 
