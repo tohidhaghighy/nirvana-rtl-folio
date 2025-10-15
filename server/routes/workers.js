@@ -84,7 +84,7 @@ router.post("/time-logs", authenticateToken, async (req, res) => {
       req.body;
 
     // Check if user is admin or the worker themselves
-    const isAdmin = req.user.role === "admin" || req.user.role === "super_admin";
+    const isAdmin = req.user.role === "admin" || req.user.role === "worker";
     const isOwnLog = req.user.userId === worker_id;
 
     if (!isAdmin && !isOwnLog) {
@@ -253,7 +253,7 @@ router.post("/day-off-requests", authenticateToken, async (req, res) => {
     const { worker_id, request_date, reason } = req.body;
 
     // Check if user is admin or the worker themselves
-    const isAdmin = req.user.role === "admin" || req.user.role === "super_admin";
+    const isAdmin = req.user.role === "admin" || req.user.role === "worker";
     const isOwnRequest = req.user.userId === worker_id;
 
     if (!isAdmin && !isOwnRequest) {
