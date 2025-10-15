@@ -83,6 +83,14 @@ router.post("/time-logs", authenticateToken, async (req, res) => {
     const { worker_id, date, start_time, end_time, hours_worked, description } =
       req.body;
 
+    // Check if user is admin or the worker themselves
+    const isAdmin = req.user.role === "admin" || req.user.role === "super_admin";
+    const isOwnLog = req.user.userId === worker_id;
+
+    if (!isAdmin && !isOwnLog) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
     const pool = await getConnection();
 
     // Check if log exists for this date
@@ -243,6 +251,14 @@ router.get("/day-off-requests", authenticateToken, async (req, res) => {
 router.post("/day-off-requests", authenticateToken, async (req, res) => {
   try {
     const { worker_id, request_date, reason } = req.body;
+
+    // Check if user is admin or the worker themselves
+    const isAdmin = req.user.role === "admin" || req.user.role === "super_admin";
+    const isOwnRequest = req.user.userId === worker_id;
+
+    if (!isAdmin && !isOwnRequest) {
+      return res.status(403).json({ error: "Access denied" });
+    }
 
     const pool = await getConnection();
     await pool
