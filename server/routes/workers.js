@@ -12,7 +12,7 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
         SELECT p.id, p.user_id, p.full_name, u.email
         FROM profiles p
         INNER JOIN users u ON p.user_id = u.id
-        WHERE p.role = 'worker'
+        WHERE p.role = 'worker' or p.role = 'admin'
         ORDER BY p.full_name
       `);
 
