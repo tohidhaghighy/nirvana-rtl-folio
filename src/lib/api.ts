@@ -239,6 +239,18 @@ class ApiClient {
     });
   }
 
+  async deleteTimeLog(id: string) {
+    return this.request(`/workers/time-logs/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async deleteDayOffRequest(id: string) {
+    return this.request(`/workers/day-off-requests/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   // Services
   async getServices() {
     return this.request("/services");

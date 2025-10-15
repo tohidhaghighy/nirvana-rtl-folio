@@ -156,6 +156,39 @@ router.put('/time-logs/:id', authenticateToken, requireAdmin, async (req, res) =
   }
 });
 
+// Delete time log (admin and worker can delete their own)
+router.delete('/time-logs/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await getConnection();
+    
+    // Check if user owns this time log or is admin
+    const checkResult = await pool.request()
+      .input('id', sql.UniqueIdentifier, id)
+      .query('SELECT worker_id FROM time_logs WHERE id = @id');
+    
+    if (checkResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'Time log not found' });
+    }
+    
+    const isOwner = checkResult.recordset[0].worker_id === req.user.userId;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+    
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    await pool.request()
+      .input('id', sql.UniqueIdentifier, id)
+      .query('DELETE FROM time_logs WHERE id = @id');
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting time log:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get day off requests
 router.get('/day-off-requests', authenticateToken, async (req, res) => {
   try {
@@ -243,6 +276,39 @@ router.put('/day-off-requests/:id', authenticateToken, requireAdmin, async (req,
     res.json({ success: true });
   } catch (error) {
     console.error('Error updating day off request:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete day off request (admin and worker can delete their own)
+router.delete('/day-off-requests/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await getConnection();
+    
+    // Check if user owns this request or is admin
+    const checkResult = await pool.request()
+      .input('id', sql.UniqueIdentifier, id)
+      .query('SELECT worker_id FROM day_off_requests WHERE id = @id');
+    
+    if (checkResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'Day off request not found' });
+    }
+    
+    const isOwner = checkResult.recordset[0].worker_id === req.user.userId;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+    
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    await pool.request()
+      .input('id', sql.UniqueIdentifier, id)
+      .query('DELETE FROM day_off_requests WHERE id = @id');
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting day off request:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

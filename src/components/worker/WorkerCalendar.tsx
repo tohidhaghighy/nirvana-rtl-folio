@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Calendar, Clock, Coffee, Save } from "lucide-react";
+import { Calendar, Clock, Coffee, Save, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/hooks/useAuthStore";
@@ -74,6 +74,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const [dayOffReason, setDayOffReason] = useState("");
   const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
   const [isDayOffDialogOpen, setIsDayOffDialogOpen] = useState(false);
+  const [currentLogId, setCurrentLogId] = useState<string | null>(null);
+  const [currentDayOffId, setCurrentDayOffId] = useState<string | null>(null);
 
   const calculateHoursTime = (start: string, end: string): string => {
     if (!start || !end) return "00:00";
@@ -221,6 +223,52 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     // return false;
   };
 
+  const deleteTimeLog = async () => {
+    if (!currentLogId) return;
+
+    try {
+      await apiClient.deleteTimeLog(currentLogId);
+      toast({
+        title: "موفقیت",
+        description: "ساعات کاری حذف شد",
+      });
+      setIsLogDialogOpen(false);
+      setCurrentLogId(null);
+      setStartTime("");
+      setEndTime("");
+      setDescription("");
+      onDataChange();
+    } catch (error) {
+      toast({
+        title: "خطا",
+        description: "خطا در حذف ساعات کاری",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteDayOff = async () => {
+    if (!currentDayOffId) return;
+
+    try {
+      await apiClient.deleteDayOffRequest(currentDayOffId);
+      toast({
+        title: "موفقیت",
+        description: "درخواست مرخصی حذف شد",
+      });
+      setIsDayOffDialogOpen(false);
+      setCurrentDayOffId(null);
+      setDayOffReason("");
+      onDataChange();
+    } catch (error) {
+      toast({
+        title: "خطا",
+        description: "خطا در حذف درخواست مرخصی",
+        variant: "destructive",
+      });
+    }
+  };
+
   const openLogDialog = (jy: number, jm: number, jd: number) => {
     if (!canEditDate(jy, jm, jd)) {
       toast({
@@ -238,7 +286,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     );
 
     if (existingLog) {
-      // Use the actual start_time and end_time from the log
+      setCurrentLogId(existingLog.id);
       setStartTime(
         existingLog.start_time ? existingLog.start_time.substring(0, 5) : ""
       );
@@ -247,6 +295,7 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       );
       setDescription(existingLog.description || "");
     } else {
+      setCurrentLogId(null);
       setStartTime("");
       setEndTime("");
       setDescription("");
@@ -266,7 +315,19 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
     }
 
     setSelectedDate({ jy, jm, jd });
-    setDayOffReason("");
+    const dateStr = formatDateForDB(jy, jm, jd);
+    const existingRequest = dayOffRequests.find(
+      (req) => req.request_date.substring(0, 10) === dateStr
+    );
+
+    if (existingRequest) {
+      setCurrentDayOffId(existingRequest.id);
+      setDayOffReason(existingRequest.reason || "");
+    } else {
+      setCurrentDayOffId(null);
+      setDayOffReason("");
+    }
+
     setIsDayOffDialogOpen(true);
   };
 
@@ -480,10 +541,18 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
                 placeholder="توضیحات کار انجام شده..."
               />
             </div>
-            <Button onClick={saveTimeLog} className="w-full">
-              <Save className="h-4 w-4 mr-2" />
-              ذخیره
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={saveTimeLog} className="flex-1">
+                <Save className="h-4 w-4 mr-2" />
+                ذخیره
+              </Button>
+              {currentLogId && (
+                <Button onClick={deleteTimeLog} variant="destructive" className="flex-1">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  حذف
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -503,10 +572,18 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
                 placeholder="دلیل درخواست مرخصی..."
               />
             </div>
-            <Button onClick={requestDayOff} className="w-full">
-              <Coffee className="h-4 w-4 mr-2" />
-              ثبت درخواست
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={requestDayOff} className="flex-1">
+                <Coffee className="h-4 w-4 mr-2" />
+                ثبت درخواست
+              </Button>
+              {currentDayOffId && (
+                <Button onClick={deleteDayOff} variant="destructive" className="flex-1">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  حذف
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
