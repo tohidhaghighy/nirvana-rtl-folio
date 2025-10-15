@@ -29,6 +29,12 @@ import { BlogManagement } from "./BlogManagement";
 import { WorkerManagement } from "./WorkerManagement";
 import ServiceManagement from "./ServiceManagement";
 import ProjectManagement from "./ProjectManagement";
+import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
+import {
+  formatDateForDB,
+  getDaysInJalaliMonth,
+  getCurrentJalaliDate,
+} from "@/utils/jalali";
 import {
   Dialog,
   DialogContent,
@@ -87,12 +93,29 @@ interface ClientProfile {
   last_submission?: string;
 }
 
+interface TimeLog {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  hours_worked: string;
+  description: string;
+  hours_worked_str: string;
+}
+
+interface DayOffRequest {
+  id: string;
+  request_date: string;
+  reason: string;
+  status: "pending" | "approved" | "rejected";
+}
+
 interface AdminDashboardProps {
   profile: Profile;
 }
 
 const AdminDashboard = ({ profile }: AdminDashboardProps) => {
-  const { signOut } = useAuthStore();
+  const { signOut, user } = useAuthStore();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ContactSubmission[]>([]);
   const [clients, setClients] = useState<ClientProfile[]>([]);
@@ -111,6 +134,12 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
+  
+  // Calendar state
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentJalaliDate());
+  const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
+  const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
+  const [totalHours, setTotalHours] = useState(0);
 
   const fetchSubmissions = async () => {
     try {
@@ -163,10 +192,77 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     }
   };
 
+  const fetchTimeLogs = async () => {
+    if (!user) return;
+
+    const startDate = formatDateForDB(selectedMonth.jy, selectedMonth.jm, 1);
+    const endDate = formatDateForDB(
+      selectedMonth.jy,
+      selectedMonth.jm,
+      getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm)
+    );
+
+    try {
+      const data = await apiClient.getTimeLogs({
+        startDate,
+        endDate,
+        workerId: user.id,
+      });
+
+      setTimeLogs(data || []);
+      const total = (data || []).reduce((sum, log) => {
+        let d = log.hours_worked_str || "0:00";
+        const [hours, minutes] = (d || "0:00").split(":").map(Number);
+        return sum + hours + (minutes || 0) / 60;
+      }, 0);
+      setTotalHours(total);
+    } catch (error) {
+      toast({
+        title: "خطا",
+        description: "خطا در دریافت ساعات کاری",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchDayOffRequests = async () => {
+    if (!user) return;
+
+    const startDate = formatDateForDB(selectedMonth.jy, selectedMonth.jm, 1);
+    const endDate = formatDateForDB(
+      selectedMonth.jy,
+      selectedMonth.jm,
+      getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm)
+    );
+
+    try {
+      const data = await apiClient.getDayOffRequests({
+        startDate,
+        endDate,
+        workerId: user.id,
+      });
+
+      const typedData = (data || []).map((request) => ({
+        ...request,
+        status: request.status as "pending" | "approved" | "rejected",
+      }));
+      setDayOffRequests(typedData);
+    } catch (error) {
+      // Handle error silently
+    }
+  };
+
   useEffect(() => {
     fetchSubmissions();
     fetchDashboardStats();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchTimeLogs();
+      fetchDayOffRequests();
+    }
+  }, [user, selectedMonth]);
 
   const fetchClients = async () => {
     setClientsLoading(true);
@@ -393,7 +489,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -406,6 +502,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             </TabsTrigger>
             <TabsTrigger value="workers" className="persian-body">
               کارمندان
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="persian-body">
+              تقویم من
             </TabsTrigger>
             <TabsTrigger value="blogs" className="persian-body">
               مقالات
@@ -726,6 +825,27 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
           <TabsContent value="workers">
             <WorkerManagement />
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <WorkerCalendar
+              today={formatDateForDB(
+                getCurrentJalaliDate().jy,
+                getCurrentJalaliDate().jm,
+                getCurrentJalaliDate().jd
+              )}
+              currentDate={getCurrentJalaliDate()}
+              selectedMonth={selectedMonth}
+              totalHours={totalHours}
+              timeLogs={timeLogs}
+              dayOffRequests={dayOffRequests}
+              isAdmin={true}
+              selectedWorkerId={user?.id || ""}
+              onDataChange={() => {
+                fetchTimeLogs();
+                fetchDayOffRequests();
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="blogs">
