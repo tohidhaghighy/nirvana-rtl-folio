@@ -55,6 +55,10 @@ import {
   Briefcase,
   Coffee,
   Palette,
+  Database,
+  BarChart3,
+  Brain,
+  Shield,
 } from "lucide-react";
 
 export const iconMap: Record<string, any> = {
@@ -74,4 +78,8 @@ export const iconMap: Record<string, any> = {
   Briefcase,
   Coffee,
   Palette,
+  Database,
+  BarChart3,
+  Brain,
+  Shield,
 };
