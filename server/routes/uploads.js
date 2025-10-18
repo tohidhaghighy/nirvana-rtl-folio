@@ -120,16 +120,27 @@ function saveBase64Image(base64String, uploadDir) {
     const buffer = Buffer.from(data, "base64");
 
     if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
-    }
+      // 🚨 CRITICAL DEBUG: Log directory creation attempt
+      console.log(`[Upload Debug] Attempting to create directory: ${uploadDir}`);
+      try {
+          fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
+      } catch(e) {
+          // Log an error if directory creation fails due to permissions
+          console.error(`[Upload Error] FAILED to create directory: ${uploadDir}`, e);
+          return reject(new Error(`Failed to create upload directory due to permissions: ${uploadDir}`));
+      }    }
 
     const filename =
       Date.now() + "-" + Math.round(Math.random() * 1e9) + "." + ext;
     const filePath = path.join(uploadDir, filename);
 
     fs.writeFile(filePath, buffer, (err) => {
-      if (err) return reject(err);
+      if (err) {
+        console.error(`[Upload Error] Failed to write file to: ${filePath}`, err);
+        return reject(err);
+      }
 
+      console.log(`[Upload Success] File saved to: ${filePath}`);
       // We only return the file path relative to the public/uploads folder
       // to construct the final URL later.
       resolve(filename);
@@ -140,13 +151,14 @@ function saveBase64Image(base64String, uploadDir) {
 // POST /project-image expects { image: "data:image/png;base64,...." }
 router.post(
   "/project-image",
-  // REMOVED redundant express.json() middleware, using global 50MB limit from server.js
   async (req, res) => {
     try {
       const { image } = req.body;
       if (!image) {
         return res.status(400).json({ error: "No image provided" });
       }
+
+      console.log(`[Upload Debug] UPLOAD_ROOT_DIR (Absolute Path): ${UPLOAD_ROOT_DIR}`);
 
       // 1. Define the final save location based on the UPLOAD_ROOT_DIR
       const projectUploadDir = path.join(UPLOAD_ROOT_DIR, "projects");
@@ -192,6 +204,8 @@ router.delete("/project-image", (req, res) => {
     
     // Reconstruct the full file path to where it's physically stored
     const filePath = path.join(UPLOAD_ROOT_DIR, safePathSegment);
+
+    console.log(`[Delete Debug] Attempting to delete file from: ${filePath}`);
 
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
