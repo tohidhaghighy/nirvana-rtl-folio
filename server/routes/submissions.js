@@ -93,31 +93,16 @@ router.get('/stats/dashboard', authenticateToken, requireAdmin, async (req, res)
     const usersResult = await pool.request()
       .query('SELECT COUNT(*) as count FROM profiles');
     
-    // Get monthly submissions count
-    // const monthlySubmissionsResult = await pool.request()
-    //   .query(`
-    //     SELECT COUNT(*) as count FROM contact_submissions 
-    //     WHERE created_at >= DATEADD(DAY, -30, GETDATE())
-    //   `);
-    
     const blogsCount = blogsResult.recordset[0].count;
     const servicesCount = servicesResult.recordset[0].count;
     const projectsCount = projectsResult.recordset[0].count;
     const usersCount = usersResult.recordset[0].count;
-    // const monthlySubmissions = monthlySubmissionsResult.recordset[0].count;
-    
-    // Calculate estimated visits
-    // const estimatedVisits = Math.max(
-    //   monthlySubmissions * 50 + usersCount * 25 + blogsCount * 100,
-    //   usersCount * 10
-    // );
-    
+
     res.json({
       publishedBlogsCount: blogsCount,
       servicesCount: servicesCount,
       projectsCount: projectsCount,
       totalUsers: usersCount,
-      // monthlyVisits: estimatedVisits
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);

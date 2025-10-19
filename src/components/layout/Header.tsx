@@ -10,7 +10,6 @@ import {
   FolderOpen,
   Phone,
   Shield,
-  Code,
   LogOut,
   FileText,
 } from "lucide-react";

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api";
 import { Navigate } from "react-router-dom";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
@@ -36,10 +35,10 @@ const Dashboard = () => {
           full_name: user.full_name || null,
           role: user.role,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
@@ -53,7 +52,9 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="persian-body text-muted-foreground">در حال بارگذاری...</p>
+          <p className="persian-body text-muted-foreground">
+            در حال بارگذاری...
+          </p>
         </div>
       </div>
     );
@@ -67,7 +68,9 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="persian-body text-muted-foreground">خطا در بارگذاری پروفایل</p>
+          <p className="persian-body text-muted-foreground">
+            خطا در بارگذاری پروفایل
+          </p>
         </div>
       </div>
     );
@@ -75,9 +78,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {profile.role === 'admin' ? (
+      {profile.role === "admin" ? (
         <AdminDashboard profile={profile} />
-      ) : profile.role === 'worker' ? (
+      ) : profile.role === "worker" ? (
         <WorkerDashboard />
       ) : (
         <ClientDashboard profile={profile} />

@@ -4,33 +4,25 @@ import {
   BarChart3,
   Code2,
   Database,
-  Users,
-  Award,
-  Clock,
   Zap,
   Shield,
   Target,
   Brain,
   Calendar,
-  User,
   CircleCheckBig,
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import {
   Carousel,
-  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { SEOHead, createServiceSchema } from "@/components/seo/SEOHead";
 import { toast } from "sonner";
@@ -78,69 +70,6 @@ const Home = () => {
       setLoading(false);
     }
   };
-
-  const staticProjects = [
-    {
-      id: 1,
-      title: "میز خدمت تعزیرات حکومتی و اپلیکیشن موبایل آن",
-      description:
-        "طراحی و توسعه سیستم جامع میز خدمت و اپلیکیشن موبایل برای تسهیل ارائه خدمات تعزیرات حکومتی.",
-      image: "./135.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["React", "Mobile App", "Blazor", "Dashboard", "Government"],
-      client: "سازمان تعزیرات حکومتی",
-    },
-    {
-      id: 2,
-      title: "سامانه مدیریت پرونده‌ها",
-      description:
-        "پیاده‌سازی سامانه مدیریت پرونده‌ها برای بهبود روندهای کاری و افزایش بهره‌وری سازمانی.",
-      image: "./cms.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Web App", "Microsoft SilverLight", "SQL", "Workflow"],
-      client: "سازمان تعزیرات حکومتی",
-    },
-    {
-      id: 3,
-      title: "مشاوره نرم‌افزاری و DevOps",
-      description:
-        "ارائه خدمات مشاوره در زمینه توسعه نرم‌افزار و پیاده‌سازی فرآیندهای DevOps.",
-      image: "./devops.png",
-      category: "مشاوره و DevOps",
-      tags: ["DevOps", "CI/CD", "Cloud", "Consulting"],
-      client: "شرکت‌های فناوری اطلاعات",
-    },
-    {
-      id: 4,
-      title: "سامانه هوش تجاری سازمان تعزیرات",
-      description:
-        "ایجاد داشبورد هوش تجاری برای تحلیل داده‌های سازمان و بهبود فرآیند تصمیم‌گیری.",
-      image: "./bi.jpg",
-      category: "هوش تجاری",
-      tags: ["Power BI", "Analytics", "Dashboard", "Data"],
-      client: "سازمان تعزیرات حکومتی",
-    },
-    {
-      id: 5,
-      title: "سامانه امحاء",
-      description:
-        "طراحی و پیاده‌سازی سامانه امحاء اسناد و مدارک با امنیت بالا و قابلیت پیگیری.",
-      image: "./emha.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Security", "Workflow", "Web App", "Tracking"],
-      client: "سازمان تعزیرات حکومتی",
-    },
-    {
-      id: 6,
-      title: "سامانه مدیریت پروژه و مکاتبات",
-      description:
-        "پیاده‌سازی سامانه یکپارچه مدیریت پروژه‌ها و مکاتبات برای سازمان‌ها و شرکت‌ها.",
-      image: "./ticketing.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Project Management", "Communication", "Web App", "Collaboration"],
-      client: "شرکت‌ها و سازمان‌های دولتی",
-    },
-  ];
 
   const features = [
     {
@@ -204,18 +133,7 @@ const Home = () => {
       />
       <div>
         {/* Hero Section */}
-        <section
-          className="relative min-h-screen flex items-center justify-center overflow-hidden"
-          // style={{
-          //   backgroundImage: `url('/public/hero-image.jpg')`,
-          //   backgroundSize: "cover",
-          //   backgroundPosition: "center",
-          // }}
-        >
-          {/* <div className="absolute inset-0 bg-hero-image bg-cover bg-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/100 to-background/50"></div>
-          </div> */}
-
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-accent via-primary/100 to-background/50"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-background/20 to-transparent"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
@@ -261,27 +179,6 @@ const Home = () => {
             <ChevronDown className="w-8 h-8 text-muted-foreground" />
           </div>
         </section>
-
-        {/* Stats Section */}
-        {/* <section className="py-20 bg-gradient-to-br from-secondary/30 to-muted/20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center fade-in-scale">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                  <stat.icon className="w-8 h-8 text-primary" />
-                </div>
-                <div className="persian-heading text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  {stat.value}
-                </div>
-                <div className="persian-body text-muted-foreground text-sm md:text-base">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
 
         {/* Features Section */}
         <section className="py-20 bg-gradient-to-b from-background to-secondary/10">

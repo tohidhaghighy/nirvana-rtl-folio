@@ -16,7 +16,6 @@ import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import {
-  getCurrentJalaliDate,
   getJalaliMonthName,
   getDaysInJalaliMonth,
   jalaliToGregorian,
@@ -182,33 +181,10 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const canEditDate = (jy: number, jm: number, jd: number) => {
     if (isAdmin) return true;
 
-    const targetDateStr = formatDateForDB(jy, jm, jd);
-    const currentDateStr = formatDateForDB(
-      currentDate.jy,
-      currentDate.jm,
-      currentDate.jd
-    );
-    const currentMonthStr = formatDateForDB(currentDate.jy, currentDate.jm, 1);
-
     // Workers can edit current month + 5 days into next month
     if (jy === currentDate.jy && jm === currentDate.jm) {
       return true; // Current month
     }
-
-    // Check if it's within 5 days after current month
-    // const currentMonthEnd = formatDateForDB(
-    //   currentDate.jy,
-    //   currentDate.jm,
-    //   getDaysInJalaliMonth(currentDate.jy, currentDate.jm)
-    // );
-
-    // const nextMonth = currentDate.jm === 12 ? 1 : currentDate.jm + 1;
-    // const nextYear =
-    //   currentDate.jm === 12 ? currentDate.jy + 1 : currentDate.jy;
-
-    // if (jy === nextYear && jm === nextMonth && jd <= 5) {
-    //   return true; // First 5 days of next month
-    // }
 
     const isNextMonthGracePeriod =
       (currentDate.jy === jy &&
@@ -220,7 +196,6 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
         currentDate.jd <= 5);
 
     return isNextMonthGracePeriod;
-    // return false;
   };
 
   const deleteTimeLog = async () => {
@@ -547,7 +522,11 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
                 ذخیره
               </Button>
               {currentLogId && (
-                <Button onClick={deleteTimeLog} variant="destructive" className="flex-1">
+                <Button
+                  onClick={deleteTimeLog}
+                  variant="destructive"
+                  className="flex-1"
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   حذف
                 </Button>
@@ -578,7 +557,11 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
                 ثبت درخواست
               </Button>
               {currentDayOffId && (
-                <Button onClick={deleteDayOff} variant="destructive" className="flex-1">
+                <Button
+                  onClick={deleteDayOff}
+                  variant="destructive"
+                  className="flex-1"
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   حذف
                 </Button>

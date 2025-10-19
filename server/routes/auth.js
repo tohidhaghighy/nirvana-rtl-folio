@@ -4,12 +4,6 @@ import jwt from 'jsonwebtoken';
 import { getConnection, sql } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
-// const express = require('express');
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
-// const { getConnection, sql } = require('../config/database');
-// const { authenticateToken } = require('../middleware/auth');
-
 const router = express.Router();
 
 // Sign up - Simplified without email verification

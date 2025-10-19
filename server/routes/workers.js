@@ -29,12 +29,7 @@ router.get("/time-logs", authenticateToken, async (req, res) => {
     const { startDate, endDate, workerId } = req.query;
 
     const pool = await getConnection();
-    // let query = `
-    //   SELECT tl.*, p.full_name as worker_name
-    //   FROM time_logs tl
-    //   INNER JOIN profiles p ON tl.worker_id = p.user_id
-    //   WHERE 1=1
-    // `;
+
     let query = `SELECT tl.id, 
     tl.worker_id,
     tl.date, 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, ArrowLeft, CircleCheckBig } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -49,76 +49,6 @@ const Projects = () => {
     );
   }
 
-  const staticProjects = [
-    {
-      id: 1,
-      title: "میز خدمت تعزیرات حکومتی و اپلیکیشن موبایل آن",
-      description:
-        "طراحی و توسعه سیستم جامع میز خدمت و اپلیکیشن موبایل برای تسهیل ارائه خدمات تعزیرات حکومتی.",
-      image: "./135.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["React", "Mobile App", "Blazor", "Dashboard", "Government"],
-
-      client: "سازمان تعزیرات حکومتی",
-      link: "#",
-    },
-    {
-      id: 2,
-      title: "سامانه مدیریت پرونده‌ها",
-      description:
-        "پیاده‌سازی سامانه مدیریت پرونده‌ها برای بهبود روندهای کاری و افزایش بهره‌وری سازمانی.",
-      image: "./cms.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Web App", "Microsoft SilverLight", "SQL", "Workflow"],
-      client: "سازمان تعزیرات حکومتی",
-      link: "#",
-    },
-    {
-      id: 3,
-      title: "مشاوره نرم‌افزاری و DevOps",
-      description:
-        "ارائه خدمات مشاوره در زمینه توسعه نرم‌افزار و پیاده‌سازی فرآیندهای DevOps.",
-      image: "./devops.png",
-      category: "مشاوره و DevOps",
-      tags: ["DevOps", "CI/CD", "Cloud", "Consulting"],
-      client: "شرکت‌های فناوری اطلاعات",
-      link: "#",
-    },
-    {
-      id: 4,
-      title: "سامانه هوش تجاری سازمان تعزیرات",
-      description:
-        "ایجاد داشبورد هوش تجاری برای تحلیل داده‌های سازمان و بهبود فرآیند تصمیم‌گیری.",
-      image: "./bi.jpg",
-      category: "هوش تجاری",
-      tags: ["Power BI", "Analytics", "Dashboard", "Data"],
-      client: "سازمان تعزیرات حکومتی",
-      link: "#",
-    },
-    {
-      id: 5,
-      title: "سامانه امحاء",
-      description:
-        "طراحی و پیاده‌سازی سامانه امحاء اسناد و مدارک با امنیت بالا و قابلیت پیگیری.",
-      image: "./emha.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Security", "Workflow", "Web App", "Tracking"],
-      client: "سازمان تعزیرات حکومتی",
-      link: "#",
-    },
-    {
-      id: 6,
-      title: "سامانه مدیریت پروژه و مکاتبات",
-      description:
-        "پیاده‌سازی سامانه یکپارچه مدیریت پروژه‌ها و مکاتبات برای سازمان‌ها و شرکت‌ها.",
-      image: "./ticketing.png",
-      category: "توسعه نرم‌افزار",
-      tags: ["Project Management", "Communication", "Web App", "Collaboration"],
-      client: "شرکت‌ها و سازمان‌های دولتی",
-      link: "#",
-    },
-  ];
-
   return (
     <>
       <SEOHead
@@ -155,18 +85,7 @@ const Projects = () => {
                       alt={project.title}
                       className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      {/* <div className="absolute bottom-4 right-4">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="bg-white/90 text-foreground"
-                      >
-                        <ExternalLink className="w-4 h-4 ml-2" />
-                        مشاهده
-                      </Button>
-                    </div> */}
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
 
                   <div className="p-6">

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Code } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -86,23 +86,6 @@ const Footer = () => {
                 </span>
               </div>
             </div>
-
-            {/* Social Links */}
-            {/* <div className="flex gap-4 pt-4">
-              {[
-                { icon: Instagram, href: "/contact" },
-                { icon: Linkedin, href: "/contact" },
-                { icon: Twitter, href: "/contact" },
-              ].map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  className="w-10 h-10 bg-background/10 rounded-lg flex items-center justify-center hover:bg-accent hover:text-foreground transition-colors"
-                >
-                  <social.icon className="w-5 h-5" />
-                </a>
-              ))}
-            </div> */}
           </div>
         </div>
 

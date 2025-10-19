@@ -89,27 +89,6 @@ const ProjectManagement = () => {
 
     const base64Image = await toBase64(imageFile);
 
-    // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-    // const response = await fetch(`${API_BASE_URL}/uploads/project-image`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ image: base64Image }),
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error("Failed to upload image");
-    // }
-
-    // const data = await response.json();
-
-    // // API_BASE_ROOT_URL to remove '/api' if needed
-    // const API_BASE_ROOT_URL = API_BASE_URL.endsWith("/api")
-    //   ? API_BASE_URL.slice(0, -4)
-    //   : API_BASE_URL;
-
     return `${base64Image}`;
   };
 

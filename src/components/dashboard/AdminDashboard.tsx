@@ -129,7 +129,6 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [servicesCount, setServicesCount] = useState(0);
   const [projectsCount, setProjectsCount] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
-  // const [monthlyVisits, setMonthlyVisits] = useState(0);
   const [selectedSubmission, setSelectedSubmission] =
     useState<ContactSubmission | null>(null);
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(
@@ -191,7 +190,6 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
       setServicesCount(stats.servicesCount || 0);
       setProjectsCount(stats.projectsCount || 0);
       setTotalUsers(stats.totalUsers || 0);
-      // setMonthlyVisits(stats.monthlyVisits || 0);
     } catch (error: any) {
       console.error("خطا در دریافت اطلاعات داشبورد:", error);
     }
@@ -329,8 +327,6 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   };
 
   const canNavigate = (direction: "prev" | "next") => {
-    // if (isAdmin) return true;
-
     // Workers can navigate through the current year
     const isSameMonth = (d1, d2) => d1.jy === d2.jy && d1.jm === d2.jm;
 
@@ -546,20 +542,6 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               <ClipboardCheck className="w-8 h-8 text-indigo-400" />
             </div>
           </Card>
-
-          {/* <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="persian-body text-sm text-muted-foreground mb-1">
-                  بازدید ماهانه
-                </p>
-                <p className="persian-heading text-3xl font-bold text-green-500">
-                  {monthlyVisits.toLocaleString("fa-IR")}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-green-500" />
-            </div>
-          </Card> */}
         </div>
 
         {/* Main Content */}

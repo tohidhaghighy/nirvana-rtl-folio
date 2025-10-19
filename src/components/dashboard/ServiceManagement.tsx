@@ -259,7 +259,6 @@ const ServiceManagement = () => {
                   <Button
                     variant="outline"
                     role="combobox"
-                    // aria-expanded={/* popover state */}
                     className="w-full justify-between"
                   >
                     {/* Display the currently selected icon and its name */}
@@ -289,9 +288,6 @@ const ServiceManagement = () => {
                           onClick={() => handleSelectIcon(iconName)}
                         >
                           <DynamicIcon name={iconName} size={24} />
-                          {/* <span className="text-xs mt-1 truncate w-full text-center">
-                            {iconName}
-                          </span> */}
                         </Button>
                       ))
                     ) : (

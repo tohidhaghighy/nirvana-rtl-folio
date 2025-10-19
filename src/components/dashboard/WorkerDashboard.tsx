@@ -26,7 +26,6 @@ import {
   getDaysInJalaliMonth,
   getCurrentJalaliDate,
   getJalaliMonthName,
-  jalaliToGregorian,
 } from "@/utils/jalali";
 import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
 
