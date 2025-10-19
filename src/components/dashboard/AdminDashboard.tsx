@@ -16,8 +16,11 @@ import {
   Save,
   Briefcase,
   ClipboardCheck,
+  ChevronLeft,
+  ChevronRight,
+  Coffee,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +37,7 @@ import {
   formatDateForDB,
   getDaysInJalaliMonth,
   getCurrentJalaliDate,
+  getJalaliMonthName,
 } from "@/utils/jalali";
 import {
   Dialog,
@@ -52,7 +56,7 @@ import {
 } from "@/components/ui/table";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
-import { convertToPersianDigits } from "@/lib/utils";
+import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
 
 interface Profile {
   id: string;
@@ -134,12 +138,36 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
-  
+
   // Calendar state
   const [selectedMonth, setSelectedMonth] = useState(getCurrentJalaliDate());
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
   const [totalHours, setTotalHours] = useState(0);
+
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+  const currentDate = getCurrentJalaliDate();
+
+  const todayDateStr = formatDateForDB(
+    currentDate.jy,
+    currentDate.jm,
+    currentDate.jd
+  );
+
+  const convertTimeToHours = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours + (minutes || 0) / 60;
+  };
+
+  const hoursToday = convertTimeToHours(
+    timeLogs.find((log) => log.date.substring(0, 10) === todayDateStr)
+      ?.hours_worked || "0:00"
+  );
+  const daysWorked = new Set(timeLogs.map((log) => log.date)).size;
+  const pendingRequests = dayOffRequests.filter(
+    (req) => req.status === "pending"
+  ).length;
 
   const fetchSubmissions = async () => {
     try {
@@ -278,6 +306,53 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
     } finally {
       setClientsLoading(false);
     }
+  };
+
+  const navigateMonth = (direction: "prev" | "next") => {
+    const newMonth = { ...selectedMonth };
+    if (direction === "next") {
+      if (newMonth.jm === 12) {
+        newMonth.jy += 1;
+        newMonth.jm = 1;
+      } else {
+        newMonth.jm += 1;
+      }
+    } else {
+      if (newMonth.jm === 1) {
+        newMonth.jy -= 1;
+        newMonth.jm = 12;
+      } else {
+        newMonth.jm -= 1;
+      }
+    }
+    setSelectedMonth(newMonth);
+  };
+
+  const canNavigate = (direction: "prev" | "next") => {
+    // if (isAdmin) return true;
+
+    // Workers can navigate through the current year
+    const isSameMonth = (d1, d2) => d1.jy === d2.jy && d1.jm === d2.jm;
+
+    const isSelectedMonthBeforeCurrentYearStart = () => {
+      return selectedMonth.jy < currentDate.jy;
+    };
+
+    if (direction === "prev") {
+      // Workers can't go to previous years. They can go back to the first month of the current year.
+      // So, disable the 'prev' button if the selected month is the first month of the current year.
+      return (
+        !isSelectedMonthBeforeCurrentYearStart() &&
+        !(selectedMonth.jy === currentDate.jy && selectedMonth.jm === 1)
+      );
+    }
+
+    if (direction === "next") {
+      // Workers cannot go to the next month if they are already in the current month.
+      return !isSameMonth(selectedMonth, currentDate);
+    }
+
+    return false;
   };
 
   const handleLogout = async () => {
@@ -828,6 +903,108 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="calendar">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    ساعات امروز
+                  </CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {convertToPersianDigits(
+                      formatDecimalHoursToTime(hoursToday)
+                    )}{" "}
+                    ساعت
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hoursToday > 0
+                      ? "ثبت شده برای امروز"
+                      : "برای امروز ثبت نشده"}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    مجموع این ماه
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {convertToPersianDigits(
+                      formatDecimalHoursToTime(totalHours)
+                    )}{" "}
+                    ساعت
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    ساعات کاری ماه جاری
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    روزهای کاری
+                  </CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {daysWorked.toLocaleString("fa-IR")} روز
+                  </div>
+                  <p className="text-xs text-muted-foreground">از ابتدای ماه</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    درخواست مرخصی
+                  </CardTitle>
+                  <Coffee className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {pendingRequests.toLocaleString("fa-IR")}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    در انتظار بررسی
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex items-center justify-end my-2">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth("prev")}
+                    disabled={!canNavigate("prev")}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <div className="text-sm font-medium min-w-32 text-center">
+                    {getJalaliMonthName(selectedMonth.jm)}{" "}
+                    {selectedMonth.jy.toLocaleString("fa-IR", {
+                      useGrouping: false,
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth("next")}
+                    disabled={!canNavigate("next")}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
             <WorkerCalendar
               today={formatDateForDB(
                 getCurrentJalaliDate().jy,
