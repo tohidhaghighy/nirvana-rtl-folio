@@ -21,6 +21,8 @@ import { WorkerCalendar } from "@/components/worker/WorkerCalendar";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { apiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChangePassword } from "@/components/auth/ChangePassword";
 import {
   formatDateForDB,
   getDaysInJalaliMonth,
@@ -407,20 +409,33 @@ export const WorkerDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <WorkerCalendar
-        today={todayDateStr}
-        currentDate={currentDate}
-        selectedMonth={selectedMonth}
-        totalHours={totalHours}
-        timeLogs={timeLogs}
-        dayOffRequests={dayOffRequests}
-        isAdmin={isAdmin}
-        selectedWorkerId={selectedWorkerId}
-        onDataChange={() => {
-          fetchTimeLogs();
-          fetchDayOffRequests();
-        }}
-      />
+      <Tabs defaultValue="calendar" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="calendar">تقویم کاری من</TabsTrigger>
+          <TabsTrigger value="settings">تنظیمات</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar">
+          <WorkerCalendar
+            today={todayDateStr}
+            currentDate={currentDate}
+            selectedMonth={selectedMonth}
+            totalHours={totalHours}
+            timeLogs={timeLogs}
+            dayOffRequests={dayOffRequests}
+            isAdmin={isAdmin}
+            selectedWorkerId={selectedWorkerId}
+            onDataChange={() => {
+              fetchTimeLogs();
+              fetchDayOffRequests();
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <ChangePassword />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -22,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChangePassword } from "@/components/auth/ChangePassword";
 
 interface Profile {
   id: string;
@@ -226,8 +228,15 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Tabs defaultValue="submissions" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="submissions">درخواست‌های من</TabsTrigger>
+          <TabsTrigger value="settings">تنظیمات</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="submissions" className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -371,6 +380,12 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
           )}
         </div>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <ChangePassword />
+        </TabsContent>
+      </Tabs>
 
       {/* Ticket Details Modal */}
       <Dialog open={ticketModalOpen} onOpenChange={setTicketModalOpen}>

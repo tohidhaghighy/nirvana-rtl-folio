@@ -39,6 +39,7 @@ import {
   getCurrentJalaliDate,
   getJalaliMonthName,
 } from "@/utils/jalali";
+import { ChangePassword } from "@/components/auth/ChangePassword";
 import {
   Dialog,
   DialogContent,
@@ -546,7 +547,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -571,6 +572,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
             </TabsTrigger>
             <TabsTrigger value="projects" className="persian-body">
               پروژه‌ها
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="persian-body">
+              تنظیمات
             </TabsTrigger>
           </TabsList>
 
@@ -1199,6 +1203,11 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Settings Tab - Add before closing */}
+      <TabsContent value="settings" className="space-y-6">
+        <ChangePassword />
+      </TabsContent>
     </>
   );
 };
