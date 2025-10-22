@@ -345,8 +345,8 @@ export const WorkerManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">مدیریت کارمندان</h2>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-start">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Users className="h-4 w-4 text-muted-foreground" />
             <Select
               value={selectedWorkerId || "all"}
@@ -367,7 +367,7 @@ export const WorkerManagement: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <Select
               value={selectedMonth.jy.toString()}
@@ -420,7 +420,7 @@ export const WorkerManagement: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
@@ -446,7 +446,7 @@ export const WorkerManagement: React.FC = () => {
       </div>
 
       <Tabs defaultValue="summary" className="space-y-6" dir="rtl">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 h-20 sm:grid-cols-4 sm:h-auto">
           <TabsTrigger value="summary">خلاصه کارمندان</TabsTrigger>
           <TabsTrigger value="time-logs">ساعات کاری</TabsTrigger>
           <TabsTrigger value="day-off-requests">درخواست‌های مرخصی</TabsTrigger>

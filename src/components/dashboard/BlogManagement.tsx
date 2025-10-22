@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
   Calendar,
-  FileText 
+  FileText,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
@@ -42,7 +42,7 @@ export const BlogManagement = () => {
       const data = await apiClient.getBlogs();
       setPosts(data || []);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
       toast({
         variant: "destructive",
         title: "خطا",
@@ -60,49 +60,51 @@ export const BlogManagement = () => {
         title: "در حال پردازش",
         description: "در حال تغییر وضعیت انتشار مقاله...",
       });
-      
+
       // Call API to toggle publish status
       await apiClient.toggleBlogPublish(post.id, !post.published);
 
       // Update local state
-      setPosts(posts.map(p => 
-        p.id === post.id 
-          ? { ...p, published: !p.published }
-          : p
-      ));
+      setPosts(
+        posts.map((p) =>
+          p.id === post.id ? { ...p, published: !p.published } : p
+        )
+      );
 
       // Show success toast
       toast({
         title: "موفق",
-        description: post.published ? "مقاله از حالت انتشار خارج شد" : "مقاله منتشر شد",
+        description: post.published
+          ? "مقاله از حالت انتشار خارج شد"
+          : "مقاله منتشر شد",
       });
     } catch (error: any) {
-      console.error('Error toggling publish:', error);
-      
+      console.error("Error toggling publish:", error);
+
       // Show detailed error message
       toast({
         variant: "destructive",
         title: "خطا",
         description: error.message || "خطا در تغییر وضعیت انتشار",
       });
-      
+
       // Refresh posts to ensure UI is in sync with server
       fetchPosts();
     }
   };
 
   const handleDelete = async (postId: string) => {
-    if (!confirm('آیا از حذف این مقاله مطمئن هستید؟')) return;
+    if (!confirm("آیا از حذف این مقاله مطمئن هستید؟")) return;
 
     try {
       await apiClient.deleteBlog(postId);
-      setPosts(posts.filter(p => p.id !== postId));
+      setPosts(posts.filter((p) => p.id !== postId));
       toast({
         title: "موفق",
         description: "مقاله با موفقیت حذف شد",
       });
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error("Error deleting post:", error);
       toast({
         variant: "destructive",
         title: "خطا",
@@ -130,20 +132,15 @@ export const BlogManagement = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fa-IR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("fa-IR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   if (showEditor) {
-    return (
-      <BlogEditor 
-        post={editingPost}
-        onClose={handleEditorClose}
-      />
-    );
+    return <BlogEditor post={editingPost} onClose={handleEditorClose} />;
   }
 
   return (
@@ -199,7 +196,7 @@ export const BlogManagement = () => {
                         <Calendar size={14} />
                         <span>{formatDate(post.created_at)}</span>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={post.published ? "default" : "secondary"}
                         className="persian-body"
                       >
@@ -207,13 +204,13 @@ export const BlogManagement = () => {
                       </Badge>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-2 flex-col sm:flex-row sm:items-center sm:justify-start">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleTogglePublish(post)}
-                      className="persian-body"
+                      className="persian-body w-full sm:w-auto"
                     >
                       {post.published ? (
                         <>
@@ -227,22 +224,22 @@ export const BlogManagement = () => {
                         </>
                       )}
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(post)}
-                      className="persian-body"
+                      className="persian-body w-full sm:w-auto"
                     >
                       <Edit className="w-4 h-4 ml-1" />
                       ویرایش
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(post.id)}
-                      className="text-destructive hover:text-destructive persian-body"
+                      className="text-destructive hover:text-destructive persian-body w-full sm:w-auto"
                     >
                       <Trash2 className="w-4 h-4 ml-1" />
                       حذف
@@ -250,7 +247,7 @@ export const BlogManagement = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               {post.excerpt && (
                 <CardContent>
                   <p className="text-muted-foreground persian-body line-clamp-2">

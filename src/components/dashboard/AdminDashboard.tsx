@@ -58,6 +58,9 @@ import {
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
+import { useWindowSize } from "../windowWidth/useWindowSize";
+
+const MOBILE_WIDTH_THRESHOLD = 600;
 
 interface Profile {
   id: string;
@@ -144,6 +147,9 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
   const [totalHours, setTotalHours] = useState(0);
+
+  const { width } = useWindowSize();
+  const isTooNarrow = width !== undefined && width < MOBILE_WIDTH_THRESHOLD;
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const currentDate = getCurrentJalaliDate();
@@ -328,6 +334,8 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
   };
 
   const canNavigate = (direction: "prev" | "next") => {
+    if (isTooNarrow) return false;
+
     // Workers can navigate through the current year
     const isSameMonth = (d1, d2) => d1.jy === d2.jy && d1.jm === d2.jm;
 
@@ -547,7 +555,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="submissions" className="space-y-6" dir="rtl">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-4 h-20">
             <TabsTrigger value="submissions" className="persian-body">
               درخواست‌ها
             </TabsTrigger>
@@ -574,7 +582,7 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
               پروژه‌ها
             </TabsTrigger>
             <TabsTrigger value="settings" className="persian-body">
-              تنظیمات
+              تغییر رمز عبور
             </TabsTrigger>
           </TabsList>
 
@@ -1022,6 +1030,10 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           <TabsContent value="projects">
             <ProjectManagement />
           </TabsContent>
+
+          <TabsContent value="settings">
+            <ChangePassword />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -1203,11 +1215,6 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Settings Tab - Add before closing */}
-      <TabsContent value="settings" className="space-y-6">
-        <ChangePassword />
-      </TabsContent>
     </>
   );
 };

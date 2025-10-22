@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { apiClient } from '@/lib/api';
-import { toast } from 'sonner';
+import { create } from "zustand";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -16,6 +16,10 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => void;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
   initialize: () => Promise<void>;
 }
 
@@ -34,7 +38,7 @@ export const useAuth = create<AuthState>((set, get) => ({
       const user = await apiClient.getCurrentUser();
       set({ user, isInitialized: true });
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
+      console.error("Failed to initialize auth:", error);
       apiClient.signOut();
       set({ user: null, isInitialized: true });
     }
@@ -45,10 +49,10 @@ export const useAuth = create<AuthState>((set, get) => ({
     try {
       const response = await apiClient.signIn(email, password);
       set({ user: response.user, loading: false });
-      toast.success('خوش آمدید!');
+      toast.success("خوش آمدید!");
     } catch (error) {
       set({ loading: false });
-      toast.error(error instanceof Error ? error.message : 'خطا در ورود');
+      toast.error(error instanceof Error ? error.message : "خطا در ورود");
       throw error;
     }
   },
@@ -58,10 +62,10 @@ export const useAuth = create<AuthState>((set, get) => ({
     try {
       await apiClient.signUp(email, password, fullName);
       set({ loading: false });
-      toast.success('حساب کاربری با موفقیت ایجاد شد. لطفاً وارد شوید.');
+      toast.success("حساب کاربری با موفقیت ایجاد شد. لطفاً وارد شوید.");
     } catch (error) {
       set({ loading: false });
-      toast.error(error instanceof Error ? error.message : 'خطا در ثبت نام');
+      toast.error(error instanceof Error ? error.message : "خطا در ثبت نام");
       throw error;
     }
   },
@@ -69,6 +73,26 @@ export const useAuth = create<AuthState>((set, get) => ({
   signOut: () => {
     apiClient.signOut();
     set({ user: null });
-    toast.success('با موفقیت خارج شدید');
-  }
+    toast.success("با موفقیت خارج شدید");
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    if (!get().user) {
+      toast.error("کاربر احراز هویت نشده است.");
+      return;
+    }
+
+    set({ loading: true });
+    try {
+      await apiClient.changePassword(currentPassword, newPassword);
+      set({ loading: false });
+      toast.success("رمز عبور با موفقیت تغییر کرد");
+    } catch (error) {
+      set({ loading: false });
+      toast.error(
+        error instanceof Error ? error.message : "خطا در تغییر رمز عبور"
+      );
+      throw error;
+    }
+  },
 }));

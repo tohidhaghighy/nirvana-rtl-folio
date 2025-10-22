@@ -53,6 +53,13 @@ class ApiClient {
     return response;
   }
 
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
   async getCurrentUser() {
     return this.request("/auth/me");
   }

@@ -30,6 +30,9 @@ import {
   getJalaliMonthName,
 } from "@/utils/jalali";
 import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
+import { useWindowSize } from "../windowWidth/useWindowSize";
+
+const MOBILE_WIDTH_THRESHOLD = 600;
 
 interface TimeLog {
   id: string;
@@ -64,6 +67,9 @@ export const WorkerDashboard: React.FC = () => {
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const currentDate = getCurrentJalaliDate();
+
+  const { width } = useWindowSize();
+  const isTooNarrow = width !== undefined && width < MOBILE_WIDTH_THRESHOLD;
 
   // Set default worker ID for non-admins
   useEffect(() => {
@@ -196,6 +202,7 @@ export const WorkerDashboard: React.FC = () => {
   };
 
   const canNavigate = (direction: "prev" | "next") => {
+    if (isTooNarrow) return false;
     if (isAdmin) return true;
 
     // Workers can navigate through the current year
@@ -409,10 +416,10 @@ export const WorkerDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="calendar" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="calendar" className="space-y-4" dir="rtl">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="calendar">تقویم کاری من</TabsTrigger>
-          <TabsTrigger value="settings">تنظیمات</TabsTrigger>
+          <TabsTrigger value="settings">تغییر رمز عبور</TabsTrigger>
         </TabsList>
 
         <TabsContent value="calendar">

@@ -168,4 +168,49 @@ router.get('/me', authenticateToken, async (req, res) => {
 
 export default router;
 
-// module.exports = router;
+// Change Password
+router.post('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id; 
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'رمز عبور قبلی و فعلی را وارد نمایید' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'رمز عبور باید حداقل ۶ کاراکتر باشد' });
+    }
+
+    const pool = await getConnection();
+
+    const result = await pool.request()
+      .input('userId', sql.UniqueIdentifier, userId)
+      .query('SELECT password_hash FROM users WHERE id = @userId');
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ error: 'کاربر یافت نشد' });
+    }
+
+    const user = result.recordset[0];
+
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'رمز عبور فعلی اشتباه است' });
+    }
+
+    const saltRounds = 10;
+    const newHashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await pool.request()
+      .input('userId', sql.UniqueIdentifier, userId)
+      .input('newPasswordHash', sql.NVarChar, newHashedPassword)
+      .query('UPDATE users SET password_hash = @newPasswordHash WHERE id = @userId');
+
+    res.json({ message: 'رمز عبور با موفقیت تغییر کرد' });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'خطا در تغییر رمز عبور' });
+  }
+});

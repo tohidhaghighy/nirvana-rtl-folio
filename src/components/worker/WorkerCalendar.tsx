@@ -22,6 +22,10 @@ import {
   formatDateForDB,
 } from "@/utils/jalali";
 import { convertToPersianDigits, formatDecimalHoursToTime } from "@/lib/utils";
+import { useWindowSize } from "../windowWidth/useWindowSize";
+import { RotateCcw } from "lucide-react";
+
+const MOBILE_WIDTH_THRESHOLD = 600;
 
 interface TimeLog {
   id: string;
@@ -75,6 +79,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const [isDayOffDialogOpen, setIsDayOffDialogOpen] = useState(false);
   const [currentLogId, setCurrentLogId] = useState<string | null>(null);
   const [currentDayOffId, setCurrentDayOffId] = useState<string | null>(null);
+
+  const { width } = useWindowSize();
+  const isTooNarrow = width !== undefined && width < MOBILE_WIDTH_THRESHOLD;
 
   const calculateHoursTime = (start: string, end: string): string => {
     if (!start || !end) return "00:00";
@@ -423,6 +430,42 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       </div>
     );
   };
+
+  if (isTooNarrow) {
+    return (
+      <div className="space-y-6">
+        <Card className="flex items-center justify-center p-4">
+          {/* The inner div must control the height. We use min-h-[400px] 
+          or min-h-full to ensure it's tall enough to center the message, 
+          without using h-screen which would overflow the Card.
+        */}
+          <div
+            className="
+            flex flex-col items-center justify-center 
+            w-full 
+            min-h-[400px] /* Ensure sufficient height for the message */ 
+            text-center 
+            bg-background/50 /* Optional: slightly different background for contrast */
+            p-4 
+            rounded-lg
+          "
+          >
+            <RotateCcw className="w-12 h-12 text-blue-500 mb-4" />
+            <h2 className="text-xl font-bold mb-2 persian-body">
+              لطفاً دستگاه خود را بچرخانید
+            </h2>
+            <p className="text-gray-600 persian-body">
+              برای نمایش صحیح تقویم و جدول زمانی، لطفاً گوشی خود را به حالت افقی
+              بچرخانید.
+            </p>
+
+            {/* Optional: Show current width for debugging */}
+            {/* <p className="mt-4 text-xs text-gray-400">عرض فعلی: {width}px</p> */}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const daysInMonth = getDaysInJalaliMonth(selectedMonth.jy, selectedMonth.jm);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);

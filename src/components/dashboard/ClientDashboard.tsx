@@ -228,158 +228,159 @@ const ClientDashboard = ({ profile }: ClientDashboardProps) => {
         </div>
       </div>
 
-      <Tabs defaultValue="submissions" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="submissions" className="space-y-4" dir="rtl">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="submissions">درخواست‌های من</TabsTrigger>
-          <TabsTrigger value="settings">تنظیمات</TabsTrigger>
+          <TabsTrigger value="settings">تغییر رمز عبور</TabsTrigger>
         </TabsList>
 
         <TabsContent value="submissions" className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">
-                کل درخواست‌ها
-              </p>
-              <p className="persian-heading text-3xl font-bold text-foreground">
-                {stats.total.toLocaleString("fa-IR")}
-              </p>
-            </div>
-            <MessageSquare className="w-8 h-8 text-primary" />
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="persian-body text-sm text-muted-foreground mb-1">
+                    کل درخواست‌ها
+                  </p>
+                  <p className="persian-heading text-3xl font-bold text-foreground">
+                    {stats.total.toLocaleString("fa-IR")}
+                  </p>
+                </div>
+                <MessageSquare className="w-8 h-8 text-primary" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="persian-body text-sm text-muted-foreground mb-1">
+                    در انتظار
+                  </p>
+                  <p className="persian-heading text-3xl font-bold text-orange-500">
+                    {stats.pending.toLocaleString("fa-IR")}
+                  </p>
+                </div>
+                <Clock className="w-8 h-8 text-orange-500" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="persian-body text-sm text-muted-foreground mb-1">
+                    در حال بررسی
+                  </p>
+                  <p className="persian-heading text-3xl font-bold text-blue-500">
+                    {stats.inProgress.toLocaleString("fa-IR")}
+                  </p>
+                </div>
+                <AlertCircle className="w-8 h-8 text-blue-500" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="persian-body text-sm text-muted-foreground mb-1">
+                    حل شده
+                  </p>
+                  <p className="persian-heading text-3xl font-bold text-green-500">
+                    {stats.resolved.toLocaleString("fa-IR")}
+                  </p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+            </Card>
           </div>
-        </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">
-                در انتظار
-              </p>
-              <p className="persian-heading text-3xl font-bold text-orange-500">
-                {stats.pending.toLocaleString("fa-IR")}
-              </p>
-            </div>
-            <Clock className="w-8 h-8 text-orange-500" />
-          </div>
-        </Card>
+          {/* Submissions List */}
+          <Card>
+            <div className="p-6">
+              <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
+                درخواست‌های شما
+              </h2>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">
-                در حال بررسی
-              </p>
-              <p className="persian-heading text-3xl font-bold text-blue-500">
-                {stats.inProgress.toLocaleString("fa-IR")}
-              </p>
-            </div>
-            <AlertCircle className="w-8 h-8 text-blue-500" />
-          </div>
-        </Card>
+              {submissions.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="persian-body text-muted-foreground mb-4">
+                    شما هنوز درخواستی ارسال نکرده‌اید
+                  </p>
+                  <Button asChild>
+                    <a href="/contact">
+                      <Plus className="w-4 h-4 ml-1" />
+                      ارسال اولین درخواست
+                    </a>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {submissions.map((submission) => (
+                    <Card
+                      key={submission.id}
+                      className="p-4 border-l-4 border-l-primary"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            {getStatusIcon(submission.status)}
+                            <h3 className="persian-heading font-medium text-foreground">
+                              {submission.subject}
+                            </h3>
+                            {getStatusBadge(submission.status)}
+                          </div>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="persian-body text-sm text-muted-foreground mb-1">
-                حل شده
-              </p>
-              <p className="persian-heading text-3xl font-bold text-green-500">
-                {stats.resolved.toLocaleString("fa-IR")}
-              </p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-green-500" />
-          </div>
-        </Card>
-      </div>
-
-      {/* Submissions List */}
-      <Card>
-        <div className="p-6">
-          <h2 className="persian-heading text-xl font-semibold text-foreground mb-6">
-            درخواست‌های شما
-          </h2>
-
-          {submissions.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="persian-body text-muted-foreground mb-4">
-                شما هنوز درخواستی ارسال نکرده‌اید
-              </p>
-              <Button asChild>
-                <a href="/contact">
-                  <Plus className="w-4 h-4 ml-1" />
-                  ارسال اولین درخواست
-                </a>
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {submissions.map((submission) => (
-                <Card
-                  key={submission.id}
-                  className="p-4 border-l-4 border-l-primary"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        {getStatusIcon(submission.status)}
-                        <h3 className="persian-heading font-medium text-foreground">
-                          {submission.subject}
-                        </h3>
-                        {getStatusBadge(submission.status)}
-                      </div>
-
-                      <p className="persian-body text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {submission.message}
-                      </p>
-
-                      {submission.admin_notes && (
-                        <div className="bg-muted p-3 rounded-lg mb-3">
-                          <p className="persian-body text-sm font-medium text-foreground mb-1">
-                            پاسخ ادمین:
+                          <p className="persian-body text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {submission.message}
                           </p>
-                          <p className="persian-body text-sm text-muted-foreground">
-                            {submission.admin_notes}
-                          </p>
-                        </div>
-                      )}
 
-                      <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span className="persian-body">
-                          ارسال شده:{" "}
-                          {new Date(submission.created_at).toLocaleDateString(
-                            "fa-IR"
+                          {submission.admin_notes && (
+                            <div className="bg-muted p-3 rounded-lg mb-3">
+                              <p className="persian-body text-sm font-medium text-foreground mb-1">
+                                پاسخ ادمین:
+                              </p>
+                              <p className="persian-body text-sm text-muted-foreground">
+                                {submission.admin_notes}
+                              </p>
+                            </div>
                           )}
-                        </span>
-                        {submission.updated_at !== submission.created_at && (
-                          <span className="persian-body">
-                            آخرین بروزرسانی:{" "}
-                            {new Date(submission.updated_at).toLocaleDateString(
-                              "fa-IR"
+
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <span className="persian-body">
+                              ارسال شده:{" "}
+                              {new Date(
+                                submission.created_at
+                              ).toLocaleDateString("fa-IR")}
+                            </span>
+                            {submission.updated_at !==
+                              submission.created_at && (
+                              <span className="persian-body">
+                                آخرین بروزرسانی:{" "}
+                                {new Date(
+                                  submission.updated_at
+                                ).toLocaleDateString("fa-IR")}
+                              </span>
                             )}
-                          </span>
-                        )}
+                          </div>
+                        </div>
+                        <div className="flex items-start">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openTicketModal(submission)}
+                          >
+                            <Eye className="w-4 h-4 ml-1" />
+                            مشاهده
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openTicketModal(submission)}
-                      >
-                        <Eye className="w-4 h-4 ml-1" />
-                        مشاهده
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </Card>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
