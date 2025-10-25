@@ -704,23 +704,23 @@ const AdminDashboard = ({ profile }: AdminDashboardProps) => {
                                     submission.created_at
                                   ).toLocaleDateString("fa-IR")}
                                 </p>
-                                {submission.user_id && (
+                                {/* {submission.user_id && (
                                   <span className="persian-body text-xs text-green-600 font-medium">
                                     قابلیت پاسخگویی
                                   </span>
-                                )}
+                                )} */}
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openSubmissionModal(submission)}
-                              >
-                                <Eye className="w-4 h-4 ml-1" />
-                                {submission.user_id ? "پاسخگویی" : "مشاهده"}
-                              </Button>
-                            </div>
+                          </div>
+                          <div className="flex gap-2 w-full sm:w-auto mt-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openSubmissionModal(submission)}
+                            >
+                              <Eye className="w-4 h-4 ml-1" />
+                              {submission.user_id ? "پاسخگویی" : "مشاهده"}
+                            </Button>
                           </div>
                         </Card>
                       ))}

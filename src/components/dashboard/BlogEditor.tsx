@@ -162,7 +162,7 @@ export const BlogEditor = ({ post, onClose }: BlogEditorProps) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -179,8 +179,7 @@ export const BlogEditor = ({ post, onClose }: BlogEditorProps) => {
             </h2>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
+        <div className="flex flex-row items-center gap-2 mt-4 sm:mt-0 justify-end w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => handleSave(false)}
