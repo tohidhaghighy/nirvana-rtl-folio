@@ -30,6 +30,7 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import {
   Select,
@@ -66,6 +67,8 @@ interface TimeLog {
   hours_worked: string;
   description: string;
   worker_name: string;
+  start_time_2?: string | null;
+  end_time_2?: string | null;
 }
 
 interface DayOffRequest {
@@ -87,8 +90,6 @@ interface WorkerSummary {
 }
 
 export const WorkerManagement: React.FC = () => {
-  console.log("WorkerManagement component rendering");
-
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
   const [dayOffRequests, setDayOffRequests] = useState<DayOffRequest[]>([]);
@@ -96,6 +97,8 @@ export const WorkerManagement: React.FC = () => {
   const [selectedTimeLog, setSelectedTimeLog] = useState<TimeLog | null>(null);
   const [editStartTime, setEditStartTime] = useState("");
   const [editEndTime, setEditEndTime] = useState("");
+  const [editStartTime2, setEditStartTime2] = useState("");
+  const [editEndTime2, setEditEndTime2] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -103,11 +106,6 @@ export const WorkerManagement: React.FC = () => {
   const [selectedWorkerId, setSelectedWorkerId] = useState("");
 
   const currentDate = getCurrentJalaliDate();
-
-  console.log("WorkerManagement state:", {
-    workers: workers.length,
-    timeLogs: timeLogs.length,
-  });
 
   useEffect(() => {
     fetchWorkers();
@@ -246,33 +244,136 @@ export const WorkerManagement: React.FC = () => {
     });
   };
 
-  const calculateHoursTime = (start: string, end: string): string => {
-    if (!start || !end) return "00:00";
+  const calculateHoursTime = (
+    start1: string,
+    end1: string,
+    start2?: string,
+    end2?: string
+  ): string => {
+    const timeToMinutes = (timeString: string): number => {
+      if (!timeString) return 0;
+      const [hours, minutes] = timeString.split(":").map(Number);
+      return hours * 60 + minutes;
+    };
 
-    const [startHour, startMinute] = start.split(":").map(Number);
-    const [endHour, endMinute] = end.split(":").map(Number);
+    let totalDiffMinutes = 0;
 
-    const startMinutes = startHour * 60 + startMinute;
-    const endMinutes = endHour * 60 + endMinute;
+    if (start1 && end1) {
+      const startMinutes1 = timeToMinutes(start1);
+      let endMinutes1 = timeToMinutes(end1);
 
-    const diffMinutes = Math.max(0, endMinutes - startMinutes);
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
+      if (endMinutes1 < startMinutes1) {
+        endMinutes1 += 1440;
+      }
+
+      const diffMinutes1 = Math.max(0, endMinutes1 - startMinutes1);
+      totalDiffMinutes += diffMinutes1;
+    } else {
+      return "00:00";
+    }
+
+    if (start2 && end2) {
+      const startMinutes2 = timeToMinutes(start2);
+      let endMinutes2 = timeToMinutes(end2);
+
+      if (endMinutes2 < startMinutes2) {
+        endMinutes2 += 1440;
+      }
+
+      const diffMinutes2 = Math.max(0, endMinutes2 - startMinutes2);
+      totalDiffMinutes += diffMinutes2;
+    }
+
+    const hours = Math.floor(totalDiffMinutes / 60);
+    const minutes = totalDiffMinutes % 60;
 
     return `${hours.toString().padStart(2, "0")}:${minutes
       .toString()
       .padStart(2, "0")}`;
+    // if (!start || !end) return "00:00";
+
+    // const [startHour, startMinute] = start.split(":").map(Number);
+    // const [endHour, endMinute] = end.split(":").map(Number);
+
+    // const startMinutes = startHour * 60 + startMinute;
+    // const endMinutes = endHour * 60 + endMinute;
+
+    // const diffMinutes = Math.max(0, endMinutes - startMinutes);
+    // const hours = Math.floor(diffMinutes / 60);
+    // const minutes = diffMinutes % 60;
+
+    // return `${hours.toString().padStart(2, "0")}:${minutes
+    //   .toString()
+    //   .padStart(2, "0")}`;
+  };
+
+  const timeToMinutes = (timeString: string): number => {
+    if (!timeString) return 0;
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const isOverlap = (
+    s1: string,
+    e1: string,
+    s2: string,
+    e2: string
+  ): boolean => {
+    const min1Start = timeToMinutes(s1);
+    const min1End = timeToMinutes(e1);
+    const min2Start = timeToMinutes(s2);
+    const min2End = timeToMinutes(e2);
+
+    if (min2Start <= 0 || min2End <= 0) return false;
+
+    const overlaps = min1Start < min2End && min2Start < min1End;
+
+    return overlaps;
   };
 
   const updateTimeLog = async () => {
     if (!selectedTimeLog) return;
 
-    const hoursWorked = calculateHoursTime(editStartTime, editEndTime);
+    const isSegment2Filled = !!(editStartTime2 || editEndTime2);
+    const isSegment2Complete = !!(editStartTime2 && editEndTime2);
+
+    if (isSegment2Filled && !isSegment2Complete) {
+      toast({
+        title: "خطا",
+        description: "در بخش دوم کار، باید زمان شروع و پایان آن را کامل کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isSegment2Complete) {
+      if (
+        isOverlap(editStartTime, editEndTime, editStartTime2!, editEndTime2!)
+      ) {
+        toast({
+          title: "خطا",
+          description:
+            "بخش دوم کار نباید با بخش اول همپوشانی زمانی داشته باشد. لطفاً زمان‌ها را بررسی کنید.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const hoursWorked = calculateHoursTime(
+      editStartTime,
+      editEndTime,
+      editStartTime2,
+      editEndTime2
+    );
+    debugger;
 
     try {
       await apiClient.updateTimeLog(selectedTimeLog.id, {
         start_time: editStartTime + ":00",
         end_time: editEndTime + ":00",
+        start_time_2: editStartTime2 ? editStartTime2 + ":00" : null,
+        end_time_2: editEndTime2 ? editEndTime2 + ":00" : null,
         hours_worked: hoursWorked + ":00",
         description: editDescription,
       });
@@ -327,6 +428,12 @@ export const WorkerManagement: React.FC = () => {
       timeLog.start_time ? timeLog.start_time.substring(0, 5) : ""
     );
     setEditEndTime(timeLog.end_time ? timeLog.end_time.substring(0, 5) : "");
+    setEditStartTime2(
+      timeLog.start_time_2 ? timeLog.start_time_2.substring(0, 5) : ""
+    );
+    setEditEndTime2(
+      timeLog.end_time_2 ? timeLog.end_time_2.substring(0, 5) : ""
+    );
     setEditDescription(timeLog.description || "");
     setIsEditDialogOpen(true);
   };
@@ -705,14 +812,61 @@ export const WorkerManagement: React.FC = () => {
                 />
               </div>
             </div>
+
+            <div className="pt-10">
+              <Label className="font-semibold mb-2 flex justify-between items-center">
+                بخش دوم کار (اختیاری)
+                {(editStartTime2 || editEndTime2) && (
+                  <Button
+                    onClick={() => {
+                      setEditStartTime2("");
+                      setEditEndTime2("");
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 ml-1" />
+                    حذف بخش دوم
+                  </Button>
+                )}
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime2">زمان شروع</Label>
+                  <Input
+                    id="startTime2"
+                    type="time"
+                    value={editStartTime2}
+                    onChange={(e) => setEditStartTime2(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endTime2">زمان پایان</Label>
+                  <Input
+                    id="endTime2"
+                    type="time"
+                    value={editEndTime2}
+                    onChange={(e) => setEditEndTime2(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
             {editStartTime && editEndTime && (
               <div className="text-sm text-muted-foreground text-center">
                 مجموع:{" "}
                 {convertToPersianDigits(
-                  calculateHoursTime(editStartTime, editEndTime)
+                  calculateHoursTime(
+                    editStartTime,
+                    editEndTime,
+                    editStartTime2,
+                    editEndTime2
+                  )
                 )}
               </div>
             )}
+
             <div>
               <Label htmlFor="edit-description">توضیحات</Label>
               <Textarea

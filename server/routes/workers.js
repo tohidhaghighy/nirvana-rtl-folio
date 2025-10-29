@@ -39,6 +39,8 @@ router.get("/time-logs", authenticateToken, async (req, res) => {
     tl.hours_worked, 
     tl.start_time, 
     tl.end_time, 
+    tl.start_time_2, 
+    tl.end_time_2, 
     p.full_name as worker_name, 
     SUBSTRING(tl.hours_worked , 1, 5) AS hours_worked_str
     FROM time_logs tl
@@ -75,7 +77,7 @@ router.get("/time-logs", authenticateToken, async (req, res) => {
 // Create or update time log
 router.post("/time-logs", authenticateToken, async (req, res) => {
   try {
-    const { worker_id, date, start_time, end_time, hours_worked, description } =
+    const { worker_id, date, start_time, end_time, hours_worked, description, start_time_2, end_time_2 } =
       req.body;
 
     // Check if user is admin or the worker themselves
@@ -106,9 +108,11 @@ router.post("/time-logs", authenticateToken, async (req, res) => {
         .input("endTime", sql.VarChar, end_time)
         .input("hoursWorked", sql.VarChar, hours_worked)
         .input("description", sql.NVarChar, description)
+        .input("startTime2", sql.NVarChar, start_time_2 || null) 
+        .input("endTime2", sql.NVarChar, end_time_2 || null)
         .input("updatedAt", sql.DateTime2, new Date()).query(`
           UPDATE time_logs 
-          SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
+          SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, start_time_2 = @startTime2, end_time_2 = @endTime2, updated_at = @updatedAt
           WHERE id = @id
         `);
     } else {
@@ -121,10 +125,12 @@ router.post("/time-logs", authenticateToken, async (req, res) => {
         .input("endTime", sql.VarChar, end_time)
         .input("hoursWorked", sql.VarChar, hours_worked)
         .input("description", sql.NVarChar, description)
+        .input("startTime2", sql.NVarChar, start_time_2 || null) 
+        .input("endTime2", sql.NVarChar, end_time_2 || null)
         .input("createdAt", sql.DateTime2, new Date())
         .input("updatedAt", sql.DateTime2, new Date()).query(`
-          INSERT INTO time_logs (worker_id, date, start_time, end_time, hours_worked, description, created_at, updated_at)
-          VALUES (@workerId, @date, @startTime, @endTime, @hoursWorked, @description, @createdAt, @updatedAt)
+          INSERT INTO time_logs (worker_id, date, start_time, end_time, hours_worked, description, start_time_2, end_time_2, created_at, updated_at)
+          VALUES (@workerId, @date, @startTime, @endTime, @hoursWorked, @description, @startTime2, @endTime2, @createdAt, @updatedAt)
         `);
     }
 
@@ -143,7 +149,7 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { start_time, end_time, hours_worked, description } = req.body;
+      const { start_time, end_time, start_time_2, end_time_2, hours_worked, description } = req.body;
 
       const pool = await getConnection();
       await pool
@@ -153,9 +159,11 @@ router.put(
         .input("endTime", sql.VarChar, end_time)
         .input("hoursWorked", sql.VarChar, hours_worked)
         .input("description", sql.NVarChar, description)
+        .input("startTime2", sql.NVarChar, start_time_2 || null) 
+        .input("endTime2", sql.NVarChar, end_time_2 || null)
         .input("updatedAt", sql.DateTime2, new Date()).query(`
         UPDATE time_logs 
-        SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, updated_at = @updatedAt
+        SET start_time = @startTime, end_time = @endTime, hours_worked = @hoursWorked, description = @description, start_time_2 = @startTime2, end_time_2 = @endTime2, updated_at = @updatedAt
         WHERE id = @id
       `);
 

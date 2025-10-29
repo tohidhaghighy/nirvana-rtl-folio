@@ -34,6 +34,8 @@ interface TimeLog {
   end_time: string;
   hours_worked: string;
   description: string;
+  start_time_2?: string | null;
+  end_time_2?: string | null;
 }
 
 interface DayOffRequest {
@@ -73,6 +75,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   } | null>(null);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [startTime2, setStartTime2] = useState("");
+  const [endTime2, setEndTime2] = useState("");
   const [description, setDescription] = useState("");
   const [dayOffReason, setDayOffReason] = useState("");
   const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
@@ -83,28 +87,127 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
   const { width } = useWindowSize();
   const isTooNarrow = width !== undefined && width < MOBILE_WIDTH_THRESHOLD;
 
-  const calculateHoursTime = (start: string, end: string): string => {
-    if (!start || !end) return "00:00";
+  const calculateHoursTime = (
+    start1: string,
+    end1: string,
+    start2?: string,
+    end2?: string
+  ): string => {
+    const timeToMinutes = (timeString: string): number => {
+      if (!timeString) return 0;
+      const [hours, minutes] = timeString.split(":").map(Number);
+      return hours * 60 + minutes;
+    };
 
-    const [startHour, startMinute] = start.split(":").map(Number);
-    const [endHour, endMinute] = end.split(":").map(Number);
+    let totalDiffMinutes = 0;
 
-    const startMinutes = startHour * 60 + startMinute;
-    const endMinutes = endHour * 60 + endMinute;
+    if (start1 && end1) {
+      const startMinutes1 = timeToMinutes(start1);
+      let endMinutes1 = timeToMinutes(end1);
 
-    const diffMinutes = Math.max(0, endMinutes - startMinutes);
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
+      if (endMinutes1 < startMinutes1) {
+        endMinutes1 += 1440;
+      }
+
+      const diffMinutes1 = Math.max(0, endMinutes1 - startMinutes1);
+      totalDiffMinutes += diffMinutes1;
+    } else {
+      return "00:00";
+    }
+
+    if (start2 && end2) {
+      const startMinutes2 = timeToMinutes(start2);
+      let endMinutes2 = timeToMinutes(end2);
+
+      if (endMinutes2 < startMinutes2) {
+        endMinutes2 += 1440;
+      }
+
+      const diffMinutes2 = Math.max(0, endMinutes2 - startMinutes2);
+      totalDiffMinutes += diffMinutes2;
+    }
+
+    const hours = Math.floor(totalDiffMinutes / 60);
+    const minutes = totalDiffMinutes % 60;
 
     return `${hours.toString().padStart(2, "0")}:${minutes
       .toString()
       .padStart(2, "0")}`;
+
+    // if (!start || !end) return "00:00";
+
+    // const [startHour, startMinute] = start.split(":").map(Number);
+    // const [endHour, endMinute] = end.split(":").map(Number);
+
+    // const startMinutes = startHour * 60 + startMinute;
+    // const endMinutes = endHour * 60 + endMinute;
+
+    // const diffMinutes = Math.max(0, endMinutes - startMinutes);
+    // const hours = Math.floor(diffMinutes / 60);
+    // const minutes = diffMinutes % 60;
+
+    // return `${hours.toString().padStart(2, "0")}:${minutes
+    //   .toString()
+    //   .padStart(2, "0")}`;
+  };
+
+  const timeToMinutes = (timeString: string): number => {
+    if (!timeString) return 0;
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const isOverlap = (
+    s1: string,
+    e1: string,
+    s2: string,
+    e2: string
+  ): boolean => {
+    const min1Start = timeToMinutes(s1);
+    const min1End = timeToMinutes(e1);
+    const min2Start = timeToMinutes(s2);
+    const min2End = timeToMinutes(e2);
+
+    if (min2Start <= 0 || min2End <= 0) return false;
+
+    const overlaps = min1Start < min2End && min2Start < min1End;
+
+    return overlaps;
   };
 
   const saveTimeLog = async () => {
     if (!user || !selectedDate || !startTime || !endTime) return;
 
-    const hoursWorked = calculateHoursTime(startTime, endTime);
+    const isSegment2Filled = !!(startTime2 || endTime2);
+    const isSegment2Complete = !!(startTime2 && endTime2);
+
+    if (isSegment2Filled && !isSegment2Complete) {
+      toast({
+        title: "خطا",
+        description: "در بخش دوم کار، باید زمان شروع و پایان آن را کامل کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isSegment2Complete) {
+      if (isOverlap(startTime, endTime, startTime2!, endTime2!)) {
+        toast({
+          title: "خطا",
+          description:
+            "بخش دوم کار نباید با بخش اول همپوشانی زمانی داشته باشد. لطفاً زمان‌ها را بررسی کنید.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const hoursWorked = calculateHoursTime(
+      startTime,
+      endTime,
+      startTime2,
+      endTime2
+    );
 
     if (hoursWorked === "00:00") {
       toast({
@@ -128,8 +231,9 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       end_time: endTime + ":00",
       hours_worked: hoursWorked + ":00",
       description: description || null,
+      start_time_2: startTime2 ? startTime2 + ":00" : null,
+      end_time_2: endTime2 ? endTime2 + ":00" : null,
     };
-
     try {
       await apiClient.saveTimeLog(logData);
 
@@ -142,6 +246,8 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       setStartTime("");
       setEndTime("");
       setDescription("");
+      setStartTime2("");
+      setEndTime2("");
       onDataChange();
     } catch (error) {
       toast({
@@ -275,11 +381,19 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
       setEndTime(
         existingLog.end_time ? existingLog.end_time.substring(0, 5) : ""
       );
+      setStartTime2(
+        existingLog.start_time_2 ? existingLog.start_time_2.substring(0, 5) : ""
+      );
+      setEndTime2(
+        existingLog.end_time_2 ? existingLog.end_time_2.substring(0, 5) : ""
+      );
       setDescription(existingLog.description || "");
     } else {
       setCurrentLogId(null);
       setStartTime("");
       setEndTime("");
+      setStartTime2("");
+      setEndTime2("");
       setDescription("");
     }
 
@@ -544,10 +658,53 @@ export const WorkerCalendar: React.FC<WorkerCalendarProps> = ({
                 />
               </div>
             </div>
+
+            <div className="pt-10">
+              <Label className="font-semibold mb-2 flex justify-between items-center">
+                بخش دوم کار (اختیاری)
+                {(startTime2 || endTime2) && (
+                  <Button
+                    onClick={() => {
+                      setStartTime2("");
+                      setEndTime2("");
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 ml-1" />
+                    حذف بخش دوم
+                  </Button>
+                )}
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime2">زمان شروع</Label>
+                  <Input
+                    id="startTime2"
+                    type="time"
+                    value={startTime2}
+                    onChange={(e) => setStartTime2(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endTime2">زمان پایان</Label>
+                  <Input
+                    id="endTime2"
+                    type="time"
+                    value={endTime2}
+                    onChange={(e) => setEndTime2(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
             {startTime && endTime && (
               <div className="text-sm text-muted-foreground text-center">
                 مجموع:{" "}
-                {convertToPersianDigits(calculateHoursTime(startTime, endTime))}
+                {convertToPersianDigits(
+                  calculateHoursTime(startTime, endTime, startTime2, endTime2)
+                )}
               </div>
             )}
             <div>

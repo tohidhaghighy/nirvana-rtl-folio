@@ -42,6 +42,8 @@ interface TimeLog {
   hours_worked: string;
   description: string;
   hours_worked_str: string;
+  start_time_2?: string | null;
+  end_time_2?: string | null;
 }
 interface DayOffRequest {
   id: string;
